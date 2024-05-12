@@ -18,19 +18,11 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Scaffold
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.text.style.TextAlign
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.repaircomputerapplication_finalproject.screens.LoginScreen
-import com.example.repaircomputerapplication_finalproject.screens.MenuScreen
+import com.example.repaircomputerapplication_finalproject.graph.RootNav
 
 
 @OptIn(ExperimentalMaterial3Api::class,ExperimentalComposeUiApi::class)
@@ -42,7 +34,7 @@ class MainActivity : ComponentActivity() {
             RepairComputerApplication_FinalProjectTheme {
                 val keyboardController = LocalSoftwareKeyboardController.current
                 // A surface container using the 'background' color from the theme
-                Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background)
+                Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.surface)
                 {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center){
                         Column(modifier = Modifier
@@ -55,14 +47,15 @@ class MainActivity : ComponentActivity() {
                             },
                         ) { //Column
                             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                                NavHost(navController, startDestination = "LoginScreen"){
-                                    composable("MenuScreen"){
-                                        MenuScreen(navController)
-                                    }
-                                    composable("LoginScreen"){
-                                        LoginScreen(navController)
-                                    }
-                                }
+//                                NavHost(navController, startDestination = "LoginScreen"){
+//                                    composable("MenuScreen"){
+//                                        MenuScreen(navController)
+//                                    }
+//                                    composable("LoginScreen"){
+//                                        LoginScreen(navController)
+//                                    }
+//                                }
+                                RootNav()
                             }
                         }
                     }
