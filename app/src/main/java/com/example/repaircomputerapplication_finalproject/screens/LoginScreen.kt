@@ -1,6 +1,8 @@
 package com.example.repaircomputerapplication_finalproject.screens
 
+import android.content.ContentValues.TAG
 import android.content.Context
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -36,7 +38,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import com.example.repaircomputerapplication_finalproject.data.ScreenRoutes
-import com.example.repaircomputerapplication_finalproject.model.UserSession
 import com.example.repaircomputerapplication_finalproject.viewModel.AuthViewModel
 import com.example.repaircomputerapplication_finalproject.viewModel.dataStore
 import kotlinx.coroutines.coroutineScope
@@ -58,13 +59,13 @@ fun LoginScreen (navController: NavController,loginViewModel: AuthViewModel = vi
     val coroutineScope = rememberCoroutineScope() // รับ CoroutineScope
     val isLoading = remember { mutableStateOf(true) }
     var isLogin = remember { mutableStateOf(false) }
-
+    val sessionKey by loginViewModel.getSessionKey().collectAsState(initial = null)
     // UI reacts to state changes
     LaunchedEffect(loginResult) {
         isLogin.value = context.dataStore.data.map { preferences ->
             preferences[booleanPreferencesKey("isLogin")] ?: false
         }.first() // ดึงค่า isLogin และรอจนกว่าจะได้ผลลัพธ์
-        if (isLogin.value) {
+        if (sessionKey != null) {
             isLoading.value = false
             navController.navigate(ScreenRoutes.HomeNav.route) {
                 popUpTo(ScreenRoutes.AuthNav.route) { inclusive = true }

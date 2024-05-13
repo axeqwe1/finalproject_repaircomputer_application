@@ -1,4 +1,9 @@
 package com.example.repaircomputerapplication_finalproject.model
 
-class assignWorkModel {
-}
+data class AssignWorkModel(
+    val as_id: Int,
+    val admin_id: Int,
+    val tech_id: Int,
+    val rrid: Int,
+    val timestamp: String
+)
