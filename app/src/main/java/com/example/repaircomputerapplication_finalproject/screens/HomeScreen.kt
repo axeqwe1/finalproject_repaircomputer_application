@@ -5,8 +5,12 @@ import android.content.ContentValues.TAG
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandIn
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkOut
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -29,6 +33,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -72,6 +79,8 @@ fun HomeScreen (nav:NavController,homeViewModel: HomeViewModel = viewModel()){
     val logoutResult by homeViewModel.logoutResult.collectAsState(initial = null)
     val context = LocalContext.current
     val dataStore = context.dataStore
+
+
     LaunchedEffect(logoutResult) {
         val sessionId =  dataStore.data.firstOrNull()?.get(stringPreferencesKey("session_key"))
         Log.d(TAG,"Session ID $sessionId " ?: "No session ID found")
@@ -94,11 +103,12 @@ fun HomeScreen (nav:NavController,homeViewModel: HomeViewModel = viewModel()){
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentDestination = navBackStackEntry?.destination
                 val shouldShowBottomBar = BottomNavigationBarList().bottomNavigation().any() {it.route == currentDestination?.route}
-                AnimatedVisibility(
-                    visible = shouldShowBottomBar,
-                    enter = fadeIn(),
-                    exit = fadeOut(),
-                ){
+                Box(modifier = Modifier.fillMaxWidth()){
+                    AnimatedVisibility(
+                        visible = shouldShowBottomBar,
+                        enter = fadeIn(animationSpec = tween(durationMillis = 700)),
+                        exit = shrinkOut(animationSpec = tween(durationMillis = 700)),
+                    ){
                         BottomAppBar(
                             containerColor = Color.Transparent,
                             contentColor = Color.Transparent,
@@ -107,17 +117,20 @@ fun HomeScreen (nav:NavController,homeViewModel: HomeViewModel = viewModel()){
                         BottomNavigationBar(navController)
                     }
                 }
-        )
+                }
+            )
         {
            innerPading ->
             Column(
-                modifier = Modifier.padding(innerPading),
+                modifier = Modifier.padding(innerPading).background(Color(0xFFE0F7FA)),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                //Put UI Here
-                MenuNavGraph(navController)
 
+                    // ส่วนของเนื้อหาหน้า Home
+                    MenuNavGraph(navController)
+
+                //Put UI Here
             }
         }
 }

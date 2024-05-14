@@ -4,6 +4,7 @@ import android.app.Application
 import android.content.ContentValues.TAG
 import android.util.Log
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Warning
@@ -18,7 +19,7 @@ import androidx.navigation.compose.rememberNavController
 data class NavigateListForBtn
 (
     val Btn_Name : String = "",
-    val Icon : ImageVector = Icons.Filled.List,
+    val Icon : ImageVector = Icons.AutoMirrored.Filled.List,
     val Route : String = ""
 ){
     fun btnNavigate(Role:String) : List<NavigateListForBtn>{
@@ -27,7 +28,7 @@ data class NavigateListForBtn
         if(Role == "Technician"){
             listType = listOf(
                 NavigateListForBtn(
-                    Btn_Name = "Technician",
+                    Btn_Name = "แจ้งซ่อม",
                     Icon = Icons.Filled.Warning,
                     Route = ScreenRoutes.FormRequestForRepair.route
                 ),
@@ -40,20 +41,21 @@ data class NavigateListForBtn
         if(Role == "Employee"){
             listType = listOf(
                 NavigateListForBtn(
-                    Btn_Name = "Employee",
+                    Btn_Name = "แจ้งซ่อม",
                     Icon = Icons.Filled.Warning,
                     Route = ScreenRoutes.FormRequestForRepair.route
-                ),
-                NavigateListForBtn(
-                    Btn_Name = "รานงาน",
-                    Icon = Icons.Filled.Share
                 ),
             )
         }
         if(Role == "Admin"){
             listType = listOf(
                 NavigateListForBtn(
-                    Btn_Name = "Admin",
+                    Btn_Name = "จ่ายงาน",
+                    Icon = Icons.Filled.Warning,
+                    Route = ScreenRoutes.FormRequestForRepair.route
+                ),
+                NavigateListForBtn(
+                    Btn_Name = "จัดการข้อมูล",
                     Icon = Icons.Filled.Warning,
                     Route = ScreenRoutes.FormRequestForRepair.route
                 ),
@@ -66,12 +68,7 @@ data class NavigateListForBtn
         if(Role == "Chief"){
             listType = listOf(
                 NavigateListForBtn(
-                    Btn_Name = "Chief",
-                    Icon = Icons.Filled.Warning,
-                    Route = ScreenRoutes.FormRequestForRepair.route
-                ),
-                NavigateListForBtn(
-                    Btn_Name = "รานงาน",
+                    Btn_Name = "รายงาน",
                     Icon = Icons.Filled.Share
                 ),
             )

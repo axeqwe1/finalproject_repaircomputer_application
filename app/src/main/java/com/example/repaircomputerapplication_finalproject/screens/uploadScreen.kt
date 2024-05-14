@@ -8,6 +8,7 @@ import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -23,6 +24,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -74,6 +76,7 @@ fun ImageUploadScreen(viewModel: formRequestViewModel) {
     ){
         if(it){
             Toast.makeText(activity,"Permission Granted",Toast.LENGTH_SHORT).show()
+            cameraLauncher.launch(uri)
         }else{
             Toast.makeText(activity,"Permission Denied",Toast.LENGTH_SHORT).show()
         }
@@ -81,7 +84,8 @@ fun ImageUploadScreen(viewModel: formRequestViewModel) {
 
     Column(
         Modifier
-            .padding(3.dp),
+            .padding(3.dp)
+            .fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Bottom
     ){
@@ -96,24 +100,28 @@ fun ImageUploadScreen(viewModel: formRequestViewModel) {
         }) {
             Text(text = "Capture Image")
         }
-    }
-    if(captureImageUri.path?.isNotEmpty() == true)
-    {
-        viewModel.saveImageState(captureImageUri)
-        Log.d(TAG, "ImageUploadScreen:${captureImageUri} ")
-        Image(
-            modifier = Modifier.padding(16.dp),
-            painter = rememberImagePainter(captureImageUri),
-            contentDescription = null
-        )
-    }else
-    {
-        Log.d(TAG, "ImageUploadScreen:${captureImageUri.path} ")
-        Image(
-            modifier = Modifier.padding(16.dp),
-            painter = painterResource(id = R.drawable.ic_image),
-            contentDescription = null
-        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+        if(captureImageUri.path?.isNotEmpty() == true)
+        {
+            viewModel.saveImageState(captureImageUri)
+            Log.d(TAG, "ImageUploadScreen:${captureImageUri} ")
+            Image(
+                modifier = Modifier.padding(16.dp),
+                painter = rememberImagePainter(captureImageUri),
+                contentDescription = null
+            )
+        }else
+        {
+            Box(
+                modifier = Modifier
+                    .size(240.dp)
+                    .background(Color.Gray),
+                contentAlignment = Alignment.Center
+            ) {
+                Text("รูปภาพที่อัพโหลด")
+            }
+        }
     }
 }
 

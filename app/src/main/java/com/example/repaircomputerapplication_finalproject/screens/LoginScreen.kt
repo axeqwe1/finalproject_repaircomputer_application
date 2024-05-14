@@ -65,7 +65,7 @@ fun LoginScreen (navController: NavController,loginViewModel: AuthViewModel = vi
         isLogin.value = context.dataStore.data.map { preferences ->
             preferences[booleanPreferencesKey("isLogin")] ?: false
         }.first() // ดึงค่า isLogin และรอจนกว่าจะได้ผลลัพธ์
-        if (sessionKey != null) {
+        if (isLogin.value) {
             isLoading.value = false
             navController.navigate(ScreenRoutes.HomeNav.route) {
                 popUpTo(ScreenRoutes.AuthNav.route) { inclusive = true }

@@ -1,5 +1,6 @@
 package com.example.repaircomputerapplication_finalproject
 
+import AddAdminScreen
 import android.content.ContentValues
 import android.os.Bundle
 import android.util.Log
@@ -26,6 +27,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.navigation.compose.rememberNavController
 import com.example.repaircomputerapplication_finalproject.graph.RootNav
+import com.example.repaircomputerapplication_finalproject.screens.manageDatascreen.displayEmployee
 
 
 @OptIn(ExperimentalMaterial3Api::class,ExperimentalComposeUiApi::class)
@@ -42,7 +44,7 @@ class MainActivity : ComponentActivity() {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center){
                         Column(modifier = Modifier
                             .fillMaxSize()
-                            .background(Color.White)  //
+                            .background(Color(0xFFE0F7FA))  //
                             .pointerInput(Unit) {
                                 detectTapGestures {
                                     keyboardController?.hide()
@@ -50,15 +52,8 @@ class MainActivity : ComponentActivity() {
                             },
                         ) { //Column
                             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-//                                NavHost(navController, startDestination = "LoginScreen"){
-//                                    composable("MenuScreen"){
-//                                        MenuScreen(navController)
-//                                    }
-//                                    composable("LoginScreen"){
-//                                        LoginScreen(navController)
-//                                    }
-//                                }
                                 RootNav()
+//                                displayEmployee()
                             }
                         }
                     }

@@ -2,6 +2,10 @@ package com.example.repaircomputerapplication_finalproject.screens
 
 import android.content.ContentValues.TAG
 import android.util.Log
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -38,40 +42,45 @@ import java.lang.reflect.Array
 @Composable
 fun RequestRepairScreen(navController: NavHostController, viewModel: RequestForRepiarListViewModel = viewModel()){
     val requestList = viewModel.requestList.collectAsState().value ?: emptyList()
-    viewModel.eqtList.collectAsState().value ?: emptyList()
-    viewModel.empList.collectAsState().value ?: emptyList()
-    viewModel.buildingList.collectAsState().value ?: emptyList()
+    val eqtList =viewModel.eqtList.collectAsState().value ?: emptyList()
+    val empList = viewModel.empList.collectAsState().value ?: emptyList()
+    val buildList = viewModel.buildingList.collectAsState().value ?: emptyList()
+    var isVisible by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) {
+        isVisible = true
+    }
 
-    if (requestList.isEmpty()) {
-        LoadingScreen() // แสดงตัวโหลด
-    } else {
-        Column(Modifier.fillMaxWidth()) {
-            // ส่วน UI ทั่วไป
-            LazyColumn(modifier = Modifier.fillMaxWidth()) {
-                items(requestList) { item ->
-                    OutlinedCard(modifier = Modifier
-                        .padding(16.dp)
-                        .fillMaxWidth()
-                    ){
-                        Box(modifier = Modifier
+        if (requestList.isEmpty() || eqtList.isEmpty() || empList.isEmpty() || buildList.isEmpty()) {
+            LoadingScreen() // แสดงตัวโหลด
+        } else {
+            Column(Modifier.fillMaxSize()) {
+                // ส่วน UI ทั่วไป
+                LazyColumn(modifier = Modifier.fillMaxWidth()) {
+                    items(requestList) { item ->
+                        OutlinedCard(modifier = Modifier
+                            .padding(16.dp)
                             .fillMaxWidth()
-                            .background(Color.Gray)
-                            .padding(24.dp)
                         ){
-                            Column(modifier = Modifier.fillMaxWidth()) {
-                                Text(text = "รหัสแจ้งซ่อม   :${item.rrid}") // ตรงนี้ใช้ข้อมูลจาก item โดยตรง
-                                Text(text = "รายละเอียด    :${item.rr_description}")
-                                Text(text = "ชื่ออุปกรณ์    :${viewModel.getEquipmentName(item.eq_id ?: 0)}")
-                                Text(text = "ชื่อผู้แจ้ง      :${viewModel.getEmployeeFullName(item.employee_id ?: 0)}")
-                                Text(text = "เลขห้อง/ชั้นตึก  :${viewModel.getBuildingInfo(item.building_id ?: 0)}")
-                                // ใช้ข้อมูลอื่นๆ จาก item ได้ที่นี่
+                            Box(modifier = Modifier
+                                .fillMaxWidth()
+                                .background(Color.Gray)
+                                .padding(24.dp)
+                            ){
+                                Column(modifier = Modifier.fillMaxWidth()) {
+                                    Text(text = "รหัสแจ้งซ่อม   :${item.rrid}") // ตรงนี้ใช้ข้อมูลจาก item โดยตรง
+                                    Text(text = "รายละเอียด    :${item.rr_description}")
+                                    Text(text = "ชื่ออุปกรณ์    :${viewModel.getEquipmentName(item.eq_id ?: 0)}")
+                                    Text(text = "ชื่อผู้แจ้ง      :${viewModel.getEmployeeFullName(item.employee_id ?: 0)}")
+                                    Text(text = "เลขห้อง/ชั้นตึก  :${viewModel.getBuildingInfo(item.building_id ?: 0)}")
+                                    // ใช้ข้อมูลอื่นๆ จาก item ได้ที่นี่
+                                }
                             }
                         }
                     }
                 }
             }
         }
-    }
+
 }
 
 

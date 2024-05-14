@@ -8,6 +8,9 @@ sealed class ScreenRoutes(val route:String){
         object RequestRepairList : ScreenRoutes("รายการแจ้งซ่อม")
         object LoginScreens : ScreenRoutes("หน้าล๊อคอิน")
         object Menu : ScreenRoutes("Menu")
+        object ManageMenu : ScreenRoutes("เลือกจัดการข้อมูล")
+
+        object ManageAdminScreen :ScreenRoutes("จัดการข้อมูลแอดมิน")
         //Graph Route
         object AuthNav : ScreenRoutes("AUTH_NAV_GRAPH")
         object HomeNav : ScreenRoutes("HOME_NAV_GRAPH")
@@ -15,9 +18,9 @@ sealed class ScreenRoutes(val route:String){
         object ListRequestNav : ScreenRoutes("LISTREQUEST_NAV_GRAPH")
         object NotiNav:ScreenRoutes("NOTI_NAV_GRAPH")
         object RequestFormNav : ScreenRoutes("RR_FORM_NAV_GRAPH")
+        object ManageMenuNav : ScreenRoutes("MANAGE_MENU_NAV_GRAPH")
         //Form Route
         object FormRequestForRepair : ScreenRoutes("หน้าแจ้งซ่อม")
-
         //Report
         object Report : ScreenRoutes("report_screen")
 

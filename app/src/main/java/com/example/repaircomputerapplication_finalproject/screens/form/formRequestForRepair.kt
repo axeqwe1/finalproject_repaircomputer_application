@@ -231,13 +231,13 @@ fun formRequestForRepair(navController: NavController,formRequestViewModel: form
                 }
             }
             Box(
-                modifier = Modifier.size(360.dp),
+                modifier = Modifier.fillMaxWidth(),
+                contentAlignment = Alignment.Center
             ){
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .fillMaxHeight()
-                        .background(Color.Yellow),
+                        .fillMaxHeight(),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ){
                     ImageUploadScreen(formRequestViewModel)
