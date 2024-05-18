@@ -1,14 +1,7 @@
 package com.example.repaircomputerapplication_finalproject.`api-service`
 import android.app.Application
-import android.content.Context
-import androidx.compose.ui.platform.LocalContext
-import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.ViewModel
-import com.example.repaircomputerapplication_finalproject.viewModel.dataStore
-import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.runBlocking
-import okhttp3.Interceptor
+import com.example.repaircomputerapplication_finalproject.viewModel.ContextDataStore.dataStore
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import okhttp3.JavaNetCookieJar

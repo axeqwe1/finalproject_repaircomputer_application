@@ -2,7 +2,6 @@ package com.example.repaircomputerapplication_finalproject.viewModel
 
 import android.app.Application
 import android.content.ContentValues.TAG
-import android.media.audiofx.DynamicsProcessing.Eq
 import android.util.Log
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.lifecycle.AndroidViewModel
@@ -12,11 +11,10 @@ import com.example.repaircomputerapplication_finalproject.model.BuildingData
 import com.example.repaircomputerapplication_finalproject.model.EmployeeData
 import com.example.repaircomputerapplication_finalproject.model.EquipmentData
 import com.example.repaircomputerapplication_finalproject.model.RequestForRepairData
-import com.example.repaircomputerapplication_finalproject.model.RequestListResponse
+import com.example.repaircomputerapplication_finalproject.viewModel.ContextDataStore.dataStore
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 

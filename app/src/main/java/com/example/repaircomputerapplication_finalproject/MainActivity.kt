@@ -1,6 +1,5 @@
 package com.example.repaircomputerapplication_finalproject
 
-import AddAdminScreen
 import android.content.ContentValues
 import android.os.Bundle
 import android.util.Log
@@ -27,7 +26,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.navigation.compose.rememberNavController
 import com.example.repaircomputerapplication_finalproject.graph.RootNav
-import com.example.repaircomputerapplication_finalproject.screens.manageDatascreen.displayEmployee
 
 
 @OptIn(ExperimentalMaterial3Api::class,ExperimentalComposeUiApi::class)

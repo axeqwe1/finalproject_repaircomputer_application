@@ -1,13 +1,7 @@
 import android.content.ContentValues.TAG
-import android.net.Uri
 import android.util.Log
-import android.widget.Toast
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ModalBottomSheetLayout
@@ -18,31 +12,22 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.repaircomputerapplication_finalproject.component.LoadSuccessScreen
 import com.example.repaircomputerapplication_finalproject.data.ScreenRoutes
-import com.example.repaircomputerapplication_finalproject.model.BuildingData
-import com.example.repaircomputerapplication_finalproject.screens.LoadingScreen
-import com.example.repaircomputerapplication_finalproject.viewModel.dataStore
+import com.example.repaircomputerapplication_finalproject.viewModel.ContextDataStore.dataStore
 import com.example.repaircomputerapplication_finalproject.viewModel.formRequestViewModel
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 
@@ -52,7 +37,6 @@ fun formRequestForRepair(navController: NavController,formRequestViewModel: form
     val vmodel = formRequestViewModel
     val context = LocalContext.current
     var showLoadSuccess by remember { mutableStateOf(false) }
-
     var deviceId by remember { mutableStateOf("") }
     var empId:Int? by remember{ mutableStateOf(null) }
     var repairDetails by remember { mutableStateOf("") }
@@ -60,13 +44,10 @@ fun formRequestForRepair(navController: NavController,formRequestViewModel: form
     val equipmentList = vmodel.equipmentResult.collectAsState().value
     val buildingList = vmodel.buildingResult.collectAsState().value
     val employeeList = vmodel.employeeList.collectAsState().value
-    val uploadStatus = vmodel.uploadedStatus.collectAsState().value
     val imageName = vmodel.uploadedFileName.collectAsState().value
     var selectedBuilding by remember { mutableStateOf("กรูณาเลือกข้อมูล") }
     var buildingId by remember { mutableStateOf(0) }
-    var isExpand by remember {
-        mutableStateOf(false)
-    }
+    var isExpand by remember { mutableStateOf(false) }
     var imageUri = vmodel.image.collectAsState().value
     var showDialog by remember { mutableStateOf(false) }
     var role by remember { mutableStateOf("") }
@@ -74,11 +55,17 @@ fun formRequestForRepair(navController: NavController,formRequestViewModel: form
     var emp_Lnm by remember { mutableStateOf("") }
     var eq_id:Int? by remember{ mutableStateOf(null) }
     LaunchedEffect(key1 = true){
-        val dataStore = context.dataStore.data.map {
+        val roleData = context.dataStore.data.map {
             items ->
             items[stringPreferencesKey("role")]
         }.first()
-        role = dataStore ?: ""
+        role = roleData ?: ""
+
+        val EmpId = context.dataStore.data.map {
+            items ->
+            items[stringPreferencesKey("userId")]
+        }.first()
+        empId = EmpId?.toInt()
         Log.d(TAG, "formRequestForRepair: $role")
     }
     fun checkEmployeeData(firstName:String,lastName:String):Boolean{
@@ -130,9 +117,7 @@ fun formRequestForRepair(navController: NavController,formRequestViewModel: form
             sheetContent = {
                 LoadSuccessScreen(onContinueClicked = { /* Handle continue action */ })
             },
-        ) {
-            
-        }
+        ) {}
             LaunchedEffect(key1 = true){
                 delay(5000)
                 navController.navigate(ScreenRoutes.MenuNav.route){
@@ -154,7 +139,6 @@ fun formRequestForRepair(navController: NavController,formRequestViewModel: form
                     modifier = Modifier
                         .fillMaxWidth()
                 ) {
-
                     OutlinedTextField(
                         value = emp_Fnm,
                         onValueChange = { emp_Fnm = it },
@@ -268,7 +252,10 @@ fun formRequestForRepair(navController: NavController,formRequestViewModel: form
                     }else{
                         if (checkEquipmentId(deviceId) && checkBuildingId(buildingId) && repairDetails.isNotBlank()) {
                             showDialog = false  // เปิดใช้งาน Dialog หากข้อมูลไม่ครบ
+                            vmodel.uploadImage(imageUri!!)
+                            vmodel.SendRequest(repairDetails,vmodel.getFileName() ,empId ?:0,buildingId,eq_id ?: 0)
                             Log.d(TAG, "formRequestForRepair: $empId")
+                            showLoadSuccess = true
                         } else {
                             // โค้ดสำหรับการดำเนินการถัดไปหากข้อมูลครบถ้วน
                             showDialog = true

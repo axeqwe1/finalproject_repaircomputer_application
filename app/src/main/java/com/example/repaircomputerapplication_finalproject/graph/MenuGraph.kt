@@ -1,15 +1,6 @@
 package com.example.repaircomputerapplication_finalproject.graph
 
-import android.app.Application
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.lifecycle.AndroidViewModel
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -17,6 +8,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navigation
 import com.example.repaircomputerapplication_finalproject.component.MenuScreen
 import com.example.repaircomputerapplication_finalproject.data.ScreenRoutes
+import com.example.repaircomputerapplication_finalproject.graph.ManagementGraph.manageMenuDataGraph
 import com.example.repaircomputerapplication_finalproject.screens.NotificationScreen
 import com.example.repaircomputerapplication_finalproject.screens.RequestRepairScreen
 
@@ -36,6 +28,7 @@ fun MenuNavGraph(
         RequestListGraph(navController)
         NotiGraph(navController)
         requestFormGraph(navController)
+        manageMenuDataGraph(navController)
     }
 }
 fun NavGraphBuilder.RequestListGraph(navController: NavHostController){

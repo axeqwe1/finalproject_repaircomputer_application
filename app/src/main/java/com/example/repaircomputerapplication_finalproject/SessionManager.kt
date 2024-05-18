@@ -1,10 +1,8 @@
 import android.app.Application
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
-import androidx.datastore.preferences.preferencesDataStore
-import android.content.Context
 import androidx.lifecycle.AndroidViewModel
-import com.example.repaircomputerapplication_finalproject.viewModel.dataStore
+import com.example.repaircomputerapplication_finalproject.viewModel.ContextDataStore.dataStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 

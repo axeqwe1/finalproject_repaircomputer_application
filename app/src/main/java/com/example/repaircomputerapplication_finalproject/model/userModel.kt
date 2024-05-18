@@ -22,7 +22,25 @@ data class UserModel(
     private val departmentId:Int? = 0,
     private val status_id:Int? = null,
 )
-
+data class TechnicianBody(
+    val firstname: String? = null,
+    val lastname: String? = null,
+    val phone: String? = null,
+    val email: String? = null,
+    val password: String? = null,
+    val departmentId:Int? = 0,
+    val status_id:Int? = null,
+)
+data class AdminData(
+    val admin_id:Int? = null,
+    val firstname: String? = null,
+    val lastname: String? = null,
+    val phone: String? = null,
+    val email: String? = null,
+    val password: String? = null,
+    val departmentId:Int? = 0,
+    val status_id:Int? = null,
+)
 data class EmployeeData(
     val emp_id:Int? = null,
     val firstname: String? = null,
@@ -31,5 +49,23 @@ data class EmployeeData(
     val email: String? = null,
     val password: String? = null,
     val departmentId:Int? = 0,
+)
+data class TechnicianData(
+    val tech_id:Int? = null,
+    val firstname: String? = null,
+    val lastname: String? = null,
+    val phone: String? = null,
+    val email: String? = null,
+    val password: String? = null,
+    val departmentId:Int? = 0,
     val status_id:Int? = null,
+)
+data class ChiefData(
+    val chief_id:Int? = null,
+    val firstname: String? = null,
+    val lastname: String? = null,
+    val phone: String? = null,
+    val email: String? = null,
+    val password: String? = null,
+    val departmentId:Int? = 0,
 )

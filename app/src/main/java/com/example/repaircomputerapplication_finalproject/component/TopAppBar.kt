@@ -1,7 +1,9 @@
 package com.example.repaircomputerapplication_finalproject.component
 
+import androidx.compose.foundation.background
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material3.AlertDialogDefaults.containerColor
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
@@ -36,21 +38,19 @@ import kotlinx.coroutines.launch
 fun TopAppBarDynamic(navController: NavController,scrollBehavior: TopAppBarScrollBehavior,homeViewModel: HomeViewModel) {
     val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route ?: ""
     TopAppBar(
+        modifier = Modifier.background(Color.Transparent),
         title = { Text(
             text = currentRoute,
             color = Color.Black,
             fontSize = 24.sp
         ) },
-        colors = TopAppBarDefaults.smallTopAppBarColors(
-        containerColor = MaterialTheme.colorScheme.surface
-        ),
         navigationIcon = {
             val navBackStackEntry by navController.currentBackStackEntryAsState()
             val currentDestination = navBackStackEntry?.destination
             val topNavBarDestination = BottomNavigationBarList().bottomNavigation().any() {it.route == currentDestination?.route}
             if(!topNavBarDestination){
                 IconButton(onClick = { navController.navigateUp() }) {
-                    Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Go Back", tint = Color.Black)
+                    Icon(imageVector = Icons.Filled.ArrowBackIosNew, contentDescription = "Go Back", tint = Color.Black)
                 }
             }
         },

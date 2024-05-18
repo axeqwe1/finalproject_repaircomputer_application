@@ -8,3 +8,9 @@ data class BuildingData(
     val building_name:String = ""
 )
 
+data class BuildingRequest(
+    val building_room_number:String = "",
+    val building_floor:Int? = null,
+    val building_name:String = ""
+)
+

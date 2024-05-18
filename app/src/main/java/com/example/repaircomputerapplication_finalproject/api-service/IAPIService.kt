@@ -1,25 +1,41 @@
 package com.example.repaircomputerapplication_finalproject.`api-service`
 
+import com.example.repaircomputerapplication_finalproject.model.AdminData
 import com.example.repaircomputerapplication_finalproject.model.BuildingData
+import com.example.repaircomputerapplication_finalproject.model.BuildingRequest
+import com.example.repaircomputerapplication_finalproject.model.ChiefData
+import com.example.repaircomputerapplication_finalproject.model.DepartmentData
+import com.example.repaircomputerapplication_finalproject.model.DepartmentRequest
 import com.example.repaircomputerapplication_finalproject.model.EmployeeData
 import com.example.repaircomputerapplication_finalproject.model.EquipmentData
+import com.example.repaircomputerapplication_finalproject.model.EquipmentRequest
+import com.example.repaircomputerapplication_finalproject.model.EquipmentTypeData
+import com.example.repaircomputerapplication_finalproject.model.EquipmentTypeRequest
+import com.example.repaircomputerapplication_finalproject.model.LevelOfDamageData
+import com.example.repaircomputerapplication_finalproject.model.LevelOfDamageRequest
 import com.example.repaircomputerapplication_finalproject.model.RequestForRepairData
 import com.example.repaircomputerapplication_finalproject.model.RequestListResponse
 import com.example.repaircomputerapplication_finalproject.model.RequestResponse
+import com.example.repaircomputerapplication_finalproject.model.TechnicianBody
+import com.example.repaircomputerapplication_finalproject.model.TechnicianData
 
 import com.example.repaircomputerapplication_finalproject.model.UserRequest
 import com.example.repaircomputerapplication_finalproject.model.UserResponse
 import com.example.repaircomputerapplication_finalproject.model.sendRequest
 import com.example.repaircomputerapplication_finalproject.model.UploadResponse
+import com.example.repaircomputerapplication_finalproject.model.UserModel
 import com.example.repaircomputerapplication_finalproject.model.logoutResponse
 import com.example.repaircomputerapplication_finalproject.model.notificationData
 import com.example.repaircomputerapplication_finalproject.model.notificationListResponse
 import okhttp3.MultipartBody
+import okhttp3.ResponseBody
 import retrofit2.Response
 import retrofit2.http.POST
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.Multipart
+import retrofit2.http.PUT
 import retrofit2.http.Part
 import retrofit2.http.Path
 
@@ -34,13 +50,96 @@ interface IAPIService {
     suspend fun getEquipments():Response<List<EquipmentData>>
     @GET("managementdata/getequipment/{id}")
     suspend fun getEquipmentById(@Path("id") eq_id: Int): Response<EquipmentData>
+    @GET("managementdata/getequipmentstypes")
+    suspend fun getEquipmentTypes():Response<List<EquipmentTypeData>>
+    @GET("managementdata/getequipmentstype/{id}")
+    suspend fun getEquipmentTypeById(@Path("id") eqc_id: Int): Response<EquipmentTypeData>
+    @GET("managementdata/getdepartments")
+    suspend fun getDepartments():Response<List<DepartmentData>>
+    @GET("managementdata/getdepartment/{id}")
+    suspend fun getDepartmentById(@Path("id") department_id: Int): Response<DepartmentData>
+    @GET("managementdata/getloeds")
+    suspend fun getLevelOfDamages():Response<List<LevelOfDamageData>>
+    @GET("managementdata/getloed/{id}")
+    suspend fun getLevelOfDamageById(@Path("id") loed: Int): Response<LevelOfDamageData>
+    //-----------------------------AddData
+    @POST("managementdata/addbuilding")
+    suspend fun addBuilding(@Body bodyrequest: BuildingRequest):Response<BuildingData>
+    @POST("managementdata/adddepartment")
+    suspend fun addDepartment(@Body bodyrequest: DepartmentRequest):Response<DepartmentData>
+    @POST("managementdata/addequipment")
+    suspend fun addEquipment(@Body bodyrequest: EquipmentRequest):Response<EquipmentData>
+    @POST("managementdata/addequipmenttype")
+    suspend fun addEquipmentType(@Body bodyrequest: EquipmentTypeRequest):Response<EquipmentTypeData>
+    @POST("managementdata/addloed")
+    suspend fun addLevelOfDamage(@Body bodyrequest: LevelOfDamageRequest):Response<LevelOfDamageData>
 
+    //-------------------------------Edit Data
+    @PUT("managementdata/updatebuilding/{id}")
+    suspend fun editBuilding(@Path("id") id: Int, @Body request: BuildingRequest): Response<ResponseBody>
+
+    @PUT("managementdata/updatedepartment/{id}")
+    suspend fun editDepartment(@Path("id") id: Int, @Body request: DepartmentRequest): Response<ResponseBody>
+
+    @PUT("managementdata/updateequipment/{id}")
+    suspend fun editEquipment(@Path("id") id: Int, @Body request: EquipmentRequest): Response<ResponseBody>
+
+    @PUT("managementdata/updateequipmenttype/{id}")
+    suspend fun editEquipmentType(@Path("id") id: Int, @Body request: EquipmentTypeRequest): Response<ResponseBody>
+
+    @PUT("managementdata/updateloed/{id}")
+    suspend fun editLevelOfDamage(@Path("id") id: Int, @Body request: LevelOfDamageRequest): Response<ResponseBody>
     //---------------------------->ManagemenUser
+    //---------------------------->GetAllUser
     @GET("managementuser/getemployees")
     suspend fun getEmployees():Response<List<EmployeeData>>
-    // Get a specific equipment by ID
-    @GET("managementdata/getemployee/{id}")
-    suspend fun getEmployeeById(@Path("id") eq_id: Int): Response<EmployeeData>
+    @GET("managementuser/getadmins")
+    suspend fun getAdmins():Response<List<AdminData>>
+    @GET("managementuser/gettechnicians")
+    suspend fun getTechnicians():Response<List<TechnicianData>>
+    @GET("managementuser/getchiefs")
+    suspend fun getChiefs():Response<List<ChiefData>>
+
+
+    //---------------------------->AddUser
+    @POST("managementuser/addadmin")
+    suspend fun addAdmin(@Body adminData: UserModel):Response<AdminData>
+    @POST("managementuser/addtechnician")
+    suspend fun addTechnician(@Body technicianData: UserModel):Response<TechnicianData>
+    @POST("managementuser/addemployee")
+    suspend fun addEmployee(@Body employeeData: UserModel):Response<EmployeeData>
+    @POST("managementuser/addchief")
+    suspend fun addChief(@Body chiefData: UserModel):Response<ChiefData>
+
+    //---------------------------->EditUser
+    @PUT("managementuser/updateadmin/{id}")
+    suspend fun editAdmin(@Path("id") admin_id:Int,@Body adminData: UserModel):Response<AdminData>
+    @PUT("managementuser/updateemployee/{id}")
+    suspend fun editEmployee(@Path("id") emp_id:Int,@Body employeeData: UserModel):Response<EmployeeData>
+    @PUT("managementuser/updatetechnician/{id}")
+    suspend fun editTechnician(@Path("id") tech_id:Int,@Body technicianData: TechnicianBody):Response<TechnicianData>
+    @PUT("managementuser/updatechief/{id}")
+    suspend fun editChief(@Path("id") chief_id:Int,@Body chiefData: UserModel):Response<ChiefData>
+
+    //----------------------------------> Get a specific user by ID
+    @GET("managementuser/getadmin/{id}")
+    suspend fun getAdminById(@Path("id") admin_id: Int): Response<AdminData>
+    @GET("managementuser/getemployee/{id}")
+    suspend fun getEmployeeById(@Path("id") emp_id: Int): Response<EmployeeData>
+    @GET("managementuser/gettechnician/{id}")
+    suspend fun getTechnicianById(@Path("id") eq_id: Int): Response<TechnicianData>
+    @GET("managementuser/getchief/{id}")
+    suspend fun getChiefById(@Path("id") eq_id: Int): Response<EmployeeData>
+
+    //----------------------------------> Delete
+    @DELETE("managementuser/deleteadmin/{id}")
+    suspend fun deleteAdminById(@Path("id") admin_id: Int): Response<messageBody>
+    @DELETE("managementuser/deleteemployee/{id}")
+    suspend fun deleteEmployeeById(@Path("id") emp_id: Int): Response<messageBody>
+    @DELETE("managementuser/deletetechnician/{id}")
+    suspend fun deleteTechnicianById(@Path("id") eq_id: Int): Response<messageBody>
+    @DELETE("managementuser/deletechief/{id}")
+    suspend fun deleteChiefById(@Path("id") eq_id: Int): Response<messageBody>
 
     //---------------------------------->authen api
     @POST("auth/login")
@@ -64,3 +163,11 @@ interface IAPIService {
     @POST("images/upload")
     suspend fun uploadImage(@Part body: MultipartBody.Part): Response<UploadResponse>
 }
+
+data class messageBody(
+    val message:String?
+)
+
+data class ErrorBody(
+    val error:String?
+)

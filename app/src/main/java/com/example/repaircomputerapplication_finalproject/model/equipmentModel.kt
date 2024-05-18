@@ -8,3 +8,10 @@ data class EquipmentData (
     val eq_start_date:String? = null,
     val eqc_id:Int? = null
 )
+
+data class EquipmentRequest(
+    val eq_name:String? = null,
+    val eq_status:String? = null,
+    val eq_unit:String? = null,
+    val eqc_id:Int? = null
+)

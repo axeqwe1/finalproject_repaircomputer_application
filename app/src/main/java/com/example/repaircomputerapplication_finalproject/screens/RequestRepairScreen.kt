@@ -49,7 +49,6 @@ fun RequestRepairScreen(navController: NavHostController, viewModel: RequestForR
     LaunchedEffect(Unit) {
         isVisible = true
     }
-
         if (requestList.isEmpty() || eqtList.isEmpty() || empList.isEmpty() || buildList.isEmpty()) {
             LoadingScreen() // แสดงตัวโหลด
         } else {

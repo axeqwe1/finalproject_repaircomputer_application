@@ -33,6 +33,8 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import coil.compose.AsyncImage
+import coil.compose.rememberAsyncImagePainter
 import coil.compose.rememberImagePainter
 import java.util.Objects
 import java.util.jar.Manifest
@@ -105,11 +107,11 @@ fun ImageUploadScreen(viewModel: formRequestViewModel) {
         if(captureImageUri.path?.isNotEmpty() == true)
         {
             viewModel.saveImageState(captureImageUri)
-            Log.d(TAG, "ImageUploadScreen:${captureImageUri} ")
-            Image(
-                modifier = Modifier.padding(16.dp),
-                painter = rememberImagePainter(captureImageUri),
-                contentDescription = null
+            Log.d(TAG, "ImageUploadScreen:${captureImageUri!!} ")
+            AsyncImage(
+                model = captureImageUri,
+                contentDescription = null,
+                modifier = Modifier.padding(16.dp)
             )
         }else
         {
