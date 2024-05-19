@@ -8,6 +8,7 @@ sealed class ScreenRoutes(val route:String){
         object RequestRepairList : ScreenRoutes("RequestRepairList")
         object LoginScreens : ScreenRoutes("Login")
         object Menu : ScreenRoutes("Menu")
+
         //--------------------------- Manage Screen
         object ManageMenu : ScreenRoutes("ManageMenu")
         object UserManageMenu : ScreenRoutes("UserManageMenu")
@@ -41,13 +42,13 @@ sealed class ScreenRoutes(val route:String){
                         return "AddUserForm?User=$UserType&isEdit=$isEdit&UserId=$UserId"
                 }
         }
-        object DataForm:ScreenRoutes("BuildingForm?DataType={DataType}&isEdit={isEdit}&DataID={DataID}"){
+        object DataForm:ScreenRoutes("DataForm?DataType={DataType}&isEdit={isEdit}&DataID={DataID}"){
                 fun passIsEditAndId(
                         isEdit:Boolean = false,
                         DataID:String = "",
                         DataType:String = ""
                 ):String{
-                        return "BuildingForm?DataType=$DataType&isEdit=$isEdit&BuildID=$DataID"
+                        return "DataForm?DataType=$DataType&isEdit=$isEdit&DataID=$DataID"
                 }
         }
 //        object DepartmentForm:ScreenRoutes("DepartmentForm?isEdit={isEdit}&DepartID={DepartID}"){

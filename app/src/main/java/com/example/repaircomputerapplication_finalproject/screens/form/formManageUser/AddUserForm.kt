@@ -242,10 +242,6 @@ fun AddUserForm(
                     false -> {viewModel.addUser(userType ?: "null",firstName,lastName,email,password,phone,department)}
                     else -> { Toast.makeText(context,"Condition Wrong",Toast.LENGTH_SHORT).show()}
                 }
-                if(isEdit == false){
-                    viewModel.addUser(userType ?: "null",firstName,lastName,email,password,phone,department)
-                }
-
               },
             modifier = Modifier.fillMaxWidth()
         ) {

@@ -1,5 +1,7 @@
 package com.example.repaircomputerapplication_finalproject.screens.form.formManageData
 
+import android.content.ContentValues.TAG
+import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -35,12 +37,6 @@ fun crudDataScreen(dataType: String?, navController: NavController, viewModel: D
     val equipmentTypeList = viewModel.eqc.collectAsState().value
     val loedList = viewModel.loed.collectAsState().value
 
-    LaunchedEffect(dataType) {
-        if (dataType != null) {
-            viewModel.LoadData(dataType)
-        }
-    }
-
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(onClick = {
@@ -65,6 +61,7 @@ fun crudDataScreen(dataType: String?, navController: NavController, viewModel: D
                 label = { Text("ค้นหา") },
                 modifier = Modifier.fillMaxWidth()
             )
+
             Spacer(modifier = Modifier.height(16.dp))
 
             val dataList = when (dataType) {
@@ -81,14 +78,15 @@ fun crudDataScreen(dataType: String?, navController: NavController, viewModel: D
                 "Equipment" -> equipmentList?.filterBySearchQuery(searchQuery.text, listOf(
                     {it.eq_id.toString()},
                     {it.eq_name},
-                    {it.eqc_id.toString()},
-                    {it.eq_unit},
-                    {it.eq_start_date},
-                    {it.eq_status}
+                    {
+                        equipmentTypeList?.firstOrNull() { items ->
+                            items.eqc_id == it.eqc_id
+                        }?.eqc_name
+                    }
                 )) ?: emptyList()
                 "EquipmentType" -> equipmentTypeList?.filterBySearchQuery(searchQuery.text, listOf(
                     {it.eqc_id.toString()},
-                    {it.eqc_name}
+                    { it.eqc_name },
                 ))  ?: emptyList()
                 "LevelOfDamage" -> loedList?.filterBySearchQuery(searchQuery.text, listOf(
                     {it.loed_id.toString()},
@@ -100,11 +98,11 @@ fun crudDataScreen(dataType: String?, navController: NavController, viewModel: D
             LazyColumn {
                 items(dataList) { item ->
                     when (dataType) {
-                        "Building" -> BuildingItem(item as BuildingData, navController, viewModel)
-                        "Department" -> DepartmentItem(item as DepartmentData, navController, viewModel)
-                        "Equipment" -> EquipmentItem(item as EquipmentData, navController, viewModel)
-                        "EquipmentType" -> EquipmentTypeItem(item as EquipmentTypeData, navController, viewModel)
-                        "LevelOfDamage" -> LevelOfDamageItem(item as LevelOfDamageData, navController, viewModel)
+                        "Building" -> BuildingItem(dataType,item as BuildingData, navController, viewModel)
+                        "Department" -> DepartmentItem(dataType,item as DepartmentData, navController, viewModel)
+                        "Equipment" -> EquipmentItem(dataType,item as EquipmentData, navController, viewModel)
+                        "EquipmentType" -> EquipmentTypeItem(dataType,item as EquipmentTypeData, navController, viewModel)
+                        "LevelOfDamage" -> LevelOfDamageItem(dataType,item as LevelOfDamageData, navController, viewModel)
                         else -> Text("Invalid data type", color = Color.Red, modifier = Modifier.padding(16.dp))
                     }
                 }
@@ -122,7 +120,7 @@ fun <T> List<T>.filterBySearchQuery(searchQuery: String, selectors: List<(T) -> 
 }
 
 @Composable
-fun BuildingItem(item: BuildingData, navController: NavController, viewModel: DataManageViewModel) {
+fun BuildingItem(dataType: String?,item: BuildingData, navController: NavController, viewModel: DataManageViewModel) {
     Card(
         shape = RoundedCornerShape(10.dp),
         backgroundColor = Color(0xFFE0E0E0),
@@ -130,7 +128,7 @@ fun BuildingItem(item: BuildingData, navController: NavController, viewModel: Da
             .fillMaxWidth()
             .padding(8.dp)
             .clickable {
-                // Navigate to detailed view or edit screen if needed
+                navController.navigate(ScreenRoutes.DataForm.passIsEditAndId(true,item.building_id.toString(),dataType ?: "null"))
             }
     ) {
         Column(
@@ -148,7 +146,7 @@ fun BuildingItem(item: BuildingData, navController: NavController, viewModel: Da
 }
 
 @Composable
-fun DepartmentItem(item: DepartmentData, navController: NavController, viewModel: DataManageViewModel) {
+fun DepartmentItem(dataType: String?,item: DepartmentData, navController: NavController, viewModel: DataManageViewModel) {
     Card(
         shape = RoundedCornerShape(10.dp),
         backgroundColor = Color(0xFFE0E0E0),
@@ -156,7 +154,7 @@ fun DepartmentItem(item: DepartmentData, navController: NavController, viewModel
             .fillMaxWidth()
             .padding(8.dp)
             .clickable {
-                // Navigate to detailed view or edit screen if needed
+                navController.navigate(ScreenRoutes.DataForm.passIsEditAndId(true,item.department_id.toString(),dataType ?: "null"))
             }
     ) {
         Column(
@@ -172,7 +170,14 @@ fun DepartmentItem(item: DepartmentData, navController: NavController, viewModel
 }
 
 @Composable
-fun EquipmentItem(item: EquipmentData, navController: NavController, viewModel: DataManageViewModel) {
+fun EquipmentItem(dataType: String?,Eqitem: EquipmentData, navController: NavController, viewModel: DataManageViewModel) {
+
+    var eqcName by remember { mutableStateOf("") }
+    LaunchedEffect(Eqitem){
+        eqcName = viewModel.getEquipmentTypeName(Eqitem.eqc_id ?: 0)
+        Log.d(TAG, "EquipmentItem: ${Eqitem.eqc_id}")
+    }
+
     Card(
         shape = RoundedCornerShape(10.dp),
         backgroundColor = Color(0xFFE0E0E0),
@@ -180,7 +185,7 @@ fun EquipmentItem(item: EquipmentData, navController: NavController, viewModel: 
             .fillMaxWidth()
             .padding(8.dp)
             .clickable {
-                // Navigate to detailed view or edit screen if needed
+                navController.navigate(ScreenRoutes.DataForm.passIsEditAndId(true,Eqitem.eq_id.toString(),dataType ?: "null"))
             }
     ) {
         Column(
@@ -188,19 +193,19 @@ fun EquipmentItem(item: EquipmentData, navController: NavController, viewModel: 
                 .padding(16.dp)
                 .fillMaxWidth()
         ) {
-            Text(text = "${item.eq_id}", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+            Text(text = "${Eqitem.eq_id}", fontWeight = FontWeight.Bold, fontSize = 16.sp)
             Spacer(modifier = Modifier.height(4.dp))
-            Text(text = "ชื่ออุปกรณ์: ${item.eq_name}", fontSize = 14.sp)
-            Text(text = "สถานะ: ${item.eq_status}", fontSize = 14.sp)
-            Text(text = "หน่วยนับ: ${item.eq_unit}", fontSize = 14.sp)
-            Text(text = "วันเริ่มใช้งานอุปกรณ์: ${item.eq_start_date}", fontSize = 14.sp)
-            Text(text = "รหัสประเภทอุปกรณ์: ${item.eqc_id}", fontSize = 14.sp)
+            Text(text = "ชื่ออุปกรณ์: ${Eqitem.eq_name}", fontSize = 14.sp)
+            Text(text = "สถานะ: ${Eqitem.eq_status}", fontSize = 14.sp)
+            Text(text = "หน่วยนับ: ${Eqitem.eq_unit}", fontSize = 14.sp)
+            Text(text = "วันเริ่มใช้งานอุปกรณ์: ${Eqitem.eq_start_date}", fontSize = 14.sp)
+            Text(text = "ชื่อประเภทอุปกรณ์: $eqcName", fontSize = 14.sp)
         }
     }
 }
 
 @Composable
-fun EquipmentTypeItem(item: EquipmentTypeData, navController: NavController, viewModel: DataManageViewModel) {
+fun EquipmentTypeItem(dataType: String?,item: EquipmentTypeData, navController: NavController, viewModel: DataManageViewModel) {
     Card(
         shape = RoundedCornerShape(10.dp),
         backgroundColor = Color(0xFFE0E0E0),
@@ -208,7 +213,7 @@ fun EquipmentTypeItem(item: EquipmentTypeData, navController: NavController, vie
             .fillMaxWidth()
             .padding(8.dp)
             .clickable {
-                // Navigate to detailed view or edit screen if needed
+                navController.navigate(ScreenRoutes.DataForm.passIsEditAndId(true,item.eqc_id.toString(),dataType ?: "null"))
             }
     ) {
         Column(
@@ -224,7 +229,7 @@ fun EquipmentTypeItem(item: EquipmentTypeData, navController: NavController, vie
 }
 
 @Composable
-fun LevelOfDamageItem(item: LevelOfDamageData, navController: NavController, viewModel: DataManageViewModel) {
+fun LevelOfDamageItem(dataType: String?,item: LevelOfDamageData, navController: NavController, viewModel: DataManageViewModel) {
     Card(
         shape = RoundedCornerShape(10.dp),
         backgroundColor = Color(0xFFE0E0E0),
@@ -232,7 +237,7 @@ fun LevelOfDamageItem(item: LevelOfDamageData, navController: NavController, vie
             .fillMaxWidth()
             .padding(8.dp)
             .clickable {
-                // Navigate to detailed view or edit screen if needed
+                navController.navigate(ScreenRoutes.DataForm.passIsEditAndId(true,item.loed_id.toString(),dataType ?: "null"))
             }
     ) {
         Column(
@@ -244,5 +249,29 @@ fun LevelOfDamageItem(item: LevelOfDamageData, navController: NavController, vie
             Spacer(modifier = Modifier.height(4.dp))
             Text(text = "ชื่อระดับความเสียหาย: ${item.loed_Name}", fontSize = 14.sp)
         }
+    }
+}
+@Composable
+fun ConfirmDeleteDialog(
+    showDialog: Boolean,
+    onDismiss: () -> Unit,
+    onConfirm: () -> Unit
+) {
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = onDismiss,
+            title = { Text(text = "Confirm Delete") },
+            text = { Text(text = "Are you sure you want to delete this item?") },
+            confirmButton = {
+                Button(onClick = onConfirm) {
+                    Text("Confirm")
+                }
+            },
+            dismissButton = {
+                Button(onClick = onDismiss) {
+                    Text("Cancel")
+                }
+            }
+        )
     }
 }

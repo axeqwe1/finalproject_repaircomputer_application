@@ -27,6 +27,7 @@ import com.example.repaircomputerapplication_finalproject.model.UserModel
 import com.example.repaircomputerapplication_finalproject.model.logoutResponse
 import com.example.repaircomputerapplication_finalproject.model.notificationData
 import com.example.repaircomputerapplication_finalproject.model.notificationListResponse
+import com.example.repaircomputerapplication_finalproject.model.techStatusData
 import okhttp3.MultipartBody
 import okhttp3.ResponseBody
 import retrofit2.Response
@@ -52,7 +53,7 @@ interface IAPIService {
     suspend fun getEquipmentById(@Path("id") eq_id: Int): Response<EquipmentData>
     @GET("managementdata/getequipmentstypes")
     suspend fun getEquipmentTypes():Response<List<EquipmentTypeData>>
-    @GET("managementdata/getequipmentstype/{id}")
+    @GET("managementdata/getequipmenttype/{id}")
     suspend fun getEquipmentTypeById(@Path("id") eqc_id: Int): Response<EquipmentTypeData>
     @GET("managementdata/getdepartments")
     suspend fun getDepartments():Response<List<DepartmentData>>
@@ -62,17 +63,22 @@ interface IAPIService {
     suspend fun getLevelOfDamages():Response<List<LevelOfDamageData>>
     @GET("managementdata/getloed/{id}")
     suspend fun getLevelOfDamageById(@Path("id") loed: Int): Response<LevelOfDamageData>
+    @GET("managementdata/gettechstatus")
+    suspend fun getTechStatus():Response<List<techStatusData>>
+
+    @GET("managementdata/gettechstatus/{id}")
+    suspend fun getTechStatusById(@Path("id") status_id:Int):Response<techStatusData>
     //-----------------------------AddData
     @POST("managementdata/addbuilding")
-    suspend fun addBuilding(@Body bodyrequest: BuildingRequest):Response<BuildingData>
+    suspend fun addBuilding(@Body bodyrequest: BuildingRequest):Response<ResponseBody>
     @POST("managementdata/adddepartment")
-    suspend fun addDepartment(@Body bodyrequest: DepartmentRequest):Response<DepartmentData>
+    suspend fun addDepartment(@Body bodyrequest: DepartmentRequest):Response<ResponseBody>
     @POST("managementdata/addequipment")
-    suspend fun addEquipment(@Body bodyrequest: EquipmentRequest):Response<EquipmentData>
+    suspend fun addEquipment(@Body bodyrequest: EquipmentRequest):Response<ResponseBody>
     @POST("managementdata/addequipmenttype")
-    suspend fun addEquipmentType(@Body bodyrequest: EquipmentTypeRequest):Response<EquipmentTypeData>
+    suspend fun addEquipmentType(@Body bodyrequest: EquipmentTypeRequest):Response<ResponseBody>
     @POST("managementdata/addloed")
-    suspend fun addLevelOfDamage(@Body bodyrequest: LevelOfDamageRequest):Response<LevelOfDamageData>
+    suspend fun addLevelOfDamage(@Body bodyrequest: LevelOfDamageRequest):Response<ResponseBody>
 
     //-------------------------------Edit Data
     @PUT("managementdata/updatebuilding/{id}")

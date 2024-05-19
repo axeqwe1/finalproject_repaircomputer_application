@@ -5,7 +5,7 @@ data class EquipmentData (
     val eq_name:String? = null,
     val eq_status:String? = null,
     val eq_unit:String? = null,
-    val eq_start_date:String? = null,
+    val eq_start_date:String,
     val eqc_id:Int? = null
 )
 

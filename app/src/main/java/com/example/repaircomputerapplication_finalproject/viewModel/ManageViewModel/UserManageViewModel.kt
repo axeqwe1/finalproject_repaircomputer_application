@@ -11,10 +11,12 @@ import androidx.lifecycle.viewModelScope
 import com.example.repaircomputerapplication_finalproject.`api-service`.RetrofitInstance
 import com.example.repaircomputerapplication_finalproject.model.AdminData
 import com.example.repaircomputerapplication_finalproject.model.ChiefData
+import com.example.repaircomputerapplication_finalproject.model.DepartmentData
 import com.example.repaircomputerapplication_finalproject.model.EmployeeData
 import com.example.repaircomputerapplication_finalproject.model.TechnicianBody
 import com.example.repaircomputerapplication_finalproject.model.TechnicianData
 import com.example.repaircomputerapplication_finalproject.model.UserModel
+import com.example.repaircomputerapplication_finalproject.model.techStatusData
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
@@ -78,7 +80,7 @@ class UserManageViewModel(
                 if (result.isSuccessful) {
                     Toast.makeText(getApplication(), result.body().toString(), Toast.LENGTH_SHORT).show()
                 } else {
-                    Toast.makeText(getApplication(), "Failed to add user", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(getApplication(), "Failed to add user ${result.body().toString()}", Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
                 Toast.makeText(getApplication(), e.toString(), Toast.LENGTH_SHORT).show()
@@ -163,6 +165,14 @@ class UserManageViewModel(
         }
     }
 
+    suspend fun getTechStatusName(statusId: Int): String {
+        val response = RetrofitInstance(getApplication()).apiService.getTechStatusById(statusId)
+        return response.body()?.receive_request_status ?: "null"
+    }
+    suspend fun getDepartmentName(departmentId:Int):String{
+        val response = RetrofitInstance(getApplication()).apiService.getDepartmentById(departmentId)
+        return response.body()?.departmentName ?: "null"
+    }
     private suspend fun fetchEmployeeData(): List<EmployeeData>? {
         return fetchData { RetrofitInstance(getApplication()).apiService.getEmployees() }
     }

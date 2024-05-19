@@ -44,17 +44,16 @@ class DataManageViewModel(application: Application):AndroidViewModel(application
     private val _loed = MutableStateFlow<List<LevelOfDamageData>?>(null)
     val loed = _loed.asStateFlow()
 
-
-    fun LoadData(DataType: String) {
+    init {
+        LoadData()
+    }
+    fun LoadData() {
         viewModelScope.launch {
-            when(DataType){
-                "Building" -> {_building.value = fetchBuildingData()}
-                "Department" -> {_department.value = fetchDepartmentData()}
-                "Equipment" -> {_eq.value = fetchEquipmentData()}
-                "EquipmentType" -> {_eqc.value = fetchEquipmentTypeData()}
-                "LevelOfDamage" -> {_loed.value = fetchLevelOfDamageData()}
-                else -> {throw Exception("Wrong data type")}
-            }
+            _building.value = fetchBuildingData()
+            _department.value = fetchDepartmentData()
+            _eq.value = fetchEquipmentData()
+            _eqc.value = fetchEquipmentTypeData()
+            _loed.value = fetchLevelOfDamageData()
         }
     }
     //=================================================Add Data============================================================//
@@ -92,6 +91,7 @@ class DataManageViewModel(application: Application):AndroidViewModel(application
             )
             if(response.isSuccessful){
                 Toast.makeText(getApplication(),"${response.body()}",Toast.LENGTH_SHORT).show()
+                Log.d(TAG, "addEquipment: ${response.body().toString()}")
             }else{
                 Toast.makeText(getApplication(),"${response.errorBody()?.string()}",Toast.LENGTH_SHORT).show()
                 Log.e(TAG, "addEquipment: ${response.errorBody()?.string()}", )
@@ -201,6 +201,11 @@ class DataManageViewModel(application: Application):AndroidViewModel(application
 
     //=================================================Fetch Data============================================================//
 
+    suspend fun getEquipmentTypeName(typeId:Int) : String{
+        val response = RetrofitInstance(getApplication()).apiService.getEquipmentTypeById(typeId)
+        Log.d(TAG, "getEquipmentTypeName: ${response.body()?.eqc_name}")
+        return response.body()?.eqc_name ?: "null"
+    }
     suspend fun fetchBuildingData() : List<BuildingData>?{
         return fetchData { RetrofitInstance(getApplication()).apiService.getBuildings() }
     }

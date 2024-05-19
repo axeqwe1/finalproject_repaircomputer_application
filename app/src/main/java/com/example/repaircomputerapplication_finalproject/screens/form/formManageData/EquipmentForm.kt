@@ -1,5 +1,8 @@
 package com.example.repaircomputerapplication_finalproject.screens.form.formManageData
 
+import android.content.ContentValues
+import android.util.Log
+import android.widget.Toast
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -15,6 +18,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.repaircomputerapplication_finalproject.viewModel.ManageViewModel.DataManageViewModel
@@ -30,8 +34,26 @@ fun equipmentForm(isEdit: Boolean?, DataID: String?, viewModel: DataManageViewMo
     var selectedType by remember { mutableStateOf("ประเภทอุปกรณ์") }
 
     val statusOptions = listOf("พร้อมใช้งาน", "กำลังใช้งาน", "เสียหาย")
-    val typeOptions = listOf("คอมพิวเตอร์", "โทรศัพท์", "แท็บเล็ต")
-
+    var eqcId by remember { mutableStateOf(0) }
+    val context = LocalContext.current
+    val eqList = viewModel.eq.collectAsState().value
+    val eqcList = viewModel.eqc.collectAsState().value
+    var btnName by remember { mutableStateOf("เพิ่มข้อมูล") }
+    LaunchedEffect(DataID,isEdit ){
+        viewModel.LoadData()
+    }
+    LaunchedEffect(eqList){
+        val eq = eqList?.find { it.eq_id.toString() == DataID }
+        Log.d(ContentValues.TAG, "buildingForm: $eqList DataId $DataID")
+        if(eq != null && DataID != null && isEdit == true){
+            equipmentName = eq.eq_name!!
+            unit = eq.eq_unit!!
+            selectedStatus = eq.eq_status!!
+            selectedType = viewModel.getEquipmentTypeName(eq.eqc_id ?: 0)
+            btnName = "แก้ไขข้อมูล"
+            eqcId = eq.eqc_id ?: 0
+        }
+    }
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -119,12 +141,13 @@ fun equipmentForm(isEdit: Boolean?, DataID: String?, viewModel: DataManageViewMo
                 onDismissRequest = { showTypeDropdown = false },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                typeOptions.forEach { option ->
+                eqcList?.forEach { option ->
                     DropdownMenuItem(onClick = {
-                        selectedType = option
+                        selectedType = option.eqc_name
+                        eqcId = option.eqc_id!!
                         showTypeDropdown = false
                     }) {
-                        Text(text = option)
+                        Text(text = option.eqc_name)
                     }
                 }
             }
@@ -143,7 +166,18 @@ fun equipmentForm(isEdit: Boolean?, DataID: String?, viewModel: DataManageViewMo
         Spacer(modifier = Modifier.height(16.dp))
 
         Button(
-            onClick = { viewModel.addEquipment(equipmentName, selectedStatus, unit, selectedType) },
+            onClick = {
+                if(isEdit == true){
+                    if(DataID != null){
+                        viewModel.editEquipment(DataID.toInt(),equipmentName,selectedStatus,unit,eqcId.toString())
+                    }else{
+                        Toast.makeText(context,"not have DataId", Toast.LENGTH_SHORT).show()
+                    }
+                }else{
+                    viewModel.addEquipment(equipmentName, selectedStatus, unit, eqcId.toString())
+                }
+
+            },
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(50),
             colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFF8BC34A))

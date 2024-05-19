@@ -22,6 +22,7 @@ import com.example.repaircomputerapplication_finalproject.model.ChiefData
 import com.example.repaircomputerapplication_finalproject.model.EmployeeData
 import com.example.repaircomputerapplication_finalproject.model.TechnicianData
 import com.example.repaircomputerapplication_finalproject.viewModel.ManageViewModel.UserManageViewModel
+import kotlinx.coroutines.coroutineScope
 
 
 @Composable
@@ -184,7 +185,15 @@ fun UserCard(
     viewModel: UserManageViewModel = viewModel()
 ) {
     var showDialog by remember { mutableStateOf(false) }
+    var departName by remember { mutableStateOf("") }
+    var statusName by remember { mutableStateOf("Loading...") }
 
+    LaunchedEffect(status,departmentId){
+        coroutineScope {
+            statusName = viewModel.getTechStatusName(status?.toInt() ?: 0)
+            departName = viewModel.getDepartmentName(departmentId ?: 0)
+        }
+    }
     ConfirmDeleteDialog(
         showDialog = showDialog,
         onDismiss = { showDialog = false },
@@ -224,9 +233,9 @@ fun UserCard(
             Text("ชื่อ: $firstname $lastname", fontSize = 16.sp)
             Text("Email: $email", fontSize = 16.sp)
             Text("Phone: $phone", fontSize = 16.sp)
-            Text("หน่วยงาน: $departmentId", fontSize = 16.sp)
+            Text("หน่วยงาน: $departName", fontSize = 16.sp)
             if(userType == "Technician"){
-                Text("สถานะ: $status", fontSize = 16.sp)
+                Text("สถานะ: $statusName", fontSize = 16.sp)
             }
         }
     }
