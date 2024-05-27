@@ -52,7 +52,7 @@ data class NavigateListForBtn
                 NavigateListForBtn(
                     Btn_Name = "จ่ายงาน",
                     Icon = Icons.Filled.Warning,
-                    Route = ScreenRoutes.FormRequestForRepair.route
+                    Route = ScreenRoutes.AssignWork.route
                 ),
                 NavigateListForBtn(
                     Btn_Name = "จัดการข้อมูล",

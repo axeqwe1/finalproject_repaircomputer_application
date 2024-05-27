@@ -7,3 +7,9 @@ data class AssignWorkModel(
     val rrid: Int,
     val timestamp: String
 )
+
+data class AssignWorkBody(
+    val admin_id: Int,
+    val tech_id: Int,
+    val rrid:Int
+)

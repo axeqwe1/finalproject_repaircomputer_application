@@ -197,37 +197,82 @@ class DataManageViewModel(application: Application):AndroidViewModel(application
             }
         }
     }
-
-
-    //=================================================Fetch Data============================================================//
-
-    suspend fun getEquipmentTypeName(typeId:Int) : String{
-        val response = RetrofitInstance(getApplication()).apiService.getEquipmentTypeById(typeId)
-        Log.d(TAG, "getEquipmentTypeName: ${response.body()?.eqc_name}")
-        return response.body()?.eqc_name ?: "null"
-    }
-    suspend fun fetchBuildingData() : List<BuildingData>?{
-        return fetchData { RetrofitInstance(getApplication()).apiService.getBuildings() }
-    }
-    suspend fun fetchDepartmentData() : List<DepartmentData>?{
-        return fetchData { RetrofitInstance(getApplication()).apiService.getDepartments() }
-    }
-    suspend fun fetchEquipmentData() : List<EquipmentData>?{
-        return fetchData { RetrofitInstance(getApplication()).apiService.getEquipments() }
-    }
-    suspend fun fetchEquipmentTypeData() : List<EquipmentTypeData>?{
-        return fetchData { RetrofitInstance(getApplication()).apiService.getEquipmentTypes() }
-    }
-    suspend fun fetchLevelOfDamageData() : List<LevelOfDamageData>?{
-        return fetchData { RetrofitInstance(getApplication()).apiService.getLevelOfDamages() }
-    }
-    private suspend fun <T> fetchData(fetchCall: suspend () -> Response<T>) :T?{
-        val response = fetchCall()
-        if (response.isSuccessful) {
-            return response.body()
-        } else {
-            throw Exception("Failed to fetch data: ${response.errorBody()?.string()}")
+    //=================================================Delete Data============================================================//
+    fun deleteData(DataType: String, DataId: Int) {
+        viewModelScope.launch {
+            val response = RetrofitInstance(getApplication()).apiService
+            try {
+                val result = when (DataType) {
+                    "Building" -> response.deleteBuildingById(DataId)
+                    "Equipment" -> response.deleteEquipmentById(DataId)
+                    "EquipmentType" -> response.deleteEquipmentTypeById(DataId)
+                    "Department" -> response.deleteDepartmentById(DataId)
+                    "LevelOfDamage" -> response.deleteLevelOfDamageById(DataId)
+                    else -> throw IllegalArgumentException("Unknown user type: $DataType")
+                }
+                if (result.isSuccessful) {
+                    result.body()?.let {
+                        Log.d(
+                            TAG,
+                            "deleteUser: Successfully deleted $DataType with ID $DataId"
+                        )
+                        Toast.makeText(getApplication(), "Successfully deleted", Toast.LENGTH_SHORT).show()
+                    }
+                } else {
+                    val errorBody = result.errorBody()?.string()
+                    Log.e(
+                        TAG,
+                        "deleteUser: Failed to delete $DataType with ID $DataId - $errorBody"
+                    )
+                    Toast.makeText(
+                        getApplication(),
+                        "Failed to delete: $errorBody",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "deleteUser: Exception while deleting $DataType with ID $DataId", e)
+                Toast.makeText(getApplication(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
-}
+
+        //=================================================Fetch Data============================================================//
+
+        suspend fun getEquipmentTypeName(typeId: Int): String {
+            val response =
+                RetrofitInstance(getApplication()).apiService.getEquipmentTypeById(typeId)
+            Log.d(TAG, "getEquipmentTypeName: ${response.body()?.eqc_name}")
+            return response.body()?.eqc_name ?: "null"
+        }
+
+        suspend fun fetchBuildingData(): List<BuildingData>? {
+            return fetchData { RetrofitInstance(getApplication()).apiService.getBuildings() }
+        }
+
+        suspend fun fetchDepartmentData(): List<DepartmentData>? {
+            return fetchData { RetrofitInstance(getApplication()).apiService.getDepartments() }
+        }
+
+        suspend fun fetchEquipmentData(): List<EquipmentData>? {
+            return fetchData { RetrofitInstance(getApplication()).apiService.getEquipments() }
+        }
+
+        suspend fun fetchEquipmentTypeData(): List<EquipmentTypeData>? {
+            return fetchData { RetrofitInstance(getApplication()).apiService.getEquipmentTypes() }
+        }
+
+        suspend fun fetchLevelOfDamageData(): List<LevelOfDamageData>? {
+            return fetchData { RetrofitInstance(getApplication()).apiService.getLevelOfDamages() }
+        }
+
+        private suspend fun <T> fetchData(fetchCall: suspend () -> Response<T>): T? {
+            val response = fetchCall()
+            if (response.isSuccessful) {
+                return response.body()
+            } else {
+                throw Exception("Failed to fetch data: ${response.errorBody()?.string()}")
+            }
+        }
+    }

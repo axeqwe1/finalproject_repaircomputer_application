@@ -51,47 +51,27 @@ sealed class ScreenRoutes(val route:String){
                         return "DataForm?DataType=$DataType&isEdit=$isEdit&DataID=$DataID"
                 }
         }
-//        object DepartmentForm:ScreenRoutes("DepartmentForm?isEdit={isEdit}&DepartID={DepartID}"){
-//                fun passIsEditAndId(
-//                        isEdit:Boolean = false,
-//                        DepartID:String = ""
-//                ):String{
-//                        return "DepartmentForm?isEdit=$isEdit&BuildID=$DepartID"
-//                }
-//        }
-//        object EquipmentForm:ScreenRoutes("EquipmentForm?isEdit={isEdit}&EqID={EqID}"){
-//                fun passIsEditAndId(
-//                        isEdit:Boolean = false,
-//                        EqID:String = ""
-//                ):String{
-//                        return "EquipmentForm?isEdit=$isEdit&BuildID=$EqID"
-//                }
-//        }
-//        object EquipmentTypeForm:ScreenRoutes("EquipmentTypeForm?isEdit={isEdit}&EqCID={EqCID}"){
-//                fun passIsEditAndId(
-//                        isEdit:Boolean = false,
-//                        EqCID:String = ""
-//                ):String{
-//                        return "EquipmentTypeForm?isEdit=$isEdit&BuildID=$EqCID"
-//                }
-//        }
-//        object LevelOfDamageForm:ScreenRoutes("LevelOfDamageForm?isEdit={isEdit}&LoedID={LoedID}"){
-//                fun passIsEditAndId(
-//                        isEdit:Boolean = false,
-//                        LoedID:String = ""
-//                ):String{
-//                        return "LevelOfDamageForm?isEdit=$isEdit&BuildID=$LoedID"
-//                }
-//        }
+
         //---------------------------Report
         object Report : ScreenRoutes("report_screen")
 
 
 
 
+        //---------------------------DisplayDetail
 
-
-
+        object detailRepair:ScreenRoutes("detail_screen?rrid={rrid}&userType={userType}"){
+                fun passRridAndUserType(rrid:String,userType:String):String{
+                    return "detail_screen?rrid=$rrid&userType=$userType"
+                }
+        }
+        //---------------------------DisplayAssignWork
+        object AssignWork : ScreenRoutes("displayList_Assignwork")
+        object TechnicianListBacklog : ScreenRoutes("techBacklogList?admin_id={admin_id}&rrid={rrid}"){
+                fun passAdminIdAndRrid(admin_id:String,rrid:String):String{
+                        return "techBacklogList?admin_id=$admin_id&rrid=$rrid"
+                }
+        }
 
         //---------------------------Graph Route
         object AuthNav : ScreenRoutes("AUTH_NAV_GRAPH")
@@ -101,8 +81,9 @@ sealed class ScreenRoutes(val route:String){
         object NotiNav:ScreenRoutes("NOTI_NAV_GRAPH")
         object RequestFormNav : ScreenRoutes("RR_FORM_NAV_GRAPH")
 
-
         object ManageMenuNav : ScreenRoutes("MANAGE_MENU_NAV_GRAPH")
         object UserManageMenuNav : ScreenRoutes("USER_MANAGE_MENU_GRAPH")
         object DataManageMenuNav : ScreenRoutes("DATA_MANAGE_MENU_GRAPH")
+        object DisplayNav:ScreenRoutes("DISPLAY_DETAIL_GRAPH")
+        object AssignWorkNav:ScreenRoutes("ASSIGN_WORK_GRAPH")
 }

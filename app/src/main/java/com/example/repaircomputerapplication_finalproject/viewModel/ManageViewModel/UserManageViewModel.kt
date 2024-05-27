@@ -137,6 +137,7 @@ class UserManageViewModel(
             }
         }
     }
+    // delete data
     fun deleteUser(userType: String, userId: Int) {
         viewModelScope.launch {
             val response = RetrofitInstance(getApplication()).apiService

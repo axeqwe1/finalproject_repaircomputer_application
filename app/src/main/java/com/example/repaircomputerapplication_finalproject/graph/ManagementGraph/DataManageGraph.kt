@@ -34,7 +34,7 @@ fun NavGraphBuilder.dataManageGraph(navController: NavHostController){
             route = ScreenRoutes.DataForm.route,
             arguments = listOf(
                 navArgument("DataType"){
-                   type = NavType.StringType
+                    type = NavType.StringType
                     nullable = true
                 },
                 navArgument("DataID"){

@@ -1,6 +1,8 @@
 package com.example.repaircomputerapplication_finalproject.`api-service`
 
 import com.example.repaircomputerapplication_finalproject.model.AdminData
+import com.example.repaircomputerapplication_finalproject.model.AssignWorkBody
+import com.example.repaircomputerapplication_finalproject.model.BacklogResponse
 import com.example.repaircomputerapplication_finalproject.model.BuildingData
 import com.example.repaircomputerapplication_finalproject.model.BuildingRequest
 import com.example.repaircomputerapplication_finalproject.model.ChiefData
@@ -16,6 +18,7 @@ import com.example.repaircomputerapplication_finalproject.model.LevelOfDamageReq
 import com.example.repaircomputerapplication_finalproject.model.RequestForRepairData
 import com.example.repaircomputerapplication_finalproject.model.RequestListResponse
 import com.example.repaircomputerapplication_finalproject.model.RequestResponse
+import com.example.repaircomputerapplication_finalproject.model.TechBacklogCount
 import com.example.repaircomputerapplication_finalproject.model.TechnicianBody
 import com.example.repaircomputerapplication_finalproject.model.TechnicianData
 
@@ -24,6 +27,7 @@ import com.example.repaircomputerapplication_finalproject.model.UserResponse
 import com.example.repaircomputerapplication_finalproject.model.sendRequest
 import com.example.repaircomputerapplication_finalproject.model.UploadResponse
 import com.example.repaircomputerapplication_finalproject.model.UserModel
+import com.example.repaircomputerapplication_finalproject.model.detailRepairData
 import com.example.repaircomputerapplication_finalproject.model.logoutResponse
 import com.example.repaircomputerapplication_finalproject.model.notificationData
 import com.example.repaircomputerapplication_finalproject.model.notificationListResponse
@@ -95,6 +99,19 @@ interface IAPIService {
 
     @PUT("managementdata/updateloed/{id}")
     suspend fun editLevelOfDamage(@Path("id") id: Int, @Body request: LevelOfDamageRequest): Response<ResponseBody>
+
+    //-------------------------------Delete Data
+    @DELETE("managementdata/deleteequipment/{id}")
+    suspend fun deleteEquipmentById(@Path("id") id: Int): Response<ResponseBody>
+    @DELETE("managementdata/deleteequipmenttype/{id}")
+    suspend fun deleteEquipmentTypeById(@Path("id") id: Int): Response<ResponseBody>
+    @DELETE("managementdata/deleteloed/{id}")
+    suspend fun deleteLevelOfDamageById(@Path("id") id: Int): Response<ResponseBody>
+    @DELETE("managementdata/deletebuilding/{id}")
+    suspend fun deleteBuildingById(@Path("id") id: Int): Response<ResponseBody>
+    @DELETE("managementdata/deletedepartment/{id}")
+    suspend fun deleteDepartmentById(@Path("id") id: Int): Response<ResponseBody>
+
     //---------------------------->ManagemenUser
     //---------------------------->GetAllUser
     @GET("managementuser/getemployees")
@@ -137,7 +154,7 @@ interface IAPIService {
     @GET("managementuser/getchief/{id}")
     suspend fun getChiefById(@Path("id") eq_id: Int): Response<EmployeeData>
 
-    //----------------------------------> Delete
+    //----------------------------------> Delete User
     @DELETE("managementuser/deleteadmin/{id}")
     suspend fun deleteAdminById(@Path("id") admin_id: Int): Response<messageBody>
     @DELETE("managementuser/deleteemployee/{id}")
@@ -162,12 +179,24 @@ interface IAPIService {
     suspend fun getNotification(@Path("role") role: String,@Path("id") id:Int):Response<notificationListResponse>
     @GET("display/request-list/{role}/{id}")
     suspend fun getRequestList(@Path("role") role : String,@Path("id") id:Int):Response<RequestListResponse>
+    @GET("display/request/{id}")
+    suspend fun getRequestDetail(@Path("id") id : Int):Response<detailRepairData>
+    @GET("display/backlog-request-list")
+    suspend fun getBackLogRequest():Response<BacklogResponse>
 
-
+    @GET("display/techReceive/{id}")
+    suspend fun getTechBacklogCount(@Path("id") id : Int):Response<TechBacklogCount>
     //-------------------------->Upload Api
     @Multipart
     @POST("images/upload")
     suspend fun uploadImage(@Part body: MultipartBody.Part): Response<UploadResponse>
+
+    //-------------------------->Upload Api
+    @POST("action/assign")
+    suspend fun assignWork(@Body AssignWorkBody: AssignWorkBody):Response<messageBody>
+    //-------------------------->Upload Api
+    @GET("images/{imageName}")
+    suspend fun getImage(@Path("imageName") imageName: String): ResponseBody
 }
 
 data class messageBody(

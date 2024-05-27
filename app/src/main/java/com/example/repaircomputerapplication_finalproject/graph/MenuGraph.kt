@@ -8,6 +8,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navigation
 import com.example.repaircomputerapplication_finalproject.component.MenuScreen
 import com.example.repaircomputerapplication_finalproject.data.ScreenRoutes
+import com.example.repaircomputerapplication_finalproject.graph.AssignWorkGraph.assignWorkGraph
+import com.example.repaircomputerapplication_finalproject.graph.DisplayGraph.detailGraph
 import com.example.repaircomputerapplication_finalproject.graph.ManagementGraph.manageMenuDataGraph
 import com.example.repaircomputerapplication_finalproject.screens.NotificationScreen
 import com.example.repaircomputerapplication_finalproject.screens.RequestRepairScreen
@@ -29,6 +31,7 @@ fun MenuNavGraph(
         NotiGraph(navController)
         requestFormGraph(navController)
         manageMenuDataGraph(navController)
+        assignWorkGraph(navController)
     }
 }
 fun NavGraphBuilder.RequestListGraph(navController: NavHostController){
@@ -36,6 +39,7 @@ fun NavGraphBuilder.RequestListGraph(navController: NavHostController){
         composable(route = ScreenRoutes.RequestRepairList.route){
             RequestRepairScreen(navController)
         }
+        detailGraph(navController)
     }
 }
 fun NavGraphBuilder.NotiGraph(navController: NavHostController){

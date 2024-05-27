@@ -2,11 +2,13 @@ package com.example.repaircomputerapplication_finalproject.screens.form.formMana
 
 import android.content.ContentValues.TAG
 import android.util.Log
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -36,7 +38,6 @@ fun crudDataScreen(dataType: String?, navController: NavController, viewModel: D
     val equipmentList = viewModel.eq.collectAsState().value
     val equipmentTypeList = viewModel.eqc.collectAsState().value
     val loedList = viewModel.loed.collectAsState().value
-
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(onClick = {
@@ -119,17 +120,30 @@ fun <T> List<T>.filterBySearchQuery(searchQuery: String, selectors: List<(T) -> 
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun BuildingItem(dataType: String?,item: BuildingData, navController: NavController, viewModel: DataManageViewModel) {
+    var showDialog by remember { mutableStateOf(false) }
+    ConfirmDeleteDialog(
+        showDialog = showDialog,
+        onDismiss = { showDialog = false },
+        onConfirm = {
+            if(dataType != null && item.building_id != null){
+                viewModel.deleteData(dataType,item.building_id)
+                showDialog = false
+            }
+        }
+    )
     Card(
         shape = RoundedCornerShape(10.dp),
         backgroundColor = Color(0xFFE0E0E0),
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp)
-            .clickable {
-                navController.navigate(ScreenRoutes.DataForm.passIsEditAndId(true,item.building_id.toString(),dataType ?: "null"))
-            }
+            .combinedClickable(
+                onClick = {navController.navigate(ScreenRoutes.DataForm.passIsEditAndId(true,item.building_id.toString(),dataType ?: "null"))},
+                onLongClick = {showDialog = true}
+            )
     ) {
         Column(
             modifier = Modifier
@@ -145,17 +159,30 @@ fun BuildingItem(dataType: String?,item: BuildingData, navController: NavControl
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun DepartmentItem(dataType: String?,item: DepartmentData, navController: NavController, viewModel: DataManageViewModel) {
+    var showDialog by remember { mutableStateOf(false) }
+    ConfirmDeleteDialog(
+        showDialog = showDialog,
+        onDismiss = { showDialog = false },
+        onConfirm = {
+            if(dataType != null && item.department_id != null){
+                viewModel.deleteData(dataType,item.department_id)
+                showDialog = false
+            }
+        }
+    )
     Card(
         shape = RoundedCornerShape(10.dp),
         backgroundColor = Color(0xFFE0E0E0),
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp)
-            .clickable {
-                navController.navigate(ScreenRoutes.DataForm.passIsEditAndId(true,item.department_id.toString(),dataType ?: "null"))
-            }
+            .combinedClickable(
+                onClick = {navController.navigate(ScreenRoutes.DataForm.passIsEditAndId(true,item.department_id.toString(),dataType ?: "null"))},
+                onLongClick = {showDialog = true}
+            )
     ) {
         Column(
             modifier = Modifier
@@ -169,9 +196,20 @@ fun DepartmentItem(dataType: String?,item: DepartmentData, navController: NavCon
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun EquipmentItem(dataType: String?,Eqitem: EquipmentData, navController: NavController, viewModel: DataManageViewModel) {
-
+    var showDialog by remember { mutableStateOf(false) }
+    ConfirmDeleteDialog(
+        showDialog = showDialog,
+        onDismiss = { showDialog = false },
+        onConfirm = {
+            if(dataType != null && Eqitem.eq_id != null){
+                viewModel.deleteData(dataType,Eqitem.eq_id)
+                showDialog = false
+            }
+        }
+    )
     var eqcName by remember { mutableStateOf("") }
     LaunchedEffect(Eqitem){
         eqcName = viewModel.getEquipmentTypeName(Eqitem.eqc_id ?: 0)
@@ -184,9 +222,10 @@ fun EquipmentItem(dataType: String?,Eqitem: EquipmentData, navController: NavCon
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp)
-            .clickable {
-                navController.navigate(ScreenRoutes.DataForm.passIsEditAndId(true,Eqitem.eq_id.toString(),dataType ?: "null"))
-            }
+            .combinedClickable(
+                onClick = {navController.navigate(ScreenRoutes.DataForm.passIsEditAndId(true,Eqitem.eq_id.toString(),dataType ?: "null"))},
+                onLongClick = {showDialog = true}
+            )
     ) {
         Column(
             modifier = Modifier
@@ -204,17 +243,30 @@ fun EquipmentItem(dataType: String?,Eqitem: EquipmentData, navController: NavCon
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun EquipmentTypeItem(dataType: String?,item: EquipmentTypeData, navController: NavController, viewModel: DataManageViewModel) {
+    var showDialog by remember { mutableStateOf(false) }
+    ConfirmDeleteDialog(
+        showDialog = showDialog,
+        onDismiss = { showDialog = false },
+        onConfirm = {
+            if(dataType != null && item.eqc_id != null){
+                viewModel.deleteData(dataType,item.eqc_id)
+                showDialog = false
+            }
+        }
+    )
     Card(
         shape = RoundedCornerShape(10.dp),
         backgroundColor = Color(0xFFE0E0E0),
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp)
-            .clickable {
-                navController.navigate(ScreenRoutes.DataForm.passIsEditAndId(true,item.eqc_id.toString(),dataType ?: "null"))
-            }
+            .combinedClickable(
+                onClick = {navController.navigate(ScreenRoutes.DataForm.passIsEditAndId(true,item.eqc_id.toString(),dataType ?: "null"))},
+                onLongClick = {showDialog = true}
+            )
     ) {
         Column(
             modifier = Modifier
@@ -228,17 +280,30 @@ fun EquipmentTypeItem(dataType: String?,item: EquipmentTypeData, navController: 
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun LevelOfDamageItem(dataType: String?,item: LevelOfDamageData, navController: NavController, viewModel: DataManageViewModel) {
+    var showDialog by remember { mutableStateOf(false) }
+    ConfirmDeleteDialog(
+        showDialog = showDialog,
+        onDismiss = { showDialog = false },
+        onConfirm = {
+            if(dataType != null && item.loed_id != null){
+                viewModel.deleteData(dataType,item.loed_id)
+                showDialog = false
+            }
+        }
+    )
     Card(
         shape = RoundedCornerShape(10.dp),
         backgroundColor = Color(0xFFE0E0E0),
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp)
-            .clickable {
-                navController.navigate(ScreenRoutes.DataForm.passIsEditAndId(true,item.loed_id.toString(),dataType ?: "null"))
-            }
+            .combinedClickable(
+                onClick = {navController.navigate(ScreenRoutes.DataForm.passIsEditAndId(true,item.loed_id.toString(),dataType ?: "null"))},
+                onLongClick = {showDialog = true}
+            )
     ) {
         Column(
             modifier = Modifier

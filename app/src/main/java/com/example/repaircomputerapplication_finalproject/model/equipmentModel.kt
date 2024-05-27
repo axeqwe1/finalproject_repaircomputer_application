@@ -1,5 +1,6 @@
 package com.example.repaircomputerapplication_finalproject.model
 
+
 data class EquipmentData (
     val eq_id:Int? = null,
     val eq_name:String? = null,

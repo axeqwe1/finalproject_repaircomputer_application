@@ -10,3 +10,11 @@ data class notificationData(
     val tech_id:Int? = null,
     val timestamp:String? = null
 )
+
+data class NotificationMessage(
+    val title: String,
+    val message: String,
+    val user_id: String,
+    val role: String,
+    val timestamp: String
+)

@@ -19,7 +19,6 @@ class RetrofitInstance(application: Application) : AndroidViewModel(application)
     val loggingInterceptor = HttpLoggingInterceptor().apply {
         level = HttpLoggingInterceptor.Level.BODY
     }
-
     // สร้าง Interceptor
 //    val authInterceptor = Interceptor { chain ->
 //        val originalRequest = chain.request()
