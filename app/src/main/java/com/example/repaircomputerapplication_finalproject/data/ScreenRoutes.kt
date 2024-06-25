@@ -58,11 +58,15 @@ sealed class ScreenRoutes(val route:String){
 
 
 
-        //---------------------------DisplayDetail
-
+        //---------------------------DetailRequest
         object detailRepair:ScreenRoutes("detail_screen?rrid={rrid}&userType={userType}"){
                 fun passRridAndUserType(rrid:String,userType:String):String{
                     return "detail_screen?rrid=$rrid&userType=$userType"
+                }
+        }
+        object addDetailRepair:ScreenRoutes("add_detail_screen?rrid={rrid}&rd_id={rd_id}&isUpdate={isUpdate}"){
+                fun passRrceIdAndIsUpdate(rrid:String,rd_id:String,isUpdate:Boolean):String{
+                        return "add_detail_screen?rrid=$rrid&rd_id=$rd_id&isUpdate=$isUpdate"
                 }
         }
         //---------------------------DisplayAssignWork

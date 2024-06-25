@@ -34,7 +34,8 @@ data class NavigateListForBtn
                 ),
                 NavigateListForBtn(
                     Btn_Name = "รานงาน",
-                    Icon = Icons.Filled.Share
+                    Icon = Icons.Filled.Share,
+                    Route = ScreenRoutes.Report.route
                 ),
             )
         }
@@ -61,7 +62,8 @@ data class NavigateListForBtn
                 ),
                 NavigateListForBtn(
                     Btn_Name = "รานงาน",
-                    Icon = Icons.Filled.Share
+                    Icon = Icons.Filled.Share,
+                    Route = ScreenRoutes.Report.route
                 ),
             )
         }
@@ -69,7 +71,8 @@ data class NavigateListForBtn
             listType = listOf(
                 NavigateListForBtn(
                     Btn_Name = "รายงาน",
-                    Icon = Icons.Filled.Share
+                    Icon = Icons.Filled.Share,
+                    Route = ScreenRoutes.Report.route
                 ),
             )
         }

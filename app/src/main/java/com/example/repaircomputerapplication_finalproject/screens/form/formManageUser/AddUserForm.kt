@@ -44,19 +44,21 @@ fun AddUserForm(
     var status by remember { mutableStateOf("") }
     var expandedDepartment by remember { mutableStateOf(false) }
     var expandedStatus by remember { mutableStateOf(false) }
-
     var submitBtnName by remember{ mutableStateOf("") }
-
     val adminList = viewModel.admin.collectAsState().value ?: emptyList()
     val techList = viewModel.tech.collectAsState().value ?: emptyList()
     val empList = viewModel.emp.collectAsState().value ?: emptyList()
     val chiefList = viewModel.chief.collectAsState().value ?: emptyList()
+    val departList = viewModel.department.collectAsState().value ?: emptyList()
+    val techStatusList = viewModel.techStatus.collectAsState().value ?: emptyList()
+    var statusId by remember{ mutableStateOf("") }
+    var departmentId by remember{ mutableStateOf("") }
     LaunchedEffect(userType, isEdit) {
         if (isEdit == true && userType != null && userId != null) {
             viewModel.loadData(userType)
         }
     }
-    LaunchedEffect(adminList, techList, empList, chiefList) {
+    LaunchedEffect(adminList, techList, empList, chiefList,departList,techStatusList) {
         if (isEdit == true && userId != null) {
             when (userType) {
                 "Admin" -> {
@@ -194,11 +196,14 @@ fun AddUserForm(
                 expanded = expandedDepartment,
                 onDismissRequest = { expandedDepartment = false }
             ) {
-                DropdownMenuItem(onClick = {
-                    department = "1"
-                    expandedDepartment = false
-                }) {
-                    Text("1")
+                departList.forEach { item ->
+                    DropdownMenuItem(onClick = {
+                        department = item.departmentName
+                        departmentId = item.department_id.toString()
+                        expandedDepartment = false
+                    }) {
+                        Text("$department")
+                    }
                 }
             }
         }
@@ -223,11 +228,14 @@ fun AddUserForm(
                     expanded = expandedStatus,
                     onDismissRequest = { expandedStatus = false }
                 ) {
-                    DropdownMenuItem(onClick = {
-                        status = "1"
-                        expandedStatus = false
-                    }) {
-                        Text("1")
+                    techStatusList.forEach{ item ->
+                        DropdownMenuItem(onClick = {
+                            status = item.receive_request_status.toString()
+                            statusId = item.status_id.toString()
+                            expandedStatus = false
+                        }) {
+                            Text("$status")
+                        }
                     }
                 }
             }
@@ -238,8 +246,8 @@ fun AddUserForm(
         Button(
             onClick = {
                 when(isEdit){
-                    true -> {viewModel.editUser(userType ?: "null",userId ?: "null",firstName,lastName,email,password,phone,department,status)}
-                    false -> {viewModel.addUser(userType ?: "null",firstName,lastName,email,password,phone,department)}
+                    true -> {viewModel.editUser(userType ?: "null",userId ?: "null",firstName,lastName,email,password,phone,departmentId,statusId)}
+                    false -> {viewModel.addUser(userType ?: "null",firstName,lastName,email,password,phone,departmentId,statusId)}
                     else -> { Toast.makeText(context,"Condition Wrong",Toast.LENGTH_SHORT).show()}
                 }
               },

@@ -37,6 +37,7 @@ fun crudDataScreen(dataType: String?, navController: NavController, viewModel: D
     val departmentList = viewModel.department.collectAsState().value
     val equipmentList = viewModel.eq.collectAsState().value
     val equipmentTypeList = viewModel.eqc.collectAsState().value
+    val techStatusList = viewModel.techStatus.collectAsState().value
     val loedList = viewModel.loed.collectAsState().value
     Scaffold(
         floatingActionButton = {
@@ -93,6 +94,10 @@ fun crudDataScreen(dataType: String?, navController: NavController, viewModel: D
                     {it.loed_id.toString()},
                     {it.loed_Name}
                 )) ?: emptyList()
+                "TechStatus" -> techStatusList?.filterBySearchQuery(searchQuery.text,listOf(
+                    {it.status_id.toString()},
+                    {it.receive_request_status.toString()}
+                )) ?: emptyList()
                 else -> emptyList()
             }
 
@@ -104,6 +109,7 @@ fun crudDataScreen(dataType: String?, navController: NavController, viewModel: D
                         "Equipment" -> EquipmentItem(dataType,item as EquipmentData, navController, viewModel)
                         "EquipmentType" -> EquipmentTypeItem(dataType,item as EquipmentTypeData, navController, viewModel)
                         "LevelOfDamage" -> LevelOfDamageItem(dataType,item as LevelOfDamageData, navController, viewModel)
+                        "TechStatus" -> TechStatusItem(dataType,item as techStatusData, navController, viewModel)
                         else -> Text("Invalid data type", color = Color.Red, modifier = Modifier.padding(16.dp))
                     }
                 }
@@ -141,8 +147,16 @@ fun BuildingItem(dataType: String?,item: BuildingData, navController: NavControl
             .fillMaxWidth()
             .padding(8.dp)
             .combinedClickable(
-                onClick = {navController.navigate(ScreenRoutes.DataForm.passIsEditAndId(true,item.building_id.toString(),dataType ?: "null"))},
-                onLongClick = {showDialog = true}
+                onClick = {
+                    navController.navigate(
+                        ScreenRoutes.DataForm.passIsEditAndId(
+                            true,
+                            item.building_id.toString(),
+                            dataType ?: "null"
+                        )
+                    )
+                },
+                onLongClick = { showDialog = true }
             )
     ) {
         Column(
@@ -180,8 +194,16 @@ fun DepartmentItem(dataType: String?,item: DepartmentData, navController: NavCon
             .fillMaxWidth()
             .padding(8.dp)
             .combinedClickable(
-                onClick = {navController.navigate(ScreenRoutes.DataForm.passIsEditAndId(true,item.department_id.toString(),dataType ?: "null"))},
-                onLongClick = {showDialog = true}
+                onClick = {
+                    navController.navigate(
+                        ScreenRoutes.DataForm.passIsEditAndId(
+                            true,
+                            item.department_id.toString(),
+                            dataType ?: "null"
+                        )
+                    )
+                },
+                onLongClick = { showDialog = true }
             )
     ) {
         Column(
@@ -223,8 +245,16 @@ fun EquipmentItem(dataType: String?,Eqitem: EquipmentData, navController: NavCon
             .fillMaxWidth()
             .padding(8.dp)
             .combinedClickable(
-                onClick = {navController.navigate(ScreenRoutes.DataForm.passIsEditAndId(true,Eqitem.eq_id.toString(),dataType ?: "null"))},
-                onLongClick = {showDialog = true}
+                onClick = {
+                    navController.navigate(
+                        ScreenRoutes.DataForm.passIsEditAndId(
+                            true,
+                            Eqitem.eq_id.toString(),
+                            dataType ?: "null"
+                        )
+                    )
+                },
+                onLongClick = { showDialog = true }
             )
     ) {
         Column(
@@ -264,8 +294,16 @@ fun EquipmentTypeItem(dataType: String?,item: EquipmentTypeData, navController: 
             .fillMaxWidth()
             .padding(8.dp)
             .combinedClickable(
-                onClick = {navController.navigate(ScreenRoutes.DataForm.passIsEditAndId(true,item.eqc_id.toString(),dataType ?: "null"))},
-                onLongClick = {showDialog = true}
+                onClick = {
+                    navController.navigate(
+                        ScreenRoutes.DataForm.passIsEditAndId(
+                            true,
+                            item.eqc_id.toString(),
+                            dataType ?: "null"
+                        )
+                    )
+                },
+                onLongClick = { showDialog = true }
             )
     ) {
         Column(
@@ -301,8 +339,16 @@ fun LevelOfDamageItem(dataType: String?,item: LevelOfDamageData, navController: 
             .fillMaxWidth()
             .padding(8.dp)
             .combinedClickable(
-                onClick = {navController.navigate(ScreenRoutes.DataForm.passIsEditAndId(true,item.loed_id.toString(),dataType ?: "null"))},
-                onLongClick = {showDialog = true}
+                onClick = {
+                    navController.navigate(
+                        ScreenRoutes.DataForm.passIsEditAndId(
+                            true,
+                            item.loed_id.toString(),
+                            dataType ?: "null"
+                        )
+                    )
+                },
+                onLongClick = { showDialog = true }
             )
     ) {
         Column(
@@ -313,6 +359,50 @@ fun LevelOfDamageItem(dataType: String?,item: LevelOfDamageData, navController: 
             Text(text = "${item.loed_id}", fontWeight = FontWeight.Bold, fontSize = 16.sp)
             Spacer(modifier = Modifier.height(4.dp))
             Text(text = "ชื่อระดับความเสียหาย: ${item.loed_Name}", fontSize = 14.sp)
+        }
+    }
+}
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun TechStatusItem(dataType: String?,item: techStatusData, navController: NavController, viewModel: DataManageViewModel) {
+    var showDialog by remember { mutableStateOf(false) }
+    ConfirmDeleteDialog(
+        showDialog = showDialog,
+        onDismiss = { showDialog = false },
+        onConfirm = {
+            if(dataType != null && item.status_id != null){
+                viewModel.deleteData(dataType,item.status_id)
+                showDialog = false
+            }
+        }
+    )
+    Card(
+        shape = RoundedCornerShape(10.dp),
+        backgroundColor = Color(0xFFE0E0E0),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp)
+            .combinedClickable(
+                onClick = {
+                    navController.navigate(
+                        ScreenRoutes.DataForm.passIsEditAndId(
+                            true,
+                            item.status_id.toString(),
+                            dataType ?: "null"
+                        )
+                    )
+                },
+                onLongClick = { showDialog = true }
+            )
+    ) {
+        Column(
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth()
+        ) {
+            Text(text = "${item.status_id}", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(text = "ชื่อระดับความเสียหาย: ${item.receive_request_status}", fontSize = 14.sp)
         }
     }
 }

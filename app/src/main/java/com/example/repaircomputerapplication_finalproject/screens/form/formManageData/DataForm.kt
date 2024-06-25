@@ -19,6 +19,7 @@ fun DataForm(DataType:String?,isEdit:Boolean?,DataID:String?,navController: NavC
         "Equipment" -> equipmentForm(isEdit,DataID,viewModel)
         "EquipmentType" -> equipmentTypeForm(isEdit,DataID,viewModel)
         "LevelOfDamage" -> levelOfDamageForm(isEdit,DataID,viewModel)
+        "TechStatus" -> technicianStatusForm(isEdit, DataID ,viewModel)
         else -> {
             Text(text = "Not have DataType")}
     }

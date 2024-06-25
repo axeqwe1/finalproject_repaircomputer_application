@@ -38,8 +38,17 @@ class UserManageViewModel(
     private val _chief = MutableStateFlow<List<ChiefData>?>(null)
     val chief = _chief.asStateFlow()
 
+    private val _department = MutableStateFlow<List<DepartmentData>?>(null)
+    val department = _department.asStateFlow()
+
+    private val _techStatus = MutableStateFlow<List<techStatusData>?>(null)
+    val techStatus = _techStatus.asStateFlow()
+
     fun loadData(userType: String) {
         viewModelScope.launch {
+            _department.value = fetchDepartmentData()
+            _techStatus.value = fetchTechStatusData()
+            Log.d(TAG, "loadData: ${_department.value}")
             when (userType) {
                 "Admin" -> _admin.value = fetchAdminData()
                 "Technician" -> _tech.value = fetchTechnicianData()
@@ -57,7 +66,8 @@ class UserManageViewModel(
         email: String,
         password: String,
         phone: String,
-        department: String
+        department: String,
+        status: String
     ) {
         viewModelScope.launch {
             val response = RetrofitInstance(getApplication()).apiService
@@ -67,7 +77,8 @@ class UserManageViewModel(
                 email,
                 password,
                 phone,
-                department.toInt()
+                department.toInt(),
+                status.toInt()
             )
             try {
                 val result = when (userType) {
@@ -188,6 +199,12 @@ class UserManageViewModel(
 
     private suspend fun fetchChiefData(): List<ChiefData>? {
         return fetchData { RetrofitInstance(getApplication()).apiService.getChiefs() }
+    }
+    private suspend fun fetchDepartmentData():List<DepartmentData>?{
+        return fetchData { RetrofitInstance(getApplication()).apiService.getDepartments() }
+    }
+    private suspend fun fetchTechStatusData():List<techStatusData>? {
+        return fetchData { RetrofitInstance(getApplication()).apiService.getTechStatus() }
     }
 
     private suspend fun <T> fetchData(fetchCall: suspend () -> Response<T>): T? {

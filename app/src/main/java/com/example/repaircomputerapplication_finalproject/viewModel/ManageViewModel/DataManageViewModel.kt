@@ -21,6 +21,8 @@ import com.example.repaircomputerapplication_finalproject.model.EquipmentTypeReq
 import com.example.repaircomputerapplication_finalproject.model.LevelOfDamageData
 import com.example.repaircomputerapplication_finalproject.model.LevelOfDamageRequest
 import com.example.repaircomputerapplication_finalproject.model.TechnicianData
+import com.example.repaircomputerapplication_finalproject.model.techStatusData
+import com.example.repaircomputerapplication_finalproject.model.techStatusRequest
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
@@ -44,6 +46,9 @@ class DataManageViewModel(application: Application):AndroidViewModel(application
     private val _loed = MutableStateFlow<List<LevelOfDamageData>?>(null)
     val loed = _loed.asStateFlow()
 
+    private val _techStatus = MutableStateFlow<List<techStatusData>?>(null)
+    val techStatus = _techStatus.asStateFlow()
+
     init {
         LoadData()
     }
@@ -54,6 +59,7 @@ class DataManageViewModel(application: Application):AndroidViewModel(application
             _eq.value = fetchEquipmentData()
             _eqc.value = fetchEquipmentTypeData()
             _loed.value = fetchLevelOfDamageData()
+            _techStatus.value = fetchTectStatusData()
         }
     }
     //=================================================Add Data============================================================//
@@ -125,7 +131,19 @@ class DataManageViewModel(application: Application):AndroidViewModel(application
             }
         }
     }
-
+    fun addTechStatus(receive_request_status:String){
+        viewModelScope.launch {
+            val response = RetrofitInstance(getApplication()).apiService.addTechStatus(
+                techStatusRequest(receive_request_status)
+            )
+            if(response.isSuccessful){
+                Toast.makeText(getApplication(),"${response.body()}",Toast.LENGTH_SHORT).show()
+            }else{
+                Toast.makeText(getApplication(),"${response.errorBody()?.string()}",Toast.LENGTH_SHORT).show()
+                Log.e(TAG, "addLevelOfDamage: ${response.errorBody()?.string()}", )
+            }
+        }
+    }
     //=================================================Edit Data============================================================//
 
     fun editBuilding(building_id: Int, building_room_number: String, building_floor: String, building_name: String) {
@@ -197,6 +215,20 @@ class DataManageViewModel(application: Application):AndroidViewModel(application
             }
         }
     }
+
+    fun editTechStatus(statusId: Int, receive_request_status: String) {
+        viewModelScope.launch {
+            val response = RetrofitInstance(getApplication()).apiService.editTechStatus(
+                statusId, techStatusRequest(receive_request_status)
+            )
+            if (response.isSuccessful) {
+                Toast.makeText(getApplication(), "${response.body()}", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(getApplication(), "${response.errorBody()?.string()}", Toast.LENGTH_SHORT).show()
+                Log.e(TAG, "editLevelOfDamage: ${response.errorBody()?.string()}")
+            }
+        }
+    }
     //=================================================Delete Data============================================================//
     fun deleteData(DataType: String, DataId: Int) {
         viewModelScope.launch {
@@ -208,6 +240,7 @@ class DataManageViewModel(application: Application):AndroidViewModel(application
                     "EquipmentType" -> response.deleteEquipmentTypeById(DataId)
                     "Department" -> response.deleteDepartmentById(DataId)
                     "LevelOfDamage" -> response.deleteLevelOfDamageById(DataId)
+                    "TechStatus" -> response.deleteTechStatus(DataId)
                     else -> throw IllegalArgumentException("Unknown user type: $DataType")
                 }
                 if (result.isSuccessful) {
@@ -247,6 +280,9 @@ class DataManageViewModel(application: Application):AndroidViewModel(application
             return response.body()?.eqc_name ?: "null"
         }
 
+        suspend fun fetchTectStatusData():List<techStatusData>?{
+            return fetchData { RetrofitInstance(getApplication()).apiService.getTechStatus() }
+        }
         suspend fun fetchBuildingData(): List<BuildingData>? {
             return fetchData { RetrofitInstance(getApplication()).apiService.getBuildings() }
         }

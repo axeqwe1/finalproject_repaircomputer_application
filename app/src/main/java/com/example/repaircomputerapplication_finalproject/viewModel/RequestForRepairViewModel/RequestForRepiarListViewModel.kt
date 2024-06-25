@@ -1,4 +1,4 @@
-package com.example.repaircomputerapplication_finalproject.viewModel
+package com.example.repaircomputerapplication_finalproject.viewModel.RequestForRepairViewModel
 
 import android.app.Application
 import android.content.ContentValues.TAG
@@ -11,7 +11,6 @@ import com.example.repaircomputerapplication_finalproject.model.BuildingData
 import com.example.repaircomputerapplication_finalproject.model.DepartmentData
 import com.example.repaircomputerapplication_finalproject.model.EmployeeData
 import com.example.repaircomputerapplication_finalproject.model.EquipmentData
-import com.example.repaircomputerapplication_finalproject.model.RequestForRepairData
 import com.example.repaircomputerapplication_finalproject.model.TechnicianData
 import com.example.repaircomputerapplication_finalproject.model.detailRepairData
 import com.example.repaircomputerapplication_finalproject.viewModel.ContextDataStore.dataStore

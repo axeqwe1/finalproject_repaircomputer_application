@@ -27,11 +27,14 @@ import com.example.repaircomputerapplication_finalproject.model.UserResponse
 import com.example.repaircomputerapplication_finalproject.model.sendRequest
 import com.example.repaircomputerapplication_finalproject.model.UploadResponse
 import com.example.repaircomputerapplication_finalproject.model.UserModel
+import com.example.repaircomputerapplication_finalproject.model.addDetailRequest
 import com.example.repaircomputerapplication_finalproject.model.detailRepairData
 import com.example.repaircomputerapplication_finalproject.model.logoutResponse
 import com.example.repaircomputerapplication_finalproject.model.notificationData
 import com.example.repaircomputerapplication_finalproject.model.notificationListResponse
 import com.example.repaircomputerapplication_finalproject.model.techStatusData
+import com.example.repaircomputerapplication_finalproject.model.techStatusRequest
+import com.example.repaircomputerapplication_finalproject.model.updateDetailRequest
 import okhttp3.MultipartBody
 import okhttp3.ResponseBody
 import retrofit2.Response
@@ -69,7 +72,6 @@ interface IAPIService {
     suspend fun getLevelOfDamageById(@Path("id") loed: Int): Response<LevelOfDamageData>
     @GET("managementdata/gettechstatus")
     suspend fun getTechStatus():Response<List<techStatusData>>
-
     @GET("managementdata/gettechstatus/{id}")
     suspend fun getTechStatusById(@Path("id") status_id:Int):Response<techStatusData>
     //-----------------------------AddData
@@ -83,6 +85,9 @@ interface IAPIService {
     suspend fun addEquipmentType(@Body bodyrequest: EquipmentTypeRequest):Response<ResponseBody>
     @POST("managementdata/addloed")
     suspend fun addLevelOfDamage(@Body bodyrequest: LevelOfDamageRequest):Response<ResponseBody>
+
+    @POST("managementdata/addtechstatus")
+    suspend fun addTechStatus(@Body bodyrequest:techStatusRequest):Response<ResponseBody>
 
     //-------------------------------Edit Data
     @PUT("managementdata/updatebuilding/{id}")
@@ -100,6 +105,9 @@ interface IAPIService {
     @PUT("managementdata/updateloed/{id}")
     suspend fun editLevelOfDamage(@Path("id") id: Int, @Body request: LevelOfDamageRequest): Response<ResponseBody>
 
+    @PUT("managementdata/updatetechstatus/{id}")
+    suspend fun editTechStatus(@Path("id") id:Int,@Body techStatusRequest: techStatusRequest):Response<ResponseBody>
+
     //-------------------------------Delete Data
     @DELETE("managementdata/deleteequipment/{id}")
     suspend fun deleteEquipmentById(@Path("id") id: Int): Response<ResponseBody>
@@ -111,7 +119,8 @@ interface IAPIService {
     suspend fun deleteBuildingById(@Path("id") id: Int): Response<ResponseBody>
     @DELETE("managementdata/deletedepartment/{id}")
     suspend fun deleteDepartmentById(@Path("id") id: Int): Response<ResponseBody>
-
+    @DELETE("managementdata/deletetechstatus/{id}")
+    suspend fun deleteTechStatus(@Path("id")id:Int):Response<ResponseBody>
     //---------------------------->ManagemenUser
     //---------------------------->GetAllUser
     @GET("managementuser/getemployees")
@@ -122,8 +131,6 @@ interface IAPIService {
     suspend fun getTechnicians():Response<List<TechnicianData>>
     @GET("managementuser/getchiefs")
     suspend fun getChiefs():Response<List<ChiefData>>
-
-
     //---------------------------->AddUser
     @POST("managementuser/addadmin")
     suspend fun addAdmin(@Body adminData: UserModel):Response<AdminData>
@@ -133,7 +140,6 @@ interface IAPIService {
     suspend fun addEmployee(@Body employeeData: UserModel):Response<EmployeeData>
     @POST("managementuser/addchief")
     suspend fun addChief(@Body chiefData: UserModel):Response<ChiefData>
-
     //---------------------------->EditUser
     @PUT("managementuser/updateadmin/{id}")
     suspend fun editAdmin(@Path("id") admin_id:Int,@Body adminData: UserModel):Response<AdminData>
@@ -143,7 +149,6 @@ interface IAPIService {
     suspend fun editTechnician(@Path("id") tech_id:Int,@Body technicianData: TechnicianBody):Response<TechnicianData>
     @PUT("managementuser/updatechief/{id}")
     suspend fun editChief(@Path("id") chief_id:Int,@Body chiefData: UserModel):Response<ChiefData>
-
     //----------------------------------> Get a specific user by ID
     @GET("managementuser/getadmin/{id}")
     suspend fun getAdminById(@Path("id") admin_id: Int): Response<AdminData>
@@ -153,8 +158,8 @@ interface IAPIService {
     suspend fun getTechnicianById(@Path("id") eq_id: Int): Response<TechnicianData>
     @GET("managementuser/getchief/{id}")
     suspend fun getChiefById(@Path("id") eq_id: Int): Response<EmployeeData>
-
     //----------------------------------> Delete User
+
     @DELETE("managementuser/deleteadmin/{id}")
     suspend fun deleteAdminById(@Path("id") admin_id: Int): Response<messageBody>
     @DELETE("managementuser/deleteemployee/{id}")
@@ -163,17 +168,13 @@ interface IAPIService {
     suspend fun deleteTechnicianById(@Path("id") eq_id: Int): Response<messageBody>
     @DELETE("managementuser/deletechief/{id}")
     suspend fun deleteChiefById(@Path("id") eq_id: Int): Response<messageBody>
-
     //---------------------------------->authen api
     @POST("auth/login")
     suspend fun userLogin(@Body userRequest: UserRequest): Response<UserResponse>
-
     @GET("auth/logout")
     suspend fun userLogout():Response<logoutResponse>
-
     @POST("action/repair")
     suspend fun sendRequestForRepair(@Body sendRequest:sendRequest): Response<RequestResponse>
-
     //-------------------------->Display Api
     @GET("display/notification/{role}/{id}")
     suspend fun getNotification(@Path("role") role: String,@Path("id") id:Int):Response<notificationListResponse>
@@ -183,20 +184,24 @@ interface IAPIService {
     suspend fun getRequestDetail(@Path("id") id : Int):Response<detailRepairData>
     @GET("display/backlog-request-list")
     suspend fun getBackLogRequest():Response<BacklogResponse>
-
     @GET("display/techReceive/{id}")
     suspend fun getTechBacklogCount(@Path("id") id : Int):Response<TechBacklogCount>
-    //-------------------------->Upload Api
+    //-------------------------->Upload Image
     @Multipart
     @POST("images/upload")
     suspend fun uploadImage(@Part body: MultipartBody.Part): Response<UploadResponse>
-
-    //-------------------------->Upload Api
-    @POST("action/assign")
-    suspend fun assignWork(@Body AssignWorkBody: AssignWorkBody):Response<messageBody>
-    //-------------------------->Upload Api
+    //-------------------------->Get Image
     @GET("images/{imageName}")
     suspend fun getImage(@Path("imageName") imageName: String): ResponseBody
+    //-------------------------->Assign Work
+    @POST("action/assign")
+    suspend fun assignWork(@Body AssignWorkBody: AssignWorkBody):Response<messageBody>
+    //-------------------------->Add DetailReceive
+    @POST("action/addDetail")
+    suspend fun addDetail(@Body addDetailRequest: addDetailRequest):Response<messageBody>
+    @PUT("action/updateDetail/{id}")
+    suspend fun updateDetail(@Path("id") id :Int,@Body updateDetailRequest: updateDetailRequest):Response<messageBody>
+
 }
 
 data class messageBody(

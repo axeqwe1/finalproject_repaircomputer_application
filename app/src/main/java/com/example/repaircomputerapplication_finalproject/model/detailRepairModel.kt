@@ -41,3 +41,16 @@ data class EquipmentForDetail(
     val eqc_id:Int? = null,
     val equipment_Type:EquipmentTypeData? = null
 )
+
+data class addDetailRequest(
+    val loed_id:Int,
+    val rrce_id:Int,
+    val rd_description:String,
+    val request_status: String
+)
+
+data class updateDetailRequest(
+    val loed_id:Int,
+    val rd_description:String,
+    val request_status:String
+)

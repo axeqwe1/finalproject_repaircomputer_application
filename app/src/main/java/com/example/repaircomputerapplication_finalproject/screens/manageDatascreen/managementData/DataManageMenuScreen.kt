@@ -88,6 +88,11 @@ private data class DataMenuList(
                 Icon = Icons.AutoMirrored.Filled.List,
                 Route = ScreenRoutes.ManageDataScreen.passDataType("EquipmentType")
             ),
+            DataMenuList(
+                Btn_Name = "หน้าจัดการข้อมูลสถานะของช่าง",
+                Icon = Icons.AutoMirrored.Filled.List,
+                Route = ScreenRoutes.ManageDataScreen.passDataType("TechStatus")
+            ),
         )
         return list
     }

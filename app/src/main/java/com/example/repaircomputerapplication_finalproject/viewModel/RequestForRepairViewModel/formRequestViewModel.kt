@@ -1,11 +1,9 @@
-package com.example.repaircomputerapplication_finalproject.viewModel
+package com.example.repaircomputerapplication_finalproject.viewModel.RequestForRepairViewModel
 
 import android.app.Application
 import android.content.ContentValues.TAG
-import android.media.Image
 import android.net.Uri
 import android.util.Log
-import androidx.compose.runtime.collectAsState
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.repaircomputerapplication_finalproject.`api-service`.RetrofitInstance

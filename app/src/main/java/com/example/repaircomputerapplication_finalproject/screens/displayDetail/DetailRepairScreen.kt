@@ -57,6 +57,7 @@ fun DetailRepairScreen(rrid:String, userType:String, navController: NavControlle
     val scrollState = rememberScrollState()
     val context = LocalContext.current
     var admin_id by remember{ mutableStateOf("") }
+    var rd_id by remember { mutableStateOf("") }
     LaunchedEffect(data){
         if(userType == "Admin"){
             admin_id = context.dataStore.data.map { item ->
@@ -94,8 +95,12 @@ fun DetailRepairScreen(rrid:String, userType:String, navController: NavControlle
             technicianName = "${data.receive_repair.technician.firstname}   ${data.receive_repair.technician.lastname}"
             dateReceive = "${data.receive_repair.date_receive}"
             if(lastRepairDetail != null){
+                rd_id = lastRepairDetail.rd_id.toString()
                 detail = lastRepairDetail.rd_description ?: "ยังไม่กรอกข้อมูล"
                 levelOfDamage = lastRepairDetail.levelOfDamage?.loed_Name ?: "ยังไม่กรอกข้อมูล"
+                hasDetail = true
+            }else{
+                hasDetail = false
             }
             department = viewModel.getDepartmentName(data.employee.departmentId ?: 0).toString()
             building = data.building.building_name
@@ -103,7 +108,6 @@ fun DetailRepairScreen(rrid:String, userType:String, navController: NavControlle
             building_floor = data.building.building_floor.toString()
             rr_description = data.rr_description
             Log.d(TAG, "DetailRepairScreen: $data")
-            hasDetail = true
         }else{
             Log.d(TAG, "DetailRepairScreen: $data")
         }
@@ -118,6 +122,21 @@ fun DetailRepairScreen(rrid:String, userType:String, navController: NavControlle
                 .verticalScroll(scrollState),
             horizontalAlignment = Alignment.Start
         ) {
+            Spacer(modifier = Modifier.padding(24.dp))
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .shadow(10.dp, RoundedCornerShape(25.dp))
+                    .clip(RoundedCornerShape(25.dp))
+                    .background(Color(0xFFD0E6F8))
+                    .padding(12.dp)
+            ) {
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Box() {
+                        Text(text = "ดูรายละเอียด")
+                    }
+                }
+            }
             Spacer(modifier = Modifier.padding(24.dp))
             Column(
                 modifier = Modifier
@@ -195,18 +214,18 @@ fun DetailRepairScreen(rrid:String, userType:String, navController: NavControlle
             }
 
             Spacer(modifier = Modifier.height(16.dp))
-            BtnType(userType,hasDetail,navController,admin_id,_rrid)
+            BtnType(userType,hasDetail,navController,admin_id,_rrid,rd_id)
             Spacer(modifier = Modifier.height(24.dp))
         }
     }
 }
 
 @Composable
-fun BtnType(userType: String,hasDetail:Boolean,navController: NavController,admin_id:String,rrid: String) {
+fun BtnType(userType: String,hasDetail:Boolean,navController: NavController,admin_id:String,rrid: String,rd_id:String) {
     var BtnName by remember { mutableStateOf("") }
     var route by remember{ mutableStateOf("") }
     var show by remember{ mutableStateOf(true) }
-
+    var isUpdate by remember{ mutableStateOf(false) }
     when (userType) {
         "Admin" -> {
             if(hasDetail){
@@ -219,34 +238,68 @@ fun BtnType(userType: String,hasDetail:Boolean,navController: NavController,admi
         "Technician" -> {
             if (hasDetail) {
                 BtnName = "อัพเดทงาน"
+                route = ScreenRoutes.addDetailRepair.passRrceIdAndIsUpdate(rrid,rd_id,false)
+                isUpdate = true
             }else{
                 BtnName = "กรอกรายละเอียด"
+                route = ScreenRoutes.addDetailRepair.passRrceIdAndIsUpdate(rrid,rd_id,false)
+                isUpdate = false
             }
         }
         else -> show = false
     }
-
     if(show){
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(
-                    color = Color(0xFFCCFFCC), // Light green background color
-                    shape = RoundedCornerShape(16.dp) // Rounded corners
+        Column(modifier = Modifier.fillMaxSize()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(
+                        color = Color(0xFFCCFFCC), // Light green background color
+                        shape = RoundedCornerShape(16.dp) // Rounded corners
+                    )
+                    .clickable {
+                        navController.navigate(route)
+                    }
+                    .padding(16.dp), // Padding for the button
+                contentAlignment = Alignment.Center // Center the text inside the button
+            ) {
+                Text(
+                    text = "$BtnName", // Button text
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black // Text color
                 )
-                .clickable {
-                    navController.navigate(route)
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+            if(isUpdate){
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            color = Color(0xFFCCFFCC), // Light green background color
+                            shape = RoundedCornerShape(16.dp) // Rounded corners
+                        )
+                        .clickable {
+                            navController.navigate(
+                                ScreenRoutes.addDetailRepair.passRrceIdAndIsUpdate(
+                                    rrid,
+                                    rd_id,
+                                    true
+                                )
+                            )
+                        }
+                        .padding(16.dp), // Padding for the button
+                    contentAlignment = Alignment.Center // Center the text inside the button
+                ) {
+                    Text(
+                        text = "แก้ไขข้อมูล", // Button text
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.Black // Text color
+                    )
                 }
-                .padding(16.dp), // Padding for the button
-            contentAlignment = Alignment.Center // Center the text inside the button
-        ) {
-            Text(
-                text = "$BtnName", // Button text
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.Black // Text color
-            )
+            }
+            Spacer(modifier = Modifier.height(16.dp))
         }
     }
-
 }
