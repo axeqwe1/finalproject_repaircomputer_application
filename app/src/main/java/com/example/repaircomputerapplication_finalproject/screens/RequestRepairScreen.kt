@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.sp
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import com.example.repaircomputerapplication_finalproject.`api-service`.ConnectionChecker
 import com.example.repaircomputerapplication_finalproject.component.ToggleComponent
 import com.example.repaircomputerapplication_finalproject.data.ScreenRoutes
 import com.example.repaircomputerapplication_finalproject.viewModel.ContextDataStore.dataStore
@@ -45,14 +46,15 @@ fun RequestRepairScreen(navController: NavHostController, viewModel: RequestForR
     val context = LocalContext.current
     var isLoading by remember{ mutableStateOf(true) }
     LaunchedEffect(Unit) {
-        viewModel.loadData()
-        userType = context.dataStore.data.map { item ->
-            item[stringPreferencesKey("role")]
-        }.first() ?: "null"
-    }
-    LaunchedEffect(key1 = true) {
-        delay(2000) // Delay for 3 seconds
-        isLoading = false
+        if(ConnectionChecker.checkConnection()){
+            viewModel.loadData()
+            userType = context.dataStore.data.map { item ->
+                item[stringPreferencesKey("role")]
+            }.first() ?: "null"
+            isLoading = false
+        }else{
+            isLoading = true
+        }
     }
     if(isLoading){
         LoadingScreen() // Show loading screen

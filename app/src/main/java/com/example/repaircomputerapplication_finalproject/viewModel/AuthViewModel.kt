@@ -10,7 +10,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.repaircomputerapplication_finalproject.`api-service`.RetrofitInstance
+import com.example.repaircomputerapplication_finalproject.api_service.RetrofitInstance
 import com.example.repaircomputerapplication_finalproject.model.UserRequest
 import com.example.repaircomputerapplication_finalproject.viewModel.ContextDataStore.dataStore
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -23,17 +23,14 @@ class AuthViewModel(application: Application): AndroidViewModel(application) {
     private val dataStore = application.dataStore
     private val _loginResult = MutableStateFlow<Boolean?>(null)
     val loginResult: StateFlow<Boolean?> = _loginResult
-    private val _protectedState = MutableStateFlow<String?>(null)
-    val protectedState:StateFlow<String?> = _protectedState
-    private val sessionManager:SessionManager = SessionManager(application)
+
     fun login(email: String, password: String) {
         viewModelScope.launch {
             try {
-                val response = RetrofitInstance(getApplication()).apiService.userLogin(UserRequest(email, password))
+                val response = RetrofitInstance.apiService.userLogin(UserRequest(email, password))
                 if (response.isSuccessful && response.body()?.message == "Logged in successfully!") {
                     response.body()?.userSession?.let{
                         item -> saveUserId(item.userId,item.role,item.IsLogin)
-                        sessionManager.saveSessionToken(response.body()?.sessionId.toString())
                         _loginResult.value = item.IsLogin
                     }
                     Log.d(TAG, response.body()!!.toString())
@@ -48,8 +45,14 @@ class AuthViewModel(application: Application): AndroidViewModel(application) {
             }
         }
     }
-    fun getSessionKey() = sessionManager.sessionKey
-
+    suspend fun checkConnection(): Boolean {
+        return try {
+            val response = RetrofitInstance.apiService.checkConnection()
+            response.success
+        } catch (e: Exception) {
+            false
+        }
+    }
     private suspend fun saveUserId(userId: Int, role: String, isLogin: Boolean) {
         val userIdKey = stringPreferencesKey("userId")
         val roleKey = stringPreferencesKey("role")

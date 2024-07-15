@@ -4,7 +4,7 @@ import android.app.Application
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.repaircomputerapplication_finalproject.`api-service`.RetrofitInstance
+import com.example.repaircomputerapplication_finalproject.api_service.RetrofitInstance
 import com.example.repaircomputerapplication_finalproject.model.notificationData
 import com.example.repaircomputerapplication_finalproject.viewModel.ContextDataStore.dataStore
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -34,7 +34,7 @@ class NotificationViewModel(application: Application):AndroidViewModel(applicati
         val role= dataStore.data.map { item ->
             item[stringPreferencesKey("role")]
         }.first()
-        val response = RetrofitInstance(getApplication()).apiService.getNotification(role!!,id!!.toInt())
+        val response = RetrofitInstance.apiService.getNotification(role!!,id!!.toInt())
         if(response.isSuccessful){
             return response.body()?.data
         }else{

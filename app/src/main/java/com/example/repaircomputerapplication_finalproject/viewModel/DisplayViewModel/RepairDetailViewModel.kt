@@ -9,7 +9,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import coil.compose.rememberAsyncImagePainter
 import coil.compose.rememberImagePainter
-import com.example.repaircomputerapplication_finalproject.`api-service`.RetrofitInstance
+import com.example.repaircomputerapplication_finalproject.api_service.RetrofitInstance
 import com.example.repaircomputerapplication_finalproject.model.BuildingData
 import com.example.repaircomputerapplication_finalproject.model.EmployeeData
 import com.example.repaircomputerapplication_finalproject.model.RequestForRepairData
@@ -37,7 +37,7 @@ class RepairDetailViewModel(application: Application) : AndroidViewModel(applica
         }
     }
    suspend fun fetchRepairDetail(dataId:String) : detailRepairData?{
-        val response = RetrofitInstance(getApplication()).apiService.getRequestDetail(dataId.toInt())
+        val response = RetrofitInstance.apiService.getRequestDetail(dataId.toInt())
         if(response.isSuccessful){
             return response.body()
         }else{
@@ -46,7 +46,7 @@ class RepairDetailViewModel(application: Application) : AndroidViewModel(applica
         }
     }
     suspend fun getDepartmentName(dep_id:Int) : String?{
-        val response = RetrofitInstance(getApplication()).apiService.getDepartmentById(dep_id)
+        val response = RetrofitInstance.apiService.getDepartmentById(dep_id)
         if(response.isSuccessful){
             return response.body()?.departmentName
         }else{
@@ -56,7 +56,7 @@ class RepairDetailViewModel(application: Application) : AndroidViewModel(applica
     }
     fun fetchImage(imageName: String) {
         viewModelScope.launch {
-            val response: ResponseBody = RetrofitInstance(getApplication()).apiService.getImage(imageName)
+            val response: ResponseBody = RetrofitInstance.apiService.getImage(imageName)
             val inputStream = response.byteStream()
             val data = inputStream.readBytes()
             inputStream.close()

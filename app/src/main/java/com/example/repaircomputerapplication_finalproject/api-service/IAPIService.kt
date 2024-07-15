@@ -202,7 +202,13 @@ interface IAPIService {
     @PUT("action/updateDetail/{id}")
     suspend fun updateDetail(@Path("id") id :Int,@Body updateDetailRequest: updateDetailRequest):Response<messageBody>
 
+    //-------------------------->Check Connection
+    @GET("/check_connection")
+    suspend fun checkConnection(): ApiResponse
 }
+
+
+data class ApiResponse(val success: Boolean)
 
 data class messageBody(
     val message:String?

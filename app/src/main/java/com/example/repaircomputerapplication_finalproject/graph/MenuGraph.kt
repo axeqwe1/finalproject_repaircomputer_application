@@ -1,5 +1,7 @@
 package com.example.repaircomputerapplication_finalproject.graph
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
@@ -13,8 +15,9 @@ import com.example.repaircomputerapplication_finalproject.graph.DisplayGraph.det
 import com.example.repaircomputerapplication_finalproject.graph.ManagementGraph.manageMenuDataGraph
 import com.example.repaircomputerapplication_finalproject.screens.NotificationScreen
 import com.example.repaircomputerapplication_finalproject.screens.RequestRepairScreen
-import com.example.repaircomputerapplication_finalproject.screens.reportscreen.ReportScreen
+import com.example.repaircomputerapplication_finalproject.screens.report.ReportScreen
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun MenuNavGraph(
     navController: NavHostController
@@ -38,6 +41,7 @@ fun MenuNavGraph(
         assignWorkGraph(navController)
     }
 }
+@RequiresApi(Build.VERSION_CODES.O)
 fun NavGraphBuilder.RequestListGraph(navController: NavHostController){
     navigation(route = ScreenRoutes.ListRequestNav.route, startDestination = ScreenRoutes.RequestRepairList.route){
         composable(route = ScreenRoutes.RequestRepairList.route){

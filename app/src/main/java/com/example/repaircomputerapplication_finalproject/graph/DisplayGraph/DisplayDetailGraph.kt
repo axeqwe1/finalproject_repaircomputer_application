@@ -1,6 +1,8 @@
 package com.example.repaircomputerapplication_finalproject.graph.DisplayGraph
 
 import DetailRepairScreen
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -8,8 +10,10 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import androidx.navigation.navigation
 import com.example.repaircomputerapplication_finalproject.data.ScreenRoutes
+import com.example.repaircomputerapplication_finalproject.screens.displayDetail.StatusScreen
 import com.example.repaircomputerapplication_finalproject.screens.form.formAddDetail
 
+@RequiresApi(Build.VERSION_CODES.O)
 fun NavGraphBuilder.detailGraph(navController: NavHostController){
     navigation(
         startDestination = ScreenRoutes.detailRepair.route,
@@ -53,6 +57,19 @@ fun NavGraphBuilder.detailGraph(navController: NavHostController){
             val isUpdate = navBackStackEntry.arguments?.getBoolean("isUpdate")
             val rd_id = navBackStackEntry.arguments?.getString("rd_id")
             formAddDetail(rrid ?: "null",rd_id ?: "null",isUpdate ?: false,navController)
+        }
+
+        composable(
+            route = ScreenRoutes.statusDetail.route,
+            arguments = listOf(
+                navArgument("rrid"){
+                    type = NavType.StringType
+                    nullable = false
+                },
+            )
+        ){ navBackStackEntry ->
+            val rrid = navBackStackEntry.arguments?.getString("rrid")
+            StatusScreen(rrid = rrid)
         }
     }
 }

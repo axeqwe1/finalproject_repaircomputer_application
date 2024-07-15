@@ -17,7 +17,7 @@ class WebSocketService : Service() {
 
     override fun onCreate() {
         super.onCreate()
-        val uri = URI("ws://192.168.1.100:8001")
+        val uri = URI("ws://192.168.1.101:8001")
         webSocketClient = MyWebSocketClient(uri, this)
         webSocketClient.connect()
         startForegroundService()

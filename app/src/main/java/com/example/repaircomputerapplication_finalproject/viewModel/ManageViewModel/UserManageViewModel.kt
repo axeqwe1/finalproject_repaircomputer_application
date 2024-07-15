@@ -8,7 +8,7 @@ import android.widget.Toast
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
-import com.example.repaircomputerapplication_finalproject.`api-service`.RetrofitInstance
+import com.example.repaircomputerapplication_finalproject.api_service.RetrofitInstance
 import com.example.repaircomputerapplication_finalproject.model.AdminData
 import com.example.repaircomputerapplication_finalproject.model.ChiefData
 import com.example.repaircomputerapplication_finalproject.model.DepartmentData
@@ -70,7 +70,7 @@ class UserManageViewModel(
         status: String
     ) {
         viewModelScope.launch {
-            val response = RetrofitInstance(getApplication()).apiService
+            val response = RetrofitInstance.apiService
             val userModel = UserModel(
                 firstname,
                 lastname,
@@ -111,7 +111,7 @@ class UserManageViewModel(
         status:String
     ){
         viewModelScope.launch {
-            val response = RetrofitInstance(getApplication()).apiService
+            val response = RetrofitInstance.apiService
             val userModel = UserModel(
                 firstname,
                 lastname,
@@ -151,7 +151,7 @@ class UserManageViewModel(
     // delete data
     fun deleteUser(userType: String, userId: Int) {
         viewModelScope.launch {
-            val response = RetrofitInstance(getApplication()).apiService
+            val response = RetrofitInstance.apiService
             try {
                 val result = when (userType) {
                     "Admin" -> response.deleteAdminById(userId)
@@ -178,33 +178,33 @@ class UserManageViewModel(
     }
 
     suspend fun getTechStatusName(statusId: Int): String {
-        val response = RetrofitInstance(getApplication()).apiService.getTechStatusById(statusId)
+        val response = RetrofitInstance.apiService.getTechStatusById(statusId)
         return response.body()?.receive_request_status ?: "null"
     }
     suspend fun getDepartmentName(departmentId:Int):String{
-        val response = RetrofitInstance(getApplication()).apiService.getDepartmentById(departmentId)
+        val response = RetrofitInstance.apiService.getDepartmentById(departmentId)
         return response.body()?.departmentName ?: "null"
     }
     private suspend fun fetchEmployeeData(): List<EmployeeData>? {
-        return fetchData { RetrofitInstance(getApplication()).apiService.getEmployees() }
+        return fetchData { RetrofitInstance.apiService.getEmployees() }
     }
 
     private suspend fun fetchAdminData(): List<AdminData>? {
-        return fetchData { RetrofitInstance(getApplication()).apiService.getAdmins() }
+        return fetchData { RetrofitInstance.apiService.getAdmins() }
     }
 
     private suspend fun fetchTechnicianData(): List<TechnicianData>? {
-        return fetchData { RetrofitInstance(getApplication()).apiService.getTechnicians() }
+        return fetchData { RetrofitInstance.apiService.getTechnicians() }
     }
 
     private suspend fun fetchChiefData(): List<ChiefData>? {
-        return fetchData { RetrofitInstance(getApplication()).apiService.getChiefs() }
+        return fetchData { RetrofitInstance.apiService.getChiefs() }
     }
     private suspend fun fetchDepartmentData():List<DepartmentData>?{
-        return fetchData { RetrofitInstance(getApplication()).apiService.getDepartments() }
+        return fetchData { RetrofitInstance.apiService.getDepartments() }
     }
     private suspend fun fetchTechStatusData():List<techStatusData>? {
-        return fetchData { RetrofitInstance(getApplication()).apiService.getTechStatus() }
+        return fetchData { RetrofitInstance.apiService.getTechStatus() }
     }
 
     private suspend fun <T> fetchData(fetchCall: suspend () -> Response<T>): T? {

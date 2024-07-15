@@ -23,8 +23,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.repaircomputerapplication_finalproject.`api-service`.ConnectionChecker
 import com.example.repaircomputerapplication_finalproject.component.LoadSuccessScreen
 import com.example.repaircomputerapplication_finalproject.data.ScreenRoutes
+import com.example.repaircomputerapplication_finalproject.screens.LoadingScreen
 import com.example.repaircomputerapplication_finalproject.viewModel.ContextDataStore.dataStore
 import com.example.repaircomputerapplication_finalproject.viewModel.RequestForRepairViewModel.formRequestViewModel
 import kotlinx.coroutines.delay
@@ -54,6 +56,12 @@ fun formRequestForRepair(navController: NavController,formRequestViewModel: form
     var emp_Fnm by remember{ mutableStateOf("") }
     var emp_Lnm by remember { mutableStateOf("") }
     var eq_id:Int? by remember{ mutableStateOf(null) }
+    var isLoading by remember { mutableStateOf(true) }
+    LaunchedEffect(Unit) {
+        if(ConnectionChecker.checkConnection()){
+            isLoading = false
+        }
+    }
     LaunchedEffect(key1 = true){
         val roleData = context.dataStore.data.map {
             items ->
@@ -87,16 +95,16 @@ fun formRequestForRepair(navController: NavController,formRequestViewModel: form
     }
     fun checkEquipmentId(deviceId:String):Boolean {
         var isFound = false
-        if(deviceId != ""){
-            equipmentList?.forEach {
-                    items ->
-                if(items.eq_id == deviceId.toInt()){
+        deviceId.toIntOrNull()?.let { id ->
+            equipmentList?.forEach { items ->
+                if (items.eq_id == id) {
                     isFound = true
                     eq_id = items.eq_id
                 }
             }
         }
         return isFound
+
     }
     fun checkBuildingId(buildingId:Int):Boolean{
         var isFound = false
@@ -127,6 +135,9 @@ fun formRequestForRepair(navController: NavController,formRequestViewModel: form
             }
 
     }else{
+        if(isLoading){
+            LoadingScreen()
+        }else{
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -265,6 +276,7 @@ fun formRequestForRepair(navController: NavController,formRequestViewModel: form
             ) {
                 Text("Submit")
             }
+        }
         }
     }
 

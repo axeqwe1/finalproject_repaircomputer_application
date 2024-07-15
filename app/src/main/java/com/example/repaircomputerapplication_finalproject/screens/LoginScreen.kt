@@ -34,8 +34,10 @@ import androidx.navigation.NavController
 import com.example.repaircomputerapplication_finalproject.data.ScreenRoutes
 import com.example.repaircomputerapplication_finalproject.viewModel.AuthViewModel
 import com.example.repaircomputerapplication_finalproject.viewModel.ContextDataStore.dataStore
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
@@ -46,10 +48,10 @@ fun LoginScreen (navController: NavController,loginViewModel: AuthViewModel = vi
     val keyboardController = LocalSoftwareKeyboardController.current
     val loginResult by loginViewModel.loginResult.collectAsState(initial = null)
     val context = LocalContext.current
-    val coroutineScope = rememberCoroutineScope() // รับ CoroutineScope
     val isLoading = remember { mutableStateOf(true) }
     var isLogin = remember { mutableStateOf(false) }
-    val sessionKey by loginViewModel.getSessionKey().collectAsState(initial = null)
+
+
     // UI reacts to state changes
     LaunchedEffect(loginResult) {
         isLogin.value = context.dataStore.data.map { preferences ->
@@ -63,6 +65,7 @@ fun LoginScreen (navController: NavController,loginViewModel: AuthViewModel = vi
         }
         isLoading.value = false
     }
+
     if(isLoading.value){
         LoadingScreen()
     }else{

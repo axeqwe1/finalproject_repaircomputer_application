@@ -6,7 +6,7 @@ import android.util.Log
 import android.widget.Toast
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.repaircomputerapplication_finalproject.`api-service`.RetrofitInstance
+import com.example.repaircomputerapplication_finalproject.api_service.RetrofitInstance
 import com.example.repaircomputerapplication_finalproject.model.AdminData
 import com.example.repaircomputerapplication_finalproject.model.BuildingData
 import com.example.repaircomputerapplication_finalproject.model.BuildingRequest
@@ -65,7 +65,7 @@ class DataManageViewModel(application: Application):AndroidViewModel(application
     //=================================================Add Data============================================================//
     fun addBuilding(building_room_number:String,building_floor:String,building_name:String){
         viewModelScope.launch {
-            val response = RetrofitInstance(getApplication()).apiService.addBuilding(
+            val response = RetrofitInstance.apiService.addBuilding(
                 BuildingRequest(building_room_number,building_floor.toInt(),building_name)
             )
             if(response.isSuccessful){
@@ -78,7 +78,7 @@ class DataManageViewModel(application: Application):AndroidViewModel(application
     }
     fun addDepartment(departmentName:String){
         viewModelScope.launch {
-            val response = RetrofitInstance(getApplication()).apiService.addDepartment(
+            val response = RetrofitInstance.apiService.addDepartment(
                 DepartmentRequest(departmentName)
             )
             if(response.isSuccessful){
@@ -92,7 +92,7 @@ class DataManageViewModel(application: Application):AndroidViewModel(application
 
     fun addEquipment(eq_name:String,eq_status:String,eq_unit:String,eqc_id:String){
         viewModelScope.launch {
-            val response = RetrofitInstance(getApplication()).apiService.addEquipment(
+            val response = RetrofitInstance.apiService.addEquipment(
                 EquipmentRequest(eq_name,eq_status,eq_unit,eqc_id.toInt())
             )
             if(response.isSuccessful){
@@ -106,7 +106,7 @@ class DataManageViewModel(application: Application):AndroidViewModel(application
     }
     fun addEquipmentType(eqc_name:String){
         viewModelScope.launch {
-            val response = RetrofitInstance(getApplication()).apiService.addEquipmentType(
+            val response = RetrofitInstance.apiService.addEquipmentType(
                 EquipmentTypeRequest(eqc_name)
             )
             if(response.isSuccessful){
@@ -120,7 +120,7 @@ class DataManageViewModel(application: Application):AndroidViewModel(application
 
     fun addLevelOfDamage(loed_name:String){
         viewModelScope.launch {
-            val response = RetrofitInstance(getApplication()).apiService.addLevelOfDamage(
+            val response = RetrofitInstance.apiService.addLevelOfDamage(
                 LevelOfDamageRequest(loed_name)
             )
             if(response.isSuccessful){
@@ -133,7 +133,7 @@ class DataManageViewModel(application: Application):AndroidViewModel(application
     }
     fun addTechStatus(receive_request_status:String){
         viewModelScope.launch {
-            val response = RetrofitInstance(getApplication()).apiService.addTechStatus(
+            val response = RetrofitInstance.apiService.addTechStatus(
                 techStatusRequest(receive_request_status)
             )
             if(response.isSuccessful){
@@ -148,7 +148,7 @@ class DataManageViewModel(application: Application):AndroidViewModel(application
 
     fun editBuilding(building_id: Int, building_room_number: String, building_floor: String, building_name: String) {
         viewModelScope.launch {
-            val response = RetrofitInstance(getApplication()).apiService.editBuilding(
+            val response = RetrofitInstance.apiService.editBuilding(
                 building_id, BuildingRequest(building_room_number, building_floor.toInt(), building_name)
             )
             if (response.isSuccessful) {
@@ -162,7 +162,7 @@ class DataManageViewModel(application: Application):AndroidViewModel(application
 
     fun editDepartment(department_id: Int, departmentName: String) {
         viewModelScope.launch {
-            val response = RetrofitInstance(getApplication()).apiService.editDepartment(
+            val response = RetrofitInstance.apiService.editDepartment(
                 department_id, DepartmentRequest(departmentName)
             )
             if (response.isSuccessful) {
@@ -176,7 +176,7 @@ class DataManageViewModel(application: Application):AndroidViewModel(application
 
     fun editEquipment(eq_id: Int, eq_name: String, eq_status: String, eq_unit: String, eqc_id: String) {
         viewModelScope.launch {
-            val response = RetrofitInstance(getApplication()).apiService.editEquipment(
+            val response = RetrofitInstance.apiService.editEquipment(
                 eq_id, EquipmentRequest(eq_name, eq_status, eq_unit, eqc_id.toInt())
             )
             if (response.isSuccessful) {
@@ -190,7 +190,7 @@ class DataManageViewModel(application: Application):AndroidViewModel(application
 
     fun editEquipmentType(eqc_id: Int, eqc_name: String) {
         viewModelScope.launch {
-            val response = RetrofitInstance(getApplication()).apiService.editEquipmentType(
+            val response = RetrofitInstance.apiService.editEquipmentType(
                 eqc_id, EquipmentTypeRequest(eqc_name)
             )
             if (response.isSuccessful) {
@@ -204,7 +204,7 @@ class DataManageViewModel(application: Application):AndroidViewModel(application
 
     fun editLevelOfDamage(loed_id: Int, loed_name: String) {
         viewModelScope.launch {
-            val response = RetrofitInstance(getApplication()).apiService.editLevelOfDamage(
+            val response = RetrofitInstance.apiService.editLevelOfDamage(
                 loed_id, LevelOfDamageRequest(loed_name)
             )
             if (response.isSuccessful) {
@@ -218,7 +218,7 @@ class DataManageViewModel(application: Application):AndroidViewModel(application
 
     fun editTechStatus(statusId: Int, receive_request_status: String) {
         viewModelScope.launch {
-            val response = RetrofitInstance(getApplication()).apiService.editTechStatus(
+            val response = RetrofitInstance.apiService.editTechStatus(
                 statusId, techStatusRequest(receive_request_status)
             )
             if (response.isSuccessful) {
@@ -232,7 +232,7 @@ class DataManageViewModel(application: Application):AndroidViewModel(application
     //=================================================Delete Data============================================================//
     fun deleteData(DataType: String, DataId: Int) {
         viewModelScope.launch {
-            val response = RetrofitInstance(getApplication()).apiService
+            val response = RetrofitInstance.apiService
             try {
                 val result = when (DataType) {
                     "Building" -> response.deleteBuildingById(DataId)
@@ -275,32 +275,32 @@ class DataManageViewModel(application: Application):AndroidViewModel(application
 
         suspend fun getEquipmentTypeName(typeId: Int): String {
             val response =
-                RetrofitInstance(getApplication()).apiService.getEquipmentTypeById(typeId)
+                RetrofitInstance.apiService.getEquipmentTypeById(typeId)
             Log.d(TAG, "getEquipmentTypeName: ${response.body()?.eqc_name}")
             return response.body()?.eqc_name ?: "null"
         }
 
         suspend fun fetchTectStatusData():List<techStatusData>?{
-            return fetchData { RetrofitInstance(getApplication()).apiService.getTechStatus() }
+            return fetchData { RetrofitInstance.apiService.getTechStatus() }
         }
         suspend fun fetchBuildingData(): List<BuildingData>? {
-            return fetchData { RetrofitInstance(getApplication()).apiService.getBuildings() }
+            return fetchData { RetrofitInstance.apiService.getBuildings() }
         }
 
         suspend fun fetchDepartmentData(): List<DepartmentData>? {
-            return fetchData { RetrofitInstance(getApplication()).apiService.getDepartments() }
+            return fetchData { RetrofitInstance.apiService.getDepartments() }
         }
 
         suspend fun fetchEquipmentData(): List<EquipmentData>? {
-            return fetchData { RetrofitInstance(getApplication()).apiService.getEquipments() }
+            return fetchData { RetrofitInstance.apiService.getEquipments() }
         }
 
         suspend fun fetchEquipmentTypeData(): List<EquipmentTypeData>? {
-            return fetchData { RetrofitInstance(getApplication()).apiService.getEquipmentTypes() }
+            return fetchData { RetrofitInstance.apiService.getEquipmentTypes() }
         }
 
         suspend fun fetchLevelOfDamageData(): List<LevelOfDamageData>? {
-            return fetchData { RetrofitInstance(getApplication()).apiService.getLevelOfDamages() }
+            return fetchData { RetrofitInstance.apiService.getLevelOfDamages() }
         }
 
         private suspend fun <T> fetchData(fetchCall: suspend () -> Response<T>): T? {

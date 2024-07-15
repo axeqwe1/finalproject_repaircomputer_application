@@ -6,7 +6,7 @@ import android.util.Log
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.repaircomputerapplication_finalproject.`api-service`.RetrofitInstance
+import com.example.repaircomputerapplication_finalproject.api_service.RetrofitInstance
 import com.example.repaircomputerapplication_finalproject.model.BuildingData
 import com.example.repaircomputerapplication_finalproject.model.DepartmentData
 import com.example.repaircomputerapplication_finalproject.model.EmployeeData
@@ -114,7 +114,7 @@ class RequestForRepiarListViewModel(application: Application):AndroidViewModel(a
         return "Fail to getDepartmentName"
     }
     suspend fun fetchTechnicianData ():List<TechnicianData>?{
-        val response = RetrofitInstance(getApplication()).apiService.getTechnicians()
+        val response = RetrofitInstance.apiService.getTechnicians()
         if(response.isSuccessful){
             return response.body()
         }else{
@@ -122,7 +122,7 @@ class RequestForRepiarListViewModel(application: Application):AndroidViewModel(a
         }
     }
     suspend fun fetchDepartmentData ():List<DepartmentData>?{
-        val response = RetrofitInstance(getApplication()).apiService.getDepartments()
+        val response = RetrofitInstance.apiService.getDepartments()
         if(response.isSuccessful){
             return response.body()
         }else{
@@ -130,7 +130,7 @@ class RequestForRepiarListViewModel(application: Application):AndroidViewModel(a
         }
     }
     suspend fun fetchEmployeeData ():List<EmployeeData>?{
-        val response = RetrofitInstance(getApplication()).apiService.getEmployees()
+        val response = RetrofitInstance.apiService.getEmployees()
         if(response.isSuccessful){
             return response.body()
         }else{
@@ -138,7 +138,7 @@ class RequestForRepiarListViewModel(application: Application):AndroidViewModel(a
         }
     }
     suspend fun fetchEquipmentData ():List<EquipmentData>?{
-        val response = RetrofitInstance(getApplication()).apiService.getEquipments()
+        val response = RetrofitInstance.apiService.getEquipments()
         if(response.isSuccessful){
             return response.body()
         }else{
@@ -146,7 +146,7 @@ class RequestForRepiarListViewModel(application: Application):AndroidViewModel(a
         }
     }
     suspend fun fetchBuildingData ():List<BuildingData>?{
-        val response = RetrofitInstance(getApplication()).apiService.getBuildings()
+        val response = RetrofitInstance.apiService.getBuildings()
         if(response.isSuccessful){
             return response.body()
         }else{
@@ -161,7 +161,7 @@ class RequestForRepiarListViewModel(application: Application):AndroidViewModel(a
             settings[stringPreferencesKey("userId")]
         }.first()?.toInt()
         Log.d(TAG, "fetchRequestForRepairList: $role + $Id")
-        val response = RetrofitInstance(getApplication()).apiService.getRequestList(role,Id ?: 0)
+        val response = RetrofitInstance.apiService.getRequestList(role,Id ?: 0)
         if(response.isSuccessful){
             return response.body()?.data
         }else{

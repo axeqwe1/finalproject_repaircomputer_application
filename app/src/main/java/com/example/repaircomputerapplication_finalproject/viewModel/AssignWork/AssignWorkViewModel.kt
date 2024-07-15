@@ -4,7 +4,7 @@ import android.app.Application
 import android.widget.Toast
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.repaircomputerapplication_finalproject.`api-service`.RetrofitInstance
+import com.example.repaircomputerapplication_finalproject.api_service.RetrofitInstance
 import com.example.repaircomputerapplication_finalproject.model.BacklogResponse
 import com.example.repaircomputerapplication_finalproject.model.DepartmentData
 import com.example.repaircomputerapplication_finalproject.model.EmployeeData
@@ -40,7 +40,7 @@ class AssignWorkViewModel(application: Application):AndroidViewModel(application
         return "Fail to getDepartmentName"
     }
     suspend fun fetchDepartmentData() : List<DepartmentData>?{
-        val response = RetrofitInstance(getApplication()).apiService.getDepartments()
+        val response = RetrofitInstance.apiService.getDepartments()
         if(response.isSuccessful){
             return response.body()
         }else{
@@ -49,7 +49,7 @@ class AssignWorkViewModel(application: Application):AndroidViewModel(application
         }
     }
     suspend fun fetchRequestListNotReceive():BacklogResponse{
-        val response = RetrofitInstance(getApplication()).apiService.getBackLogRequest()
+        val response = RetrofitInstance.apiService.getBackLogRequest()
         if (response.isSuccessful && response.body() != null){
             return response.body()!!
         }else{

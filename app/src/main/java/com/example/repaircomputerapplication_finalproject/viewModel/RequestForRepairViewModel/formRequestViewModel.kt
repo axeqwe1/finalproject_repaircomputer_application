@@ -6,7 +6,7 @@ import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.repaircomputerapplication_finalproject.`api-service`.RetrofitInstance
+import com.example.repaircomputerapplication_finalproject.api_service.RetrofitInstance
 import com.example.repaircomputerapplication_finalproject.model.BuildingData
 import com.example.repaircomputerapplication_finalproject.model.EmployeeData
 import com.example.repaircomputerapplication_finalproject.model.EquipmentData
@@ -42,7 +42,7 @@ class formRequestViewModel(application: Application):AndroidViewModel(applicatio
     fun SendRequest(description:String,picture:String,employeeId:Int,buildingId:Int,equipmentId:Int){
         viewModelScope.launch {
             try {
-                val response = RetrofitInstance(getApplication())
+                val response = RetrofitInstance
                     .apiService
                     .sendRequestForRepair(
                         sendRequest(description,newFileName,employeeId,buildingId,equipmentId)
@@ -73,7 +73,7 @@ class formRequestViewModel(application: Application):AndroidViewModel(applicatio
     }
 
     suspend fun fetchBuildingData() : List<BuildingData>? {
-        val response = RetrofitInstance(getApplication()).apiService.getBuildings()
+        val response = RetrofitInstance.apiService.getBuildings()
         if(response.isSuccessful){
             return response.body()
         }else{
@@ -82,7 +82,7 @@ class formRequestViewModel(application: Application):AndroidViewModel(applicatio
     }
 
     suspend fun fetchEquipmentData(): List<EquipmentData>?{
-        val response = RetrofitInstance(getApplication()).apiService.getEquipments()
+        val response = RetrofitInstance.apiService.getEquipments()
         if(response.isSuccessful){
             return response.body()
         }else{
@@ -91,7 +91,7 @@ class formRequestViewModel(application: Application):AndroidViewModel(applicatio
     }
 
     suspend fun fetchEmployee(): List<EmployeeData>?{
-        val response = RetrofitInstance(getApplication()).apiService.getEmployees()
+        val response = RetrofitInstance.apiService.getEmployees()
         if(response.isSuccessful){
             return response.body()
         }else{
@@ -113,7 +113,7 @@ class formRequestViewModel(application: Application):AndroidViewModel(applicatio
                     imageBytes!!.toRequestBody()
                 )
                 // Assuming RetrofitInstance is set up for your server's base URL
-                val response = RetrofitInstance(getApplication()).apiService.uploadImage(filePart)
+                val response = RetrofitInstance.apiService.uploadImage(filePart)
                 Log.d(TAG, "uploadImage: ${response.isSuccessful}")
                 if (response.isSuccessful) {
                     _uploadedFileName.value = newFileName

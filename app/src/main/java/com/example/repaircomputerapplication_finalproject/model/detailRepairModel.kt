@@ -30,6 +30,7 @@ data class RepairDetailForDetail(
     val loed_id:Int? = null,
     val rrce_id: Int? = null,
     val rd_description:String? = "",
+    val timestamp: String? = "",
     val levelOfDamage:LevelOfDamageData? = null
 )
 data class EquipmentForDetail(

@@ -7,7 +7,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.repaircomputerapplication_finalproject.`api-service`.RetrofitInstance
+import com.example.repaircomputerapplication_finalproject.api_service.RetrofitInstance
 import com.example.repaircomputerapplication_finalproject.viewModel.ContextDataStore.dataStore
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -21,7 +21,7 @@ class HomeViewModel(application: Application): AndroidViewModel(application) {
 
     fun logout(){
         viewModelScope.launch{
-            val response = RetrofitInstance(getApplication()).apiService.userLogout()
+            val response = RetrofitInstance.apiService.userLogout()
             try {
                 if(response.isSuccessful){
                     removeUserId()

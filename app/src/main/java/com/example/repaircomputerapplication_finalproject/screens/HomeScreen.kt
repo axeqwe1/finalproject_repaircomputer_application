@@ -56,11 +56,8 @@ fun HomeScreen(nav: NavController, homeViewModel: HomeViewModel = viewModel()) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val logoutResult by homeViewModel.logoutResult.collectAsState(initial = null)
     val context = LocalContext.current
-    val dataStore = context.dataStore
 
     LaunchedEffect(logoutResult) {
-        val sessionId = dataStore.data.firstOrNull()?.get(stringPreferencesKey("session_key"))
-        Log.d(TAG, "Session ID $sessionId " ?: "No session ID found")
         when (logoutResult) {
             is LogoutResult.IsLogout -> nav.navigate(ScreenRoutes.AuthNav.route) {
                 popUpTo(ScreenRoutes.HomeNav.route) { inclusive = true }

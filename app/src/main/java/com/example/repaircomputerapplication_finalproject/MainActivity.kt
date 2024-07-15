@@ -38,6 +38,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.repaircomputerapplication_finalproject.Websocket.MyWebSocketClient
 import com.example.repaircomputerapplication_finalproject.Websocket.WebSocketService
 import com.example.repaircomputerapplication_finalproject.graph.RootNav
+import com.example.repaircomputerapplication_finalproject.screens.ConnectionCheckingScreen
 import java.net.URI
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
@@ -63,7 +64,7 @@ class MainActivity : ComponentActivity() {
                                 }
                         ) {
                             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                                RootNav()
+                                ConnectionCheckingScreen(navController)
 //                                DetailRepairScreen()
 //                                displayEmployee()
                             }

@@ -1,7 +1,9 @@
 
 import android.content.ContentValues.TAG
+import android.os.Build
 import android.util.Log
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -31,10 +33,12 @@ import com.example.repaircomputerapplication_finalproject.data.ScreenRoutes
 import com.example.repaircomputerapplication_finalproject.screens.LoadingScreen
 import com.example.repaircomputerapplication_finalproject.viewModel.ContextDataStore.dataStore
 import com.example.repaircomputerapplication_finalproject.viewModel.DisplayViewModel.RepairDetailViewModel
+import com.example.repaircomputerapplication_finalproject.viewModel.formatTimestamp
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun DetailRepairScreen(rrid:String, userType:String, navController: NavController,viewModel:RepairDetailViewModel = viewModel()) {
     val data = viewModel.detailData.collectAsState().value
@@ -58,6 +62,9 @@ fun DetailRepairScreen(rrid:String, userType:String, navController: NavControlle
     val context = LocalContext.current
     var admin_id by remember{ mutableStateOf("") }
     var rd_id by remember { mutableStateOf("") }
+    var requestStatus by remember { mutableStateOf("") }
+    var detailTimeStamp by remember{ mutableStateOf("") }
+    var detailDescription by remember{ mutableStateOf("") }
     LaunchedEffect(data){
         if(userType == "Admin"){
             admin_id = context.dataStore.data.map { item ->
@@ -80,6 +87,8 @@ fun DetailRepairScreen(rrid:String, userType:String, navController: NavControlle
             building_roomnum = data.building.building_room_number
             building_floor = data.building.building_floor.toString()
             rr_description = data.rr_description
+            requestStatus = data.request_status
+            detailTimeStamp = data.timestamp
             Log.d(TAG, "DetailRepairScreen: $data")
             hasDetail = false
         }else if(data != null && data.receive_repair.repair_details != null)
@@ -98,6 +107,10 @@ fun DetailRepairScreen(rrid:String, userType:String, navController: NavControlle
                 rd_id = lastRepairDetail.rd_id.toString()
                 detail = lastRepairDetail.rd_description ?: "ยังไม่กรอกข้อมูล"
                 levelOfDamage = lastRepairDetail.levelOfDamage?.loed_Name ?: "ยังไม่กรอกข้อมูล"
+                detailTimeStamp = data.receive_repair.repair_details.lastOrNull()?.timestamp.toString()
+                detailDescription = data.receive_repair.repair_details.last().rd_description?.split(':')
+                    ?.get(1)
+                    ?: "..."
                 hasDetail = true
             }else{
                 hasDetail = false
@@ -107,6 +120,7 @@ fun DetailRepairScreen(rrid:String, userType:String, navController: NavControlle
             building_roomnum = data.building.building_room_number
             building_floor = data.building.building_floor.toString()
             rr_description = data.rr_description
+            requestStatus = data.request_status
             Log.d(TAG, "DetailRepairScreen: $data")
         }else{
             Log.d(TAG, "DetailRepairScreen: $data")
@@ -131,13 +145,35 @@ fun DetailRepairScreen(rrid:String, userType:String, navController: NavControlle
                     .background(Color(0xFFD0E6F8))
                     .padding(12.dp)
             ) {
-                Column(modifier = Modifier.fillMaxWidth()) {
-                    Box() {
-                        Text(text = "ดูรายละเอียด")
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    val typography = MaterialTheme.typography
+                    Column(modifier = Modifier.weight(2f)) {
+                        Spacer(modifier = Modifier.padding(12.dp))
+                        Text("${requestStatus}", style = typography.subtitle1.copy(color = Color.Blue))
+                        if(hasDetail){
+                            Text("${formatTimestamp(detailTimeStamp)}", style = typography.body2.copy(color = Color.DarkGray))
+                            Text("${detailDescription}", style = typography.body2.copy(color = Color.DarkGray))
+
+                        }
+                    }
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.Top)
+                            .clickable {
+                                navController.navigate(ScreenRoutes.statusDetail.passRrid(rrid))
+                            }
+                    ) {
+                        Text("ดูรายละเอียด")
                     }
                 }
+
             }
-            Spacer(modifier = Modifier.padding(24.dp))
+            Spacer(modifier = Modifier.padding(12.dp))
             Column(
                 modifier = Modifier
                     .fillMaxWidth()

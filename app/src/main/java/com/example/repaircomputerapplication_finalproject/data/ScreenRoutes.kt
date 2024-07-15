@@ -9,6 +9,8 @@ sealed class ScreenRoutes(val route:String){
         object LoginScreens : ScreenRoutes("Login")
         object Menu : ScreenRoutes("Menu")
 
+        object checkConnection : ScreenRoutes("CheckConnection")
+
         //--------------------------- Manage Screen
         object ManageMenu : ScreenRoutes("ManageMenu")
         object UserManageMenu : ScreenRoutes("UserManageMenu")
@@ -69,6 +71,12 @@ sealed class ScreenRoutes(val route:String){
                         return "add_detail_screen?rrid=$rrid&rd_id=$rd_id&isUpdate=$isUpdate"
                 }
         }
+
+        object statusDetail:ScreenRoutes("status_detail?rrid={rrid}"){
+                fun passRrid(rrid: String):String{
+                        return "status_detail?rrid=$rrid"
+                }
+        }
         //---------------------------DisplayAssignWork
         object AssignWork : ScreenRoutes("displayList_Assignwork")
         object TechnicianListBacklog : ScreenRoutes("techBacklogList?admin_id={admin_id}&rrid={rrid}"){
@@ -84,7 +92,6 @@ sealed class ScreenRoutes(val route:String){
         object ListRequestNav : ScreenRoutes("LISTREQUEST_NAV_GRAPH")
         object NotiNav:ScreenRoutes("NOTI_NAV_GRAPH")
         object RequestFormNav : ScreenRoutes("RR_FORM_NAV_GRAPH")
-
         object ManageMenuNav : ScreenRoutes("MANAGE_MENU_NAV_GRAPH")
         object UserManageMenuNav : ScreenRoutes("USER_MANAGE_MENU_GRAPH")
         object DataManageMenuNav : ScreenRoutes("DATA_MANAGE_MENU_GRAPH")

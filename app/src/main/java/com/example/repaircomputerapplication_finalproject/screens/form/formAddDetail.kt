@@ -35,6 +35,7 @@ fun formAddDetail(rrid: String, _rd_id: String, isUpdate: Boolean, navController
     val coroutineScope = rememberCoroutineScope()
     var departmentName by remember { mutableStateOf("") }
     var showDialog by remember { mutableStateOf(false) }
+    var validationError by remember { mutableStateOf<String?>(null) }
     val requestStatus = listOf(
         "กำลังส่งการแจ้งซ่อม",
         "กำลังดำเนินการ",
@@ -46,7 +47,7 @@ fun formAddDetail(rrid: String, _rd_id: String, isUpdate: Boolean, navController
     LaunchedEffect(key1 = true) {
         requestData = viewModel.fetchRequestForRepairData(rrid.toInt())
         if (isUpdate) {
-            repairDetail = requestData?.receive_repair!!.repair_details.lastOrNull()?.rd_description.toString()
+            repairDetail = requestData?.receive_repair!!.repair_details.lastOrNull()?.rd_description.toString().split(":")[1]
             selectedDamageLevel = damageLevels?.find { it.loed_id == requestData?.receive_repair!!.repair_details.lastOrNull()?.loed_id }?.loed_Name.orEmpty()
             Loed_ID = damageLevels?.find { it.loed_id == requestData?.receive_repair!!.repair_details.lastOrNull()?.loed_id }?.loed_id.toString()
             selectRequestText = requestData?.request_status.toString()
@@ -67,25 +68,29 @@ fun formAddDetail(rrid: String, _rd_id: String, isUpdate: Boolean, navController
             CustomAlertDialog(
                 onConfirm = {
                     coroutineScope.launch {
-                        if (isUpdate) {
-                            viewModel.UpdateDetail(
-                                _rd_id.toInt(),
-                                Loed_ID,
-                                repairDetail,
-                                selectRequestText
-                            )
-                            navController.navigateUp()
+                        if (repairDetail.isBlank() || selectedDamageLevel == "เลือกระดับความเสียหาย" || selectRequestText == "เลือกสถานะของการซ่อม") {
+                            validationError = "กรุณากรอกข้อมูลให้ครบถ้วน"
                         } else {
-                            viewModel.AddDetail(
-                                requestData?.receive_repair?.rrce_id.toString(),
-                                Loed_ID,
-                                repairDetail,
-                                selectRequestText
-                            )
-                            navController.navigateUp()
+                            if (isUpdate) {
+                                viewModel.UpdateDetail(
+                                    _rd_id.toInt(),
+                                    Loed_ID,
+                                    "${selectRequestText}:${repairDetail}",
+                                    selectRequestText
+                                )
+                                navController.navigateUp()
+                            } else {
+                                viewModel.AddDetail(
+                                    requestData?.receive_repair?.rrce_id.toString(),
+                                    Loed_ID,
+                                    "${selectRequestText}:${repairDetail}",
+                                    selectRequestText
+                                )
+                                navController.navigateUp()
+                            }
+                            showDialog = false
                         }
                     }
-                    showDialog = false
                 },
                 onDismiss = { showDialog = false }
             )
@@ -140,6 +145,9 @@ fun formAddDetail(rrid: String, _rd_id: String, isUpdate: Boolean, navController
                 singleLine = false,
                 maxLines = 4
             )
+            if (repairDetail.isBlank()) {
+                Text(text = "กรุณากรอกรายละเอียดการซ่อม", color = Color.Red, fontSize = 12.sp)
+            }
         }
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -179,6 +187,9 @@ fun formAddDetail(rrid: String, _rd_id: String, isUpdate: Boolean, navController
                     }
                 }
             }
+            if (selectedDamageLevel == "เลือกระดับความเสียหาย") {
+                Text(text = "กรุณาเลือกระดับความเสียหาย", color = Color.Red, fontSize = 12.sp)
+            }
         }
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -217,21 +228,24 @@ fun formAddDetail(rrid: String, _rd_id: String, isUpdate: Boolean, navController
                     }
                 }
             }
+            if (selectRequestText == "เลือกสถานะของการซ่อม") {
+                Text(text = "กรุณาเลือกสถานะของการซ่อม", color = Color.Red, fontSize = 12.sp)
+            }
         }
-
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        if (validationError != null) {
+            Text(text = validationError!!, color = Color.Red, fontSize = 12.sp)
+        }
+
         Button(
-            onClick = {
-                showDialog = true
-            },
+            onClick = { showDialog = true },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp)
-                .background(Color(0xFFCCFFCC), RoundedCornerShape(8.dp))
+                .height(50.dp)
         ) {
-            Text(text = "เพิ่มรายละเอียดการซ่อม", color = Color.Black, fontWeight = FontWeight.Bold)
+            Text("บันทึก")
         }
     }
 }

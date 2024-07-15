@@ -6,7 +6,7 @@ import android.util.Log
 import android.widget.Toast
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.repaircomputerapplication_finalproject.`api-service`.RetrofitInstance
+import com.example.repaircomputerapplication_finalproject.api_service.RetrofitInstance
 import com.example.repaircomputerapplication_finalproject.model.LevelOfDamageData
 import com.example.repaircomputerapplication_finalproject.model.RequestForRepairData
 import com.example.repaircomputerapplication_finalproject.model.addDetailRequest
@@ -31,7 +31,7 @@ class formAddDetailViewModel(application: Application):AndroidViewModel(applicat
     fun UpdateDetail(rd_id:Int,loed_id: String,rd_description: String,request_status:String){
         viewModelScope.launch {
             Log.d(TAG, "UpdateDetail: $rd_id $loed_id $rd_description $request_status")
-            val response = RetrofitInstance(getApplication()).apiService.updateDetail(
+            val response = RetrofitInstance.apiService.updateDetail(
                 rd_id,
                 updateDetailRequest(loed_id.toInt(),rd_description,request_status)
             )
@@ -45,7 +45,7 @@ class formAddDetailViewModel(application: Application):AndroidViewModel(applicat
     fun AddDetail(rrce_id:String,loed_id:String,rd_description:String,request_status: String){
         viewModelScope.launch {
             val response
-            = RetrofitInstance(getApplication()).apiService
+            = RetrofitInstance.apiService
                 .addDetail(addDetailRequest(
                     loed_id = loed_id.toInt(),
                     rrce_id = rrce_id.toInt(),
@@ -62,7 +62,7 @@ class formAddDetailViewModel(application: Application):AndroidViewModel(applicat
     fun getDepartmentName(departId:Int):String{
         var departName:String = ""
         viewModelScope.launch {
-            val response = RetrofitInstance(getApplication()).apiService.getDepartmentById(departId)
+            val response = RetrofitInstance.apiService.getDepartmentById(departId)
             if(response.isSuccessful && response.body() != null){
                 departName = response.body()!!.departmentName
             }
@@ -70,7 +70,7 @@ class formAddDetailViewModel(application: Application):AndroidViewModel(applicat
         return departName
     }
     suspend fun fetchRequestForRepairData(rrid:Int):detailRepairData{
-        val response = RetrofitInstance(getApplication()).apiService.getRequestDetail(rrid)
+        val response = RetrofitInstance.apiService.getRequestDetail(rrid)
         if(response.isSuccessful && response.body() != null){
             return response.body()!!
         }else{
@@ -78,7 +78,7 @@ class formAddDetailViewModel(application: Application):AndroidViewModel(applicat
         }
     }
     suspend fun fetchLevelOfDamage():List<LevelOfDamageData>?{
-        val response = RetrofitInstance(getApplication()).apiService.getLevelOfDamages()
+        val response = RetrofitInstance.apiService.getLevelOfDamages()
         if(response.isSuccessful && response.body() != null){
             return response.body()
         }else{

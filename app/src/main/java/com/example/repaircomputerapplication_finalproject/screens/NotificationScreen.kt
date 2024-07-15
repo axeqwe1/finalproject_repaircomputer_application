@@ -24,18 +24,24 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.datastore.preferences.core.stringPreferencesKey
 import com.example.repaircomputerapplication_finalproject.viewModel.NotificationViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.repaircomputerapplication_finalproject.`api-service`.ConnectionChecker
+import com.example.repaircomputerapplication_finalproject.viewModel.ContextDataStore.dataStore
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 
 @Composable
 fun NotificationScreen(viewModel: NotificationViewModel = viewModel()){
     val vmodel = viewModel
     val notiList = vmodel.notiList.collectAsState().value ?: emptyList()
     var isLoading by remember { mutableStateOf(true) }
-    LaunchedEffect(key1 = true) {
-        delay(2000) // Delay for 3 seconds
-        isLoading = false
+    LaunchedEffect(Unit) {
+        if(ConnectionChecker.checkConnection()){
+            isLoading = false
+        }
     }
     if(isLoading){
         LoadingScreen()

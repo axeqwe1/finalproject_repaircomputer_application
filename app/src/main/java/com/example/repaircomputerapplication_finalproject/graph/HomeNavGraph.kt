@@ -10,6 +10,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import com.example.repaircomputerapplication_finalproject.component.MenuScreen
 import com.example.repaircomputerapplication_finalproject.data.ScreenRoutes
+import com.example.repaircomputerapplication_finalproject.screens.ConnectionCheckingScreen
 import com.example.repaircomputerapplication_finalproject.screens.HomeScreen
 import com.example.repaircomputerapplication_finalproject.screens.LoginScreen
 import com.example.repaircomputerapplication_finalproject.screens.NotificationScreen
@@ -24,6 +25,10 @@ fun NavGraphBuilder.homeGraph(navController: NavHostController){
         composable(route = ScreenRoutes.Home.route)
         {
             HomeScreen(navController)
+        }
+        composable(route = ScreenRoutes.checkConnection.route)
+        {
+            ConnectionCheckingScreen(navController)
         }
     }
 }
