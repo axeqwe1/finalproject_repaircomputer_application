@@ -8,14 +8,12 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -24,105 +22,195 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import coil.compose.AsyncImage
-import java.util.Objects
 import com.example.repaircomputerapplication_finalproject.viewModel.RequestForRepairViewModel.formRequestViewModel
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
+import java.util.Objects
 
 @Composable
 fun ImageUploadScreen(viewModel: formRequestViewModel) {
     val context = LocalContext.current
     val activity = context as? Activity
-    val file = activity!!.createImageFile()
-    val uri = FileProvider.getUriForFile(
+
+    var captureImageUri1 by remember { mutableStateOf<Uri>(Uri.EMPTY) }
+    var captureImageUri2 by remember { mutableStateOf<Uri>(Uri.EMPTY) }
+    var captureImageUri3 by remember { mutableStateOf<Uri>(Uri.EMPTY) }
+
+    val imageFile1 = activity!!.createImageFile()
+    val uri1 = FileProvider.getUriForFile(
         Objects.requireNonNull(context),
-        activity.packageName + ".provider",file
+        activity.packageName + ".provider", imageFile1
     )
 
-    val uploadedFileName by viewModel.uploadedFileName.collectAsState()
+    val imageFile2 = activity.createImageFile()
+    val uri2 = FileProvider.getUriForFile(
+        Objects.requireNonNull(context),
+        activity.packageName + ".provider", imageFile2
+    )
 
-    var captureImageUri by remember {
-        mutableStateOf<Uri>(Uri.EMPTY)
+    val imageFile3 = activity.createImageFile()
+    val uri3 = FileProvider.getUriForFile(
+        Objects.requireNonNull(context),
+        activity.packageName + ".provider", imageFile3
+    )
+
+    val cameraLauncher1 = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { success ->
+        if (success) {
+            captureImageUri1 = uri1
+            viewModel.saveImageState(captureImageUri1)
+        }
     }
 
-    val cameraLauncher = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { success ->
+    val cameraLauncher2 = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { success ->
         if (success) {
-            // ถ้าผู้ใช้ถ่ายภาพและยืนยัน, ให้อัปเดต URI ที่แสดง
-            captureImageUri = uri
-            viewModel.saveImageState(captureImageUri)
-        } else {
-            // ถ้าผู้ใช้ยกเลิกการถ่ายภาพ, ควรรีเซ็ต URI หรือจัดการอื่นๆ ตามที่ต้องการ
-            captureImageUri = Uri.EMPTY
-            viewModel.saveImageState(captureImageUri)
+            captureImageUri2 = uri2
+            viewModel.saveImageState(captureImageUri2)
+        }
+    }
+
+    val cameraLauncher3 = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { success ->
+        if (success) {
+            captureImageUri3 = uri3
+            viewModel.saveImageState(captureImageUri3)
+        }
+    }
+
+    val galleryLauncher1 = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+        if (uri != null) {
+            captureImageUri1 = uri
+            viewModel.saveImageState(captureImageUri1)
+        }
+    }
+
+    val galleryLauncher2 = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+        if (uri != null) {
+            captureImageUri2 = uri
+            viewModel.saveImageState(captureImageUri2)
+        }
+    }
+
+    val galleryLauncher3 = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+        if (uri != null) {
+            captureImageUri3 = uri
+            viewModel.saveImageState(captureImageUri3)
         }
     }
 
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
-    ){
-        if(it){
-            Toast.makeText(activity,"Permission Granted",Toast.LENGTH_SHORT).show()
-            cameraLauncher.launch(uri)
-        }else{
-            Toast.makeText(activity,"Permission Denied",Toast.LENGTH_SHORT).show()
+    ) { isGranted ->
+        if (isGranted) {
+            Toast.makeText(activity, "Permission Granted", Toast.LENGTH_SHORT).show()
+        } else {
+            Toast.makeText(activity, "Permission Denied", Toast.LENGTH_SHORT).show()
         }
     }
 
     Column(
         Modifier
-            .padding(3.dp)
-            .fillMaxWidth(),
+            .padding(16.dp)
+            .fillMaxSize()
+            .background(Color(0xFFB3E5FC)),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Bottom
-    ){
-        Button(onClick = {
-            val permissionCheckResult = ContextCompat.checkSelfPermission(context, android.Manifest.permission.CAMERA)
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        UploadImageSection(
+            "รูปรหัสอุปกรณ์",
+            captureImageUri1,
+            { cameraLauncher1.launch(uri1) },
+            { galleryLauncher1.launch("image/*") },
+            "Capture",
+            "Select"
+        )
 
-            if (permissionCheckResult == PackageManager.PERMISSION_GRANTED) {
-                cameraLauncher.launch(uri)  // เรียกใช้กล้องเมื่อมีสิทธิ์อยู่แล้ว
-            } else {
-                permissionLauncher.launch(android.Manifest.permission.CAMERA)  // ขอสิทธิ์กล้องถ้ายังไม่ได้รับ
-            }
-        }) {
-            Text(text = "Capture Image")
-        }
+        UploadImageSection(
+            "รูปอาการเสีย",
+            captureImageUri2,
+            { cameraLauncher2.launch(uri2) },
+            { galleryLauncher2.launch("image/*") },
+            "Capture",
+            "Select"
+        )
 
-        Spacer(modifier = Modifier.height(16.dp))
-        if(captureImageUri.path?.isNotEmpty() == true)
-        {
-            viewModel.saveImageState(captureImageUri)
-            Log.d(TAG, "ImageUploadScreen:${captureImageUri!!} ")
-            AsyncImage(
-                model = captureImageUri,
-                contentDescription = null,
-                modifier = Modifier.padding(16.dp)
-            )
-        }else
-        {
-            Box(
-                modifier = Modifier
-                    .size(240.dp)
-                    .background(Color.Gray),
-                contentAlignment = Alignment.Center
+        UploadImageSection(
+            "รูปอุปกรณ์",
+            captureImageUri3,
+            { cameraLauncher3.launch(uri3) },
+            { galleryLauncher3.launch("image/*") },
+            "Capture",
+            "Select"
+        )
+    }
+}
+
+@Composable
+fun UploadImageSection(
+    title: String,
+    captureImageUri: Uri,
+    onCaptureClick: () -> Unit,
+    onSelectClick: () -> Unit,
+    captureButtonText: String,
+    selectButtonText: String
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(8.dp),
+        elevation = CardDefaults.cardElevation(4.dp)
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth()
+        ) {
+            Text(text = title, modifier = Modifier.align(Alignment.CenterHorizontally))
+            Spacer(modifier = Modifier.height(8.dp))
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.align(Alignment.CenterHorizontally)
             ) {
-                Text("รูปภาพที่อัพโหลด")
+                Button(onClick = onCaptureClick) {
+                    Text(text = captureButtonText)
+                }
+
+                Button(onClick = onSelectClick) {
+                    Text(text = selectButtonText)
+                }
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+            if (captureImageUri.path?.isNotEmpty() == true) {
+                AsyncImage(
+                    model = captureImageUri,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(240.dp)
+                        .background(Color.Gray)
+                        .padding(8.dp)
+                )
+            } else {
+                Box(
+                    modifier = Modifier
+                        .size(240.dp)
+                        .background(Color.Gray),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("รูปภาพที่อัพโหลด")
+                }
             }
         }
     }
 }
 
-fun Activity.createImageFile():File{
-
+fun Activity.createImageFile(): File {
     val timeStamp = SimpleDateFormat("yyyy_MM_dd_HH:mm:ss").format(Date())
     val imageFileName = "JPEG_" + timeStamp + "_"
-    val image =File.createTempFile(
+    val image = File.createTempFile(
         imageFileName,
         ".jpg",
         externalCacheDir
     )
     return image
 }
-
-
-
