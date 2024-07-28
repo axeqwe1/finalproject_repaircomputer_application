@@ -2,8 +2,10 @@ package com.example.repaircomputerapplication_finalproject.screens
 
 import android.annotation.SuppressLint
 import android.content.ContentValues.TAG
+import android.os.Build
 import android.util.Log
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -26,6 +28,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -46,20 +50,29 @@ import com.example.repaircomputerapplication_finalproject.graph.MenuNavGraph
 import com.example.repaircomputerapplication_finalproject.viewModel.HomeViewModel
 import com.example.repaircomputerapplication_finalproject.viewModel.LogoutResult
 import com.example.repaircomputerapplication_finalproject.viewModel.ContextDataStore.dataStore
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.map
 
+@RequiresApi(Build.VERSION_CODES.O)
 @SuppressLint("SuspiciousIndentation")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(nav: NavController, homeViewModel: HomeViewModel = viewModel()) {
-    val navController = rememberNavController()
+fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel = viewModel()) {
+    val navHostController = rememberNavController()
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val logoutResult by homeViewModel.logoutResult.collectAsState(initial = null)
     val context = LocalContext.current
+    var role = remember { mutableStateOf("") }
 
+    LaunchedEffect(context) {
+        role.value = context.dataStore.data.map { preferences ->
+            preferences[stringPreferencesKey("role")] ?: ""
+        }.first()
+    }
     LaunchedEffect(logoutResult) {
         when (logoutResult) {
-            is LogoutResult.IsLogout -> nav.navigate(ScreenRoutes.AuthNav.route) {
+            is LogoutResult.IsLogout -> navController.navigate(ScreenRoutes.AuthNav.route) {
                 popUpTo(ScreenRoutes.HomeNav.route) { inclusive = true }
             }
             is LogoutResult.Failure -> Toast.makeText(context, "Login failed: ${(logoutResult as LogoutResult.Failure).error}", Toast.LENGTH_LONG).show()
@@ -76,12 +89,12 @@ fun HomeScreen(nav: NavController, homeViewModel: HomeViewModel = viewModel()) {
                 .fillMaxSize()
                 .nestedScroll(scrollBehavior.nestedScrollConnection),
             topBar = {
-                TopAppBarDynamic(navController, scrollBehavior, homeViewModel)
+                TopAppBarDynamic(navHostController, scrollBehavior, homeViewModel)
             },
             bottomBar = {
-                val navBackStackEntry by navController.currentBackStackEntryAsState()
+                val navBackStackEntry by navHostController.currentBackStackEntryAsState()
                 val currentDestination = navBackStackEntry?.destination
-                val shouldShowBottomBar = BottomNavigationBarList().bottomNavigation().any { it.route == currentDestination?.route }
+                val shouldShowBottomBar = BottomNavigationBarList().bottomNavigation(role.value).any { it.route == currentDestination?.route }
                 Box(modifier = Modifier.fillMaxWidth()) {
                     AnimatedVisibility(
                         visible = shouldShowBottomBar,
@@ -92,7 +105,7 @@ fun HomeScreen(nav: NavController, homeViewModel: HomeViewModel = viewModel()) {
                             containerColor = Color.Transparent,
                             contentColor = Color.Transparent,
                         ) {}
-                        BottomNavigationBar(navController)
+                        BottomNavigationBar(navHostController)
                     }
                 }
             }
@@ -106,7 +119,7 @@ fun HomeScreen(nav: NavController, homeViewModel: HomeViewModel = viewModel()) {
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 // ส่วนของเนื้อหาหน้า Home
-                MenuNavGraph(navController)
+                MenuNavGraph(navHostController)
 
                 // Put UI Here
             }

@@ -11,7 +11,7 @@ object RetrofitInstance {
         .build()
 
     private val retrofit: Retrofit = Retrofit.Builder()
-        .baseUrl("http://192.168.1.100:8000/") // URL ของ Server ของคุณ
+        .baseUrl("http://192.168.1.33:8000/") // URL ของ Server ของคุณ
         .client(client)
         .addConverterFactory(GsonConverterFactory.create())
         .build()

@@ -2,47 +2,31 @@ package com.example.repaircomputerapplication_finalproject.viewModel.DisplayView
 
 import android.app.Application
 import android.widget.Toast
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import coil.compose.rememberAsyncImagePainter
-import coil.compose.rememberImagePainter
 import com.example.repaircomputerapplication_finalproject.api_service.RetrofitInstance
-import com.example.repaircomputerapplication_finalproject.model.BuildingData
-import com.example.repaircomputerapplication_finalproject.model.EmployeeData
-import com.example.repaircomputerapplication_finalproject.model.RequestForRepairData
-import com.example.repaircomputerapplication_finalproject.model.RequestResponse
 import com.example.repaircomputerapplication_finalproject.model.detailRepairData
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import okhttp3.Dispatcher
 import okhttp3.ResponseBody
 
-class RepairDetailViewModel(application: Application) : AndroidViewModel(application){
+class RepairDetailViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _detailData = MutableStateFlow<detailRepairData?>(null)
     val detailData = _detailData.asStateFlow()
 
-    private val _imagePainter = MutableStateFlow<ByteArray?>(null)
-    val imagePainter = _imagePainter.asStateFlow()
+    private val _imagePainters = MutableStateFlow<List<ByteArray>>(emptyList())
+    val imagePainters = _imagePainters.asStateFlow()
 
-    fun LoadData(dataId:String){
+    fun loadData(dataId: String) {
         viewModelScope.launch {
             _detailData.value = fetchRepairDetail(dataId)
-        }
-    }
-   suspend fun fetchRepairDetail(dataId:String) : detailRepairData?{
-        val response = RetrofitInstance.apiService.getRequestDetail(dataId.toInt())
-        if(response.isSuccessful){
-            return response.body()
-        }else{
-            Toast.makeText(getApplication(),"QueryData  Fail",Toast.LENGTH_SHORT).show()
-            throw Exception("Fail to Fetch RepairDetail Data")
+            _detailData.value?.rr_picture?.let { imageNames ->
+                fetchImages(imageNames)
+            }
         }
     }
     suspend fun getDepartmentName(dep_id:Int) : String?{
@@ -54,15 +38,28 @@ class RepairDetailViewModel(application: Application) : AndroidViewModel(applica
             throw Exception("Fail to Fetch department Data")
         }
     }
-    fun fetchImage(imageName: String) {
-        viewModelScope.launch {
-            val response: ResponseBody = RetrofitInstance.apiService.getImage(imageName)
-            val inputStream = response.byteStream()
-            val data = inputStream.readBytes()
-            inputStream.close()
-            withContext(Dispatchers.Main) {
-                _imagePainter.value = data
-            }
+    private suspend fun fetchRepairDetail(dataId: String): detailRepairData? {
+        val response = RetrofitInstance.apiService.getRequestDetail(dataId.toInt())
+        return if (response.isSuccessful) {
+            response.body()
+        } else {
+            Toast.makeText(getApplication(), "QueryData  Fail", Toast.LENGTH_SHORT).show()
+            throw Exception("Fail to Fetch RepairDetail Data")
         }
+    }
+
+    private suspend fun fetchImages(imageNames: String) {
+        val imageList = imageNames.split(",").map { imageName ->
+            fetchImage(imageName)
+        }
+        _imagePainters.value = imageList
+    }
+
+    private suspend fun fetchImage(imageName: String): ByteArray {
+        val response: ResponseBody = RetrofitInstance.apiService.getImage(imageName)
+        val inputStream = response.byteStream()
+        val data = inputStream.readBytes()
+        inputStream.close()
+        return data
     }
 }

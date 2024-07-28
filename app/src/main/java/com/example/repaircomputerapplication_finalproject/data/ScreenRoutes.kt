@@ -56,7 +56,7 @@ sealed class ScreenRoutes(val route:String){
 
         //---------------------------Report
         object Report : ScreenRoutes("report_screen")
-
+        object Dashboard : ScreenRoutes("dashboard_screen")
 
 
 
@@ -97,4 +97,5 @@ sealed class ScreenRoutes(val route:String){
         object DataManageMenuNav : ScreenRoutes("DATA_MANAGE_MENU_GRAPH")
         object DisplayNav:ScreenRoutes("DISPLAY_DETAIL_GRAPH")
         object AssignWorkNav:ScreenRoutes("ASSIGN_WORK_GRAPH")
+        object DashboardNav:ScreenRoutes("DASHBOARD_GRAPH")
 }

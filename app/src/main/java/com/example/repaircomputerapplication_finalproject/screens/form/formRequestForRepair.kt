@@ -35,57 +35,58 @@ import kotlinx.coroutines.flow.map
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @Composable
-fun formRequestForRepair(navController: NavController,formRequestViewModel: formRequestViewModel = viewModel()) {
+fun formRequestForRepair(navController: NavController, formRequestViewModel: formRequestViewModel = viewModel()) {
     val vmodel = formRequestViewModel
     val context = LocalContext.current
     var showLoadSuccess by remember { mutableStateOf(false) }
     var deviceId by remember { mutableStateOf("") }
-    var empId:Int? by remember{ mutableStateOf(null) }
+    var empId: Int? by remember { mutableStateOf(null) }
     var repairDetails by remember { mutableStateOf("") }
     // ตัวแปรสำหรับ DropdownMenu
     val equipmentList = vmodel.equipmentResult.collectAsState().value
     val buildingList = vmodel.buildingResult.collectAsState().value
     val employeeList = vmodel.employeeList.collectAsState().value
-    val imageName = vmodel.uploadedFileName.collectAsState().value
-    var selectedBuilding by remember { mutableStateOf("กรูณาเลือกข้อมูล") }
+    val imageName1 = vmodel.uploadedFileName1.collectAsState().value
+    val imageName2 = vmodel.uploadedFileName2.collectAsState().value
+    val imageName3 = vmodel.uploadedFileName3.collectAsState().value
+    var selectedBuilding by remember { mutableStateOf("กรุณาเลือกข้อมูล") }
     var buildingId by remember { mutableStateOf(0) }
     var isExpand by remember { mutableStateOf(false) }
-    var imageUri = vmodel.image.collectAsState().value
+    val imageUri1 = vmodel.image1.collectAsState().value
+    val imageUri2 = vmodel.image2.collectAsState().value
+    val imageUri3 = vmodel.image3.collectAsState().value
     var showDialog by remember { mutableStateOf(false) }
     var role by remember { mutableStateOf("") }
-    var emp_Fnm by remember{ mutableStateOf("") }
+    var emp_Fnm by remember { mutableStateOf("") }
     var emp_Lnm by remember { mutableStateOf("") }
-    var eq_id:Int? by remember{ mutableStateOf(null) }
+    var eq_id: Int? by remember { mutableStateOf(null) }
     var isLoading by remember { mutableStateOf(true) }
     LaunchedEffect(Unit) {
-        if(ConnectionChecker.checkConnection()){
+        if (ConnectionChecker.checkConnection()) {
             isLoading = false
         }
     }
-    LaunchedEffect(key1 = true){
-        val roleData = context.dataStore.data.map {
-            items ->
+    LaunchedEffect(key1 = true) {
+        val roleData = context.dataStore.data.map { items ->
             items[stringPreferencesKey("role")]
         }.first()
         role = roleData ?: ""
 
-        val EmpId = context.dataStore.data.map {
-            items ->
+        val EmpId = context.dataStore.data.map { items ->
             items[stringPreferencesKey("userId")]
         }.first()
         empId = EmpId?.toInt()
         Log.d(TAG, "formRequestForRepair: $role")
     }
-    fun checkEmployeeData(firstName:String,lastName:String):Boolean{
+
+    fun checkEmployeeData(firstName: String, lastName: String): Boolean {
         var isFound = false
-        if(firstName != "" && lastName != ""){
+        if (firstName != "" && lastName != "") {
             employeeList?.forEach { items ->
-                if(items.firstname == firstName && items.lastname == lastName){
+                if (items.firstname == firstName && items.lastname == lastName) {
                     isFound = true
                     empId = items.emp_id
-                }
-                else
-                {
+                } else {
                     isFound = false
                     empId = null
                 }
@@ -93,7 +94,8 @@ fun formRequestForRepair(navController: NavController,formRequestViewModel: form
         }
         return isFound
     }
-    fun checkEquipmentId(deviceId:String):Boolean {
+
+    fun checkEquipmentId(deviceId: String): Boolean {
         var isFound = false
         deviceId.toIntOrNull()?.let { id ->
             equipmentList?.forEach { items ->
@@ -104,20 +106,20 @@ fun formRequestForRepair(navController: NavController,formRequestViewModel: form
             }
         }
         return isFound
-
     }
-    fun checkBuildingId(buildingId:Int):Boolean{
+
+    fun checkBuildingId(buildingId: Int): Boolean {
         var isFound = false
-        buildingList?.forEach {
-            items ->
-            if(items.building_id == buildingId){
+        buildingList?.forEach { items ->
+            if (items.building_id == buildingId) {
                 isFound = true
             }
         }
         return isFound
     }
+
     // ... (ตัวแปรสำหรับเมนูดรอปดาวน์และรูปภาพ)
-    if(showLoadSuccess){
+    if (showLoadSuccess) {
         val sheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Expanded)
         val scope = rememberCoroutineScope()
         ModalBottomSheetLayout(
@@ -126,183 +128,176 @@ fun formRequestForRepair(navController: NavController,formRequestViewModel: form
                 LoadSuccessScreen(onContinueClicked = { /* Handle continue action */ })
             },
         ) {}
-            LaunchedEffect(key1 = true){
-                delay(5000)
-                navController.navigate(ScreenRoutes.MenuNav.route){
-                    popUpTo(ScreenRoutes.FormRequestForRepair.route)
-                }
-                sheetState.hide()
+        LaunchedEffect(key1 = true) {
+            delay(5000)
+            navController.navigate(ScreenRoutes.MenuNav.route) {
+                popUpTo(ScreenRoutes.FormRequestForRepair.route)
             }
-
-    }else{
-        if(isLoading){
+            sheetState.hide()
+        }
+    } else {
+        if (isLoading) {
             LoadingScreen()
-        }else{
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp)
-                .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            if(role == "Technician"){
+        } else {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp)
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                if (role == "Technician") {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                    ) {
+                        OutlinedTextField(
+                            value = emp_Fnm,
+                            onValueChange = { emp_Fnm = it },
+                            label = { Text("ชื่อผู้แจ้ง") },
+                            modifier = Modifier
+                                .weight(1f)
+
+                        )
+                        Spacer(modifier = Modifier.padding(3.dp))
+                        OutlinedTextField(
+                            value = emp_Lnm,
+                            onValueChange = { emp_Lnm = it },
+                            label = { Text("นามสกุลผู้แจ้ง") },
+                            modifier = Modifier
+                                .weight(1f)
+
+                        )
+                    }
+                }
+                OutlinedTextField(
+                    value = deviceId,
+                    onValueChange = { deviceId = it },
+                    label = { Text("รหัสอุปกรณ์") }
+                )
+                // TextArea สำหรับรายละเอียด
+                OutlinedTextField(
+                    value = repairDetails,
+                    onValueChange = { repairDetails = it },
+                    label = { Text("รายละเอียดการซ่อม") },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(120.dp) // ปรับขนาดตามต้องการ
+                )
+                // dropdown
                 Row(
                     modifier = Modifier
-                        .fillMaxWidth()
+                        .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
                 ) {
-                    OutlinedTextField(
-                        value = emp_Fnm,
-                        onValueChange = { emp_Fnm = it },
-                        label = { Text("ชื่อผู้แจ้ง") },
-                        modifier = Modifier
-                            .weight(1f)
-
-                    )
-                    Spacer(modifier = Modifier.padding(3.dp))
-                    OutlinedTextField(
-                        value = emp_Lnm,
-                        onValueChange = { emp_Lnm = it },
-                        label = { Text("นามสกุลผู้แจ้ง") },
-                        modifier = Modifier
-                            .weight(1f)
-
-                    )
-                }
-            }
-            OutlinedTextField(
-                value = deviceId,
-                onValueChange = { deviceId = it },
-                label = { Text("รหัสอุปกรณ์") }
-            )
-            // TextArea สำหรับรายละเอียด
-            OutlinedTextField(
-                value = repairDetails,
-                onValueChange = { repairDetails = it },
-                label = { Text("รายละเอียดการซ่อม") },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(120.dp) // ปรับขนาดตามต้องการ
-            )
-            // dropdown
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-            ) {
-                ExposedDropdownMenuBox(expanded = isExpand, onExpandedChange = {isExpand = it})
-                {
-                    OutlinedTextField(
-                        value = selectedBuilding,
-                        onValueChange = {},
-                        readOnly = true,
-                        label = { Text("เลือกตึก/อาคาร") },
-                        trailingIcon = {
-                            ExposedDropdownMenuDefaults.TrailingIcon(expanded = isExpand)
-                        },
-                        colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
-                        modifier = Modifier
-                            .menuAnchor()
-                            .fillMaxWidth()
-                    )
-                    ExposedDropdownMenu(
-                        expanded = isExpand,
-                        onDismissRequest = {
-                            isExpand = false
-                        }
-                    )
-                    {
-                        buildingList?.forEach{
-                                item ->
-                            DropdownMenuItem(
-                                text = { Text(text = "ชื่อตึก:${item.building_name} เลขห้อง:${item.building_room_number} ชั้นตึก:${item.building_floor}") },
-                                onClick = {
-                                    buildingId = item.building_id ?: 0
-                                    selectedBuilding = "ชื่อตึก:${item.building_name} เลขห้อง:${item.building_room_number} ชั้นตึก:${item.building_floor}"
-                                    isExpand = false
-                                }
-                            )
-                        }
-                    }
-                }
-            }
-            Box(
-                modifier = Modifier.fillMaxWidth(),
-                contentAlignment = Alignment.Center
-            ){
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .fillMaxHeight(),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ){
-                    ImageUploadScreen(formRequestViewModel)
-                }
-            }
-            Button(
-                onClick = {
-                    if(role == "Technician"){
-                        if (checkEmployeeData(emp_Fnm,emp_Lnm) &&
-                            checkEquipmentId(deviceId) &&
-                            checkBuildingId(buildingId) &&
-                            repairDetails.isNotBlank() &&
-                            imageUri?.path?.isNotEmpty() == true
+                    ExposedDropdownMenuBox(expanded = isExpand, onExpandedChange = { isExpand = it }) {
+                        OutlinedTextField(
+                            value = selectedBuilding,
+                            onValueChange = {},
+                            readOnly = true,
+                            label = { Text("เลือกตึก/อาคาร") },
+                            trailingIcon = {
+                                ExposedDropdownMenuDefaults.TrailingIcon(expanded = isExpand)
+                            },
+                            colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
+                            modifier = Modifier
+                                .menuAnchor()
+                                .fillMaxWidth()
+                        )
+                        ExposedDropdownMenu(
+                            expanded = isExpand,
+                            onDismissRequest = {
+                                isExpand = false
+                            }
                         ) {
-                            showDialog = false  // ปิดใช้งาน Dialog หากข้อมูลครบ
-                            vmodel.uploadImage(imageUri)
-                            Log.d(TAG, "formRequestForRepair: $imageName")
-                            vmodel.SendRequest(repairDetails,vmodel.getFileName() ,empId ?:0,buildingId,eq_id ?: 0)
-//                            navController.navigate(ScreenRoutes.MenuNav.route){
-//                                popUpTo(ScreenRoutes.FormRequestForRepair.route)
-//                            }
-                            showLoadSuccess = true
-                        } else {
-                            // โค้ดสำหรับการดำเนินการถัดไปหากข้อมูลครบถ้วน
-                            showDialog = true
-                            Log.d(TAG, "formRequestForRepair: ${imageUri?.path}")
-                        }
-                    }else{
-                        if (checkEquipmentId(deviceId) && checkBuildingId(buildingId) && repairDetails.isNotBlank()) {
-                            showDialog = false  // เปิดใช้งาน Dialog หากข้อมูลไม่ครบ
-                            vmodel.uploadImage(imageUri!!)
-                            vmodel.SendRequest(repairDetails,vmodel.getFileName() ,empId ?:0,buildingId,eq_id ?: 0)
-                            Log.d(TAG, "formRequestForRepair: $empId")
-                            showLoadSuccess = true
-                        } else {
-                            // โค้ดสำหรับการดำเนินการถัดไปหากข้อมูลครบถ้วน
-                            showDialog = true
+                            buildingList?.forEach { item ->
+                                DropdownMenuItem(
+                                    text = { Text(text = "ชื่อตึก:${item.building_name} เลขห้อง:${item.building_room_number} ชั้นตึก:${item.building_floor}") },
+                                    onClick = {
+                                        buildingId = item.building_id ?: 0
+                                        selectedBuilding = "ชื่อตึก:${item.building_name} เลขห้อง:${item.building_room_number} ชั้นตึก:${item.building_floor}"
+                                        isExpand = false
+                                    }
+                                )
+                            }
                         }
                     }
                 }
-            ) {
-                Text("Submit")
+                Box(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .fillMaxHeight(),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        ImageUploadScreen(formRequestViewModel)
+                    }
+                }
+                Button(
+                    onClick = {
+                        if (role == "Technician") {
+                            if (checkEmployeeData(emp_Fnm, emp_Lnm) &&
+                                checkEquipmentId(deviceId) &&
+                                checkBuildingId(buildingId) &&
+                                repairDetails.isNotBlank() &&
+                                imageUri1?.path?.isNotEmpty() == true &&
+                                imageUri2?.path?.isNotEmpty() == true &&
+                                imageUri3?.path?.isNotEmpty() == true
+                            ) {
+                                showDialog = false  // ปิดใช้งาน Dialog หากข้อมูลครบ
+                                vmodel.uploadImage(imageUri1, 1)
+                                vmodel.uploadImage(imageUri2, 2)
+                                vmodel.uploadImage(imageUri3, 3)
+                                Log.d(TAG, "formRequestForRepair: $imageName1, $imageName2, $imageName3")
+                                vmodel.sendRequest(repairDetails, empId ?: 0, buildingId, eq_id ?: 0)
+                                showLoadSuccess = true
+                            } else {
+                                // โค้ดสำหรับการดำเนินการถัดไปหากข้อมูลครบถ้วน
+                                showDialog = true
+                                Log.d(TAG, "formRequestForRepair: ${imageUri1?.path}, ${imageUri2?.path}, ${imageUri3?.path}")
+                            }
+                        } else {
+                            if (checkEquipmentId(deviceId) && checkBuildingId(buildingId) && repairDetails.isNotBlank()) {
+                                showDialog = false  // เปิดใช้งาน Dialog หากข้อมูลไม่ครบ
+                                vmodel.uploadImage(imageUri1!!, 1)
+                                vmodel.uploadImage(imageUri2!!, 2)
+                                vmodel.uploadImage(imageUri3!!, 3)
+                                vmodel.sendRequest(repairDetails, empId ?: 0, buildingId, eq_id ?: 0)
+                                Log.d(TAG, "formRequestForRepair: $empId")
+                                showLoadSuccess = true
+                            } else {
+                                // โค้ดสำหรับการดำเนินการถัดไปหากข้อมูลครบถ้วน
+                                showDialog = true
+                            }
+                        }
+                    }
+                ) {
+                    Text("Submit")
+                }
             }
-        }
         }
     }
 
     if (showDialog) {
-        var alertMessage:String by remember{ mutableStateOf("") }
-        if(role == "Technician"){
-            if(deviceId == "" ||
-                selectedBuilding == "กรูณาเลือกข้อมูล" ||
+        var alertMessage: String by remember { mutableStateOf("") }
+        if (role == "Technician") {
+            if (deviceId == "" ||
+                selectedBuilding == "กรุณาเลือกข้อมูล" ||
                 repairDetails == ""
-            ){
+            ) {
                 alertMessage = "กรุณากรอกข้อมูลให้ครบ"
-            }
-            else if(!checkEmployeeData(emp_Fnm,emp_Lnm)){
+            } else if (!checkEmployeeData(emp_Fnm, emp_Lnm)) {
                 alertMessage = "ไม่พบข้อมูลผู้ใช้งาน"
-            }
-            else if(!checkEquipmentId(deviceId)){
+            } else if (!checkEquipmentId(deviceId)) {
                 alertMessage = "ไม่พบข้อมูลอุปกรณ์"
-            }
-            else if (!checkBuildingId(buildingId))
-            {
+            } else if (!checkBuildingId(buildingId)) {
                 alertMessage = "ไม่พบข้อมูลตึกอาคาร"
-            }
-            else if(imageUri?.path == null)
-            {
+            } else if (imageUri1?.path == null || imageUri2?.path == null || imageUri3?.path == null) {
                 alertMessage = "กรุณาใส่รูปภาพ"
-            }else{
+            } else {
                 alertMessage = ""
             }
         }

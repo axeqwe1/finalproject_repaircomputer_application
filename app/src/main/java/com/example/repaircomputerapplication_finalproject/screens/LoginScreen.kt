@@ -29,6 +29,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.repaircomputerapplication_finalproject.data.ScreenRoutes
@@ -50,17 +51,26 @@ fun LoginScreen (navController: NavController,loginViewModel: AuthViewModel = vi
     val context = LocalContext.current
     val isLoading = remember { mutableStateOf(true) }
     var isLogin = remember { mutableStateOf(false) }
-
+    var role = remember { mutableStateOf("") }
 
     // UI reacts to state changes
     LaunchedEffect(loginResult) {
         isLogin.value = context.dataStore.data.map { preferences ->
             preferences[booleanPreferencesKey("isLogin")] ?: false
         }.first() // ดึงค่า isLogin และรอจนกว่าจะได้ผลลัพธ์
+        role.value = context.dataStore.data.map { preferences ->
+            preferences[stringPreferencesKey("role")] ?: ""
+        }.first()
         if (isLogin.value) {
             isLoading.value = false
-            navController.navigate(ScreenRoutes.HomeNav.route) {
-                popUpTo(ScreenRoutes.AuthNav.route) { inclusive = true }
+            if(role.value == "Chief"){
+                navController.navigate(ScreenRoutes.DashboardNav.route) {
+                    popUpTo(ScreenRoutes.AuthNav.route) { inclusive = true }
+                }
+            }else{
+                navController.navigate(ScreenRoutes.HomeNav.route) {
+                    popUpTo(ScreenRoutes.AuthNav.route) { inclusive = true }
+                }
             }
         }
         isLoading.value = false

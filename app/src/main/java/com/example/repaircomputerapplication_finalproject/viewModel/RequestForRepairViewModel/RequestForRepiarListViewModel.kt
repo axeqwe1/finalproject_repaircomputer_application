@@ -131,6 +131,7 @@ class RequestForRepiarListViewModel(application: Application):AndroidViewModel(a
     }
     suspend fun fetchEmployeeData ():List<EmployeeData>?{
         val response = RetrofitInstance.apiService.getEmployees()
+        Log.d(TAG, "fetchEmployeeData: ${response}")
         if(response.isSuccessful){
             return response.body()
         }else{

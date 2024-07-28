@@ -1,27 +1,39 @@
 package com.example.repaircomputerapplication_finalproject.viewModel.reportViewModel
 
 import android.app.Application
+import android.content.ContentValues.TAG
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.repaircomputerapplication_finalproject.screens.reportscreen.RepairReport
+import com.example.repaircomputerapplication_finalproject.api_service.RetrofitInstance
+import com.example.repaircomputerapplication_finalproject.model.DashboardModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 open class ReportViewModel(application: Application) : AndroidViewModel(application) {
-    private val _reportList = MutableStateFlow<List<RepairReport>>(emptyList())
-    val reportList: StateFlow<List<RepairReport>> = _reportList
+    private val _dashboardData = MutableStateFlow<DashboardModel?>(null)
+    val dashboardData: StateFlow<DashboardModel?> = _dashboardData
+//    private val _reportList = MutableStateFlow<DashboardModel?>(null)
+//    val reportList: StateFlow<DashboardModel?> = _reportList
 
     init {
-        fetchReportData()
+        loadData()
     }
-
-    private fun fetchReportData() {
+    fun loadData(){
+        viewModelScope.launch {
+            _dashboardData.value = fetchDashboardData()
+        }
+    }
+    suspend fun fetchDashboardData(): DashboardModel {
         // Simulate fetching data
-        _reportList.value = listOf(
-            RepairReport("Printer", 5, "Office Equipment", "John Doe", 20),
-            RepairReport("Scanner", 3, "Office Equipment", "Jane Smith", 15)
-        )
+        val response = RetrofitInstance.apiService.getDashboardData()
+        if(response.isSuccessful && response.body() != null){
+            Log.d(TAG, "fetchDashboardData: ${response.body()}")
+            return response.body()!!
+        }else{
+            throw Exception("Fail to Fetch DashboardData")
+        }
     }
 
     fun exportReport() {

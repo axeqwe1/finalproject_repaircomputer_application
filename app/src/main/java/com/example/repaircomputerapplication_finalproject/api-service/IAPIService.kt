@@ -6,6 +6,7 @@ import com.example.repaircomputerapplication_finalproject.model.BacklogResponse
 import com.example.repaircomputerapplication_finalproject.model.BuildingData
 import com.example.repaircomputerapplication_finalproject.model.BuildingRequest
 import com.example.repaircomputerapplication_finalproject.model.ChiefData
+import com.example.repaircomputerapplication_finalproject.model.DashboardModel
 import com.example.repaircomputerapplication_finalproject.model.DepartmentData
 import com.example.repaircomputerapplication_finalproject.model.DepartmentRequest
 import com.example.repaircomputerapplication_finalproject.model.EmployeeData
@@ -205,6 +206,10 @@ interface IAPIService {
     //-------------------------->Check Connection
     @GET("/check_connection")
     suspend fun checkConnection(): ApiResponse
+
+    //-------------------------->Report
+    @GET("/report/dashboard-data")
+    suspend fun getDashboardData():Response<DashboardModel>
 }
 
 

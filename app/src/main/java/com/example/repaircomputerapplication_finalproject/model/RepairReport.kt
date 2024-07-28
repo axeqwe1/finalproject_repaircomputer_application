@@ -8,3 +8,10 @@ data class RepairReport(
     val technicianName: String,
     val totalRequests: Int
 )
+
+data class DashboardModel(
+    val TotalWork:Int? = null,
+    val ReceiveWork:Int? = null,
+    val Backlog:Int? = null,
+    val SuccessWork:Int? = null,
+)

@@ -32,11 +32,6 @@ data class NavigateListForBtn
                     Icon = Icons.Filled.Warning,
                     Route = ScreenRoutes.FormRequestForRepair.route
                 ),
-                NavigateListForBtn(
-                    Btn_Name = "รานงาน",
-                    Icon = Icons.Filled.Share,
-                    Route = ScreenRoutes.Report.route
-                ),
             )
         }
         if(Role == "Employee"){
@@ -60,11 +55,6 @@ data class NavigateListForBtn
                     Icon = Icons.Filled.Warning,
                     Route = ScreenRoutes.ManageMenuNav.route
                 ),
-                NavigateListForBtn(
-                    Btn_Name = "รานงาน",
-                    Icon = Icons.Filled.Share,
-                    Route = ScreenRoutes.Report.route
-                ),
             )
         }
         if(Role == "Chief"){
@@ -72,7 +62,7 @@ data class NavigateListForBtn
                 NavigateListForBtn(
                     Btn_Name = "รายงาน",
                     Icon = Icons.Filled.Share,
-                    Route = ScreenRoutes.Report.route
+                    Route = ScreenRoutes.Dashboard.route
                 ),
             )
         }

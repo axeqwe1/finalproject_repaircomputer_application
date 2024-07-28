@@ -1,6 +1,8 @@
 package com.example.repaircomputerapplication_finalproject.graph
 
 import android.app.Application
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavGraphBuilder
 //import androidx.compose.ui.tooling.data.EmptyGroup.name
@@ -17,6 +19,7 @@ import com.example.repaircomputerapplication_finalproject.screens.NotificationSc
 import com.example.repaircomputerapplication_finalproject.screens.RequestRepairScreen
 
 
+@RequiresApi(Build.VERSION_CODES.O)
 fun NavGraphBuilder.homeGraph(navController: NavHostController){
     navigation(
         startDestination = ScreenRoutes.Home.route,

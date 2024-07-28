@@ -1,9 +1,9 @@
 import android.app.Activity
-import android.content.ContentValues.TAG
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.util.Log
 import android.widget.Toast
+import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -37,19 +37,19 @@ fun ImageUploadScreen(viewModel: formRequestViewModel) {
     var captureImageUri2 by remember { mutableStateOf<Uri>(Uri.EMPTY) }
     var captureImageUri3 by remember { mutableStateOf<Uri>(Uri.EMPTY) }
 
-    val imageFile1 = activity!!.createImageFile()
+    val imageFile1 = activity!!.createImageFile("Code")
     val uri1 = FileProvider.getUriForFile(
         Objects.requireNonNull(context),
         activity.packageName + ".provider", imageFile1
     )
 
-    val imageFile2 = activity.createImageFile()
+    val imageFile2 = activity.createImageFile("Defective")
     val uri2 = FileProvider.getUriForFile(
         Objects.requireNonNull(context),
         activity.packageName + ".provider", imageFile2
     )
 
-    val imageFile3 = activity.createImageFile()
+    val imageFile3 = activity.createImageFile("Overview")
     val uri3 = FileProvider.getUriForFile(
         Objects.requireNonNull(context),
         activity.packageName + ".provider", imageFile3
@@ -58,42 +58,48 @@ fun ImageUploadScreen(viewModel: formRequestViewModel) {
     val cameraLauncher1 = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { success ->
         if (success) {
             captureImageUri1 = uri1
-            viewModel.saveImageState(captureImageUri1)
+            viewModel.saveImageState(captureImageUri1, 1)
+            viewModel.uploadImage(captureImageUri1, 1)
         }
     }
 
     val cameraLauncher2 = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { success ->
         if (success) {
             captureImageUri2 = uri2
-            viewModel.saveImageState(captureImageUri2)
+            viewModel.saveImageState(captureImageUri2, 2)
+            viewModel.uploadImage(captureImageUri2, 2)
         }
     }
 
     val cameraLauncher3 = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { success ->
         if (success) {
             captureImageUri3 = uri3
-            viewModel.saveImageState(captureImageUri3)
+            viewModel.saveImageState(captureImageUri3, 3)
+            viewModel.uploadImage(captureImageUri3, 3)
         }
     }
 
     val galleryLauncher1 = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         if (uri != null) {
             captureImageUri1 = uri
-            viewModel.saveImageState(captureImageUri1)
+            viewModel.saveImageState(captureImageUri1, 1)
+            viewModel.uploadImage(captureImageUri1, 1)
         }
     }
 
     val galleryLauncher2 = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         if (uri != null) {
             captureImageUri2 = uri
-            viewModel.saveImageState(captureImageUri2)
+            viewModel.saveImageState(captureImageUri2, 2)
+            viewModel.uploadImage(captureImageUri2, 2)
         }
     }
 
     val galleryLauncher3 = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         if (uri != null) {
             captureImageUri3 = uri
-            viewModel.saveImageState(captureImageUri3)
+            viewModel.saveImageState(captureImageUri3, 3)
+            viewModel.uploadImage(captureImageUri3, 3)
         }
     }
 
@@ -118,7 +124,7 @@ fun ImageUploadScreen(viewModel: formRequestViewModel) {
         UploadImageSection(
             "รูปรหัสอุปกรณ์",
             captureImageUri1,
-            { cameraLauncher1.launch(uri1) },
+            { checkCameraPermissionAndLaunch(permissionLauncher, cameraLauncher1, activity, uri1) },
             { galleryLauncher1.launch("image/*") },
             "Capture",
             "Select"
@@ -127,7 +133,7 @@ fun ImageUploadScreen(viewModel: formRequestViewModel) {
         UploadImageSection(
             "รูปอาการเสีย",
             captureImageUri2,
-            { cameraLauncher2.launch(uri2) },
+            { checkCameraPermissionAndLaunch(permissionLauncher, cameraLauncher2, activity, uri2) },
             { galleryLauncher2.launch("image/*") },
             "Capture",
             "Select"
@@ -136,7 +142,7 @@ fun ImageUploadScreen(viewModel: formRequestViewModel) {
         UploadImageSection(
             "รูปอุปกรณ์",
             captureImageUri3,
-            { cameraLauncher3.launch(uri3) },
+            { checkCameraPermissionAndLaunch(permissionLauncher, cameraLauncher3, activity, uri3) },
             { galleryLauncher3.launch("image/*") },
             "Capture",
             "Select"
@@ -204,13 +210,30 @@ fun UploadImageSection(
     }
 }
 
-fun Activity.createImageFile(): File {
+fun Activity.createImageFile(prefix: String): File {
     val timeStamp = SimpleDateFormat("yyyy_MM_dd_HH:mm:ss").format(Date())
-    val imageFileName = "JPEG_" + timeStamp + "_"
+    val imageFileName = "${prefix}_${timeStamp}_"
     val image = File.createTempFile(
         imageFileName,
         ".jpg",
         externalCacheDir
     )
     return image
+}
+
+fun checkCameraPermissionAndLaunch(
+    permissionLauncher: ManagedActivityResultLauncher<String, Boolean>,
+    cameraLauncher: ManagedActivityResultLauncher<Uri, Boolean>,
+    activity: Activity,
+    uri: Uri
+) {
+    if (ContextCompat.checkSelfPermission(
+            activity,
+            android.Manifest.permission.CAMERA
+        ) != PackageManager.PERMISSION_GRANTED
+    ) {
+        permissionLauncher.launch(android.Manifest.permission.CAMERA)
+    } else {
+        cameraLauncher.launch(uri)
+    }
 }

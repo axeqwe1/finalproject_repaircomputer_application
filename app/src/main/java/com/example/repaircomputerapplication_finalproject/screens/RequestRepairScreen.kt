@@ -73,11 +73,12 @@ fun RequestRepairScreen(navController: NavHostController, viewModel: RequestForR
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp)
                 )
-                ToggleComponent(role = userType) { mode ->
-                    currentMode = mode
-                    Log.d(TAG, "RequestRepairScreen: $currentMode")
+                if(userType != "Employee"){
+                    ToggleComponent(role = userType) { mode ->
+                        currentMode = mode
+                        Log.d(TAG, "RequestRepairScreen: $currentMode")
+                    }
                 }
-
                 // Filter the requestList based on the currentMode and searchQuery
                 val filteredRequestList = requestList.filter { item ->
                     // Parse the ISO 8601 timestamp

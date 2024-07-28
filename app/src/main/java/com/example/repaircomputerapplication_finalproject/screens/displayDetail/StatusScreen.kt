@@ -33,7 +33,7 @@ fun StatusScreen(rrid: String?, viewModel: RepairDetailViewModel = viewModel()) 
 
     LaunchedEffect(data) {
         if (rrid != null) {
-            viewModel.LoadData(rrid)
+            viewModel.loadData(rrid)
         }
         if (data != null) {
             rr_date = data.timestamp

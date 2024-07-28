@@ -15,7 +15,6 @@ import com.example.repaircomputerapplication_finalproject.graph.DisplayGraph.det
 import com.example.repaircomputerapplication_finalproject.graph.ManagementGraph.manageMenuDataGraph
 import com.example.repaircomputerapplication_finalproject.screens.NotificationScreen
 import com.example.repaircomputerapplication_finalproject.screens.RequestRepairScreen
-import com.example.repaircomputerapplication_finalproject.screens.report.ReportScreen
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -30,9 +29,6 @@ fun MenuNavGraph(
         composable(route = ScreenRoutes.Menu.route)
         {
             MenuScreen(navController)
-        }
-        composable(route = ScreenRoutes.Report.route){
-            ReportScreen()
         }
         RequestListGraph(navController)
         NotiGraph(navController)
