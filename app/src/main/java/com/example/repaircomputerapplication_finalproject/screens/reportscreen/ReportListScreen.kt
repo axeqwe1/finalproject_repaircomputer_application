@@ -2,6 +2,8 @@ package com.example.repaircomputerapplication_finalproject.screens.reportscreen
 
 import android.app.DatePickerDialog
 import android.content.Context
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -19,10 +21,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.example.repaircomputerapplication_finalproject.model.RepairReport
+import com.example.repaircomputerapplication_finalproject.utils.formatTimestamp
 import com.example.repaircomputerapplication_finalproject.viewModel.AssignWork.AssignWorkViewModel
+import com.example.repaircomputerapplication_finalproject.viewModel.reportViewModel.ReportViewModel
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import java.text.SimpleDateFormat
@@ -41,14 +47,43 @@ data class RepairItem(
 val sampleRepairs = listOf(
     RepairItem("01-01-2023", "Dell Inspiron", "Laptop", 5, "John Doe", 100),
     RepairItem("02-01-2023", "HP LaserJet", "Printer", 3, "Jane Smith", 100),
+    RepairItem("03-01-2023", "Epson X123", "Projector", 10, "Mike Johnson", 100) ,
+    RepairItem("01-01-2023", "Dell Inspiron", "Laptop", 5, "John Doe", 100),
+    RepairItem("02-01-2023", "HP LaserJet", "Printer", 3, "Jane Smith", 100),
+    RepairItem("03-01-2023", "Epson X123", "Projector", 10, "Mike Johnson", 100),
+    RepairItem("01-01-2023", "Dell Inspiron", "Laptop", 5, "John Doe", 100),
+    RepairItem("02-01-2023", "HP LaserJet", "Printer", 3, "Jane Smith", 100),
+    RepairItem("03-01-2023", "Epson X123", "Projector", 10, "Mike Johnson", 100) ,
+    RepairItem("01-01-2023", "Dell Inspiron", "Laptop", 5, "John Doe", 100),
+    RepairItem("02-01-2023", "HP LaserJet", "Printer", 3, "Jane Smith", 100),
+    RepairItem("03-01-2023", "Epson X123", "Projector", 10, "Mike Johnson", 100),
+    RepairItem("01-01-2023", "Dell Inspiron", "Laptop", 5, "John Doe", 100),
+    RepairItem("02-01-2023", "HP LaserJet", "Printer", 3, "Jane Smith", 100),
+    RepairItem("03-01-2023", "Epson X123", "Projector", 10, "Mike Johnson", 100) ,
+    RepairItem("01-01-2023", "Dell Inspiron", "Laptop", 5, "John Doe", 100),
+    RepairItem("02-01-2023", "HP LaserJet", "Printer", 3, "Jane Smith", 100),
+    RepairItem("03-01-2023", "Epson X123", "Projector", 10, "Mike Johnson", 100),
+    RepairItem("01-01-2023", "Dell Inspiron", "Laptop", 5, "John Doe", 100),
+    RepairItem("02-01-2023", "HP LaserJet", "Printer", 3, "Jane Smith", 100),
+    RepairItem("03-01-2023", "Epson X123", "Projector", 10, "Mike Johnson", 100) ,
+    RepairItem("01-01-2023", "Dell Inspiron", "Laptop", 5, "John Doe", 100),
+    RepairItem("02-01-2023", "HP LaserJet", "Printer", 3, "Jane Smith", 100),
     RepairItem("03-01-2023", "Epson X123", "Projector", 10, "Mike Johnson", 100)
 )
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun ReportListScreen(navController: NavController,repairs: List<RepairItem>) {
-    var startDate by remember { mutableStateOf("dd-mm-yyyy") }
-    var endDate by remember { mutableStateOf("dd-mm-yyyy") }
+fun ReportListScreen(navController: NavController, viewModel: ReportViewModel = viewModel()) {
+    var startDate by remember { mutableStateOf("DD-MM-YYYY") }
+    var endDate by remember { mutableStateOf("DD-MM-YYYY") }
+    val repairData = viewModel.repairData.collectAsState().value ?: emptyList()
     val context = LocalContext.current
+
+    LaunchedEffect(startDate, endDate) {
+        if (startDate.isNotEmpty() && endDate.isNotEmpty() && startDate != "DD-MM-YYYY" && endDate != "DD-MM-YYYY") {
+            viewModel.fetchReportData(startDate, endDate)
+        }
+    }
 
     // Function to show date picker
     fun showDatePicker(context: Context, onDateSelected: (String) -> Unit) {
@@ -84,9 +119,7 @@ fun ReportListScreen(navController: NavController,repairs: List<RepairItem>) {
                 Text(text = "ถึงวันที่: $endDate")
             }
         }
-
         Spacer(modifier = Modifier.height(16.dp))
-
         // Header Row
         Row(
             modifier = Modifier
@@ -96,59 +129,88 @@ fun ReportListScreen(navController: NavController,repairs: List<RepairItem>) {
             horizontalArrangement = Arrangement.Center
         ) {
             Text(
-                text = "Date",
+                text = "วัน/เดือน/ปี ที่แจ้งซ่อม",
                 fontWeight = FontWeight.Bold,
-                fontSize = 14.sp,
-                modifier = Modifier.weight(1f).wrapContentWidth(Alignment.CenterHorizontally)
+                fontSize = 12.sp,
+                modifier = Modifier
+                    .weight(1f)
+                    .wrapContentWidth(Alignment.CenterHorizontally)
             )
             Text(
-                text = "Equipment",
+                text = "ชื่ออุปกรณ์",
                 fontWeight = FontWeight.Bold,
-                fontSize = 14.sp,
-                modifier = Modifier.weight(1f).wrapContentWidth(Alignment.CenterHorizontally)
+                fontSize = 12.sp,
+                modifier = Modifier
+                    .weight(1f)
+                    .wrapContentWidth(Alignment.CenterHorizontally)
             )
             Text(
-                text = "Type",
+                text = "ประเภท",
                 fontWeight = FontWeight.Bold,
-                fontSize = 14.sp,
-                modifier = Modifier.weight(1f).wrapContentWidth(Alignment.CenterHorizontally)
+                fontSize = 12.sp,
+                modifier = Modifier
+                    .weight(1f)
+                    .wrapContentWidth(Alignment.CenterHorizontally)
             )
             Text(
-                text = "Repair Count",
+                text = "จำนวนการซ่อม",
                 fontWeight = FontWeight.Bold,
-                fontSize = 14.sp,
-                modifier = Modifier.weight(1f).wrapContentWidth(Alignment.CenterHorizontally)
+                fontSize = 12.sp,
+                modifier = Modifier
+                    .weight(1f)
+                    .wrapContentWidth(Alignment.CenterHorizontally)
             )
             Text(
-                text = "Technician",
+                text = "ช่างผู้รับงาน",
                 fontWeight = FontWeight.Bold,
-                fontSize = 14.sp,
-                modifier = Modifier.weight(1f).wrapContentWidth(Alignment.CenterHorizontally)
+                fontSize = 12.sp,
+                modifier = Modifier
+                    .weight(1f)
+                    .wrapContentWidth(Alignment.CenterHorizontally)
             )
         }
 
-        // Data Rows
-        LazyColumn {
-            items(repairs) { repair ->
-                val backgroundColor = if (repair.repairCount > 5) Color(0xFFFFCDD2) else Color.White
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(backgroundColor)
-                        .padding(vertical = 8.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(text = repair.reportDate, fontSize = 12.sp, modifier = Modifier.weight(1f))
-                    Text(text = repair.equipmentName, fontSize = 12.sp, modifier = Modifier.weight(1f))
-                    Text(text = repair.equipmentType, fontSize = 12.sp, modifier = Modifier.weight(1f))
-                    Text(text = repair.repairCount.toString(), fontSize = 12.sp, modifier = Modifier.weight(1f))
-                    Text(text = repair.technicianName, fontSize = 12.sp, modifier = Modifier.weight(1f))
+        // Data Rows with limited height
+        Box(modifier = Modifier
+            .weight(1f)
+            .heightIn(max = 300.dp) // limit the height of LazyColumn
+        ) {
+            LazyColumn {
+                items(repairData) { repair ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(Color.White)
+                            .padding(vertical = 8.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        if (repair != null) {
+                            Text(
+                                text = formatTimestamp(repair.timestamp).split(',')[0],
+                                fontSize = 10.sp,
+                                modifier = Modifier.weight(1f).wrapContentWidth(Alignment.CenterHorizontally)
+                            )
+                        }
+                        Spacer(modifier = Modifier.padding(vertical = 5.dp))
+                        Text(text = repair!!.eq_name, fontSize = 10.sp, modifier = Modifier.weight(1f).wrapContentWidth(Alignment.CenterHorizontally))
+                        Text(text = repair!!.eqc_name, fontSize = 10.sp, modifier = Modifier.weight(1f).wrapContentWidth(Alignment.CenterHorizontally))
+                        Text(text = repair!!.repair_count.toString(), fontSize = 10.sp, modifier = Modifier.weight(1f).wrapContentWidth(Alignment.CenterHorizontally))
+                        if (repair.firstname.isNullOrBlank() || repair.firstname.isNullOrBlank()) {
+                            Text(text = "ไม่มีผู้รับงาน", fontSize = 10.sp, modifier = Modifier.weight(1f).wrapContentWidth(Alignment.CenterHorizontally))
+                        } else {
+                            Text(text = "${repair!!.firstname} ${repair!!.lastname}", fontSize = 10.sp, modifier = Modifier.weight(1f).wrapContentWidth(Alignment.CenterHorizontally))
+                        }
+                    }
                 }
             }
         }
 
         // Total Requests Component
-        TotalRequestsComponent(totalRequests = repairs.firstOrNull()?.totalRequestCount ?: 0)
+        if (repairData.isNotEmpty()) {
+            TotalRequestsComponent(totalRequests = repairData[0]?.totalRequests ?: 0)
+        } else {
+            TotalRequestsComponent(totalRequests = 0)
+        }
     }
 }
 
@@ -166,9 +228,10 @@ fun TotalRequestsComponent(totalRequests: Int) {
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Preview(showBackground = true)
 @Composable
 fun RepairTablePreview() {
     val nav = rememberNavController()
-    ReportListScreen(nav,repairs = sampleRepairs)
+    ReportListScreen(nav)
 }

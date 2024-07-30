@@ -13,6 +13,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.repaircomputerapplication_finalproject.api_service.RetrofitInstance.apiService
 import com.example.repaircomputerapplication_finalproject.model.DashboardModel
 import com.example.repaircomputerapplication_finalproject.model.DateForReport
+import com.example.repaircomputerapplication_finalproject.model.RepairReport
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -26,7 +27,8 @@ open class ReportViewModel(application: Application) : AndroidViewModel(applicat
 
     private val _dashboardData = MutableStateFlow<DashboardModel?>(null)
     val dashboardData: StateFlow<DashboardModel?> = _dashboardData
-
+    private val _repairData = MutableStateFlow<List<RepairReport?>?>(null)
+    val repairData: StateFlow<List<RepairReport?>?> = _repairData
     init {
         loadData()
     }
@@ -34,11 +36,25 @@ open class ReportViewModel(application: Application) : AndroidViewModel(applicat
     fun loadData() {
         viewModelScope.launch {
             _dashboardData.value = fetchDashboardData()
+
         }
     }
 
-
-
+    suspend fun fetchReportData(startDate: String,endDate: String){
+        try {
+            val response = apiService.getReportData(DateForReport(startDate,endDate))
+            if(response.isSuccessful){
+                Log.d("fetchReportData", "fetchDashboardData: ${response.body()}")
+                _repairData.value = response.body() ?: emptyList()
+            }else{
+                throw Exception("Fail to Fetch Report Data")
+            }
+        }catch (e:Exception){
+            e.printStackTrace()
+            Log.e("fetchReportData", "Exception during export CSV: ${e.message}")
+            throw Exception("Fail to Fetch Report Data")
+        }
+    }
     private suspend fun fetchDashboardData(): DashboardModel {
         val response = apiService.getDashboardData()
         if (response.isSuccessful && response.body() != null) {

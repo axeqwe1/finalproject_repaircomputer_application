@@ -216,7 +216,7 @@ interface IAPIService {
     @POST("/report/export-csv")
     suspend fun exportCSV(@Body dateForReport: DateForReport):Response<ResponseBody>
 
-    @GET("/report/report-data")
+    @POST("/report/report-data")
     suspend fun getReportData(@Body dateForReport: DateForReport):Response<List<RepairReport>>
 }
 

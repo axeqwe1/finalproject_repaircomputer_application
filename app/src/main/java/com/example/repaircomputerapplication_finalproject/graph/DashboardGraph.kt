@@ -35,7 +35,7 @@ fun NavGraphBuilder.dashBoard(navController: NavHostController){
             DashboardScreen(navController = navController)
         }
         composable(route = ScreenRoutes.Report.route){
-            ReportListScreen(navController = navController, repairs = sampleRepairs)
+            ReportListScreen(navController = navController)
         }
         composable(route = ScreenRoutes.checkConnection.route)
         {

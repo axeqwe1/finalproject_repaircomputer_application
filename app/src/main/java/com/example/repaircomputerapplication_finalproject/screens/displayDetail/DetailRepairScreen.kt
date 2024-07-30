@@ -1,9 +1,6 @@
 
-import android.content.ContentValues.TAG
 import android.graphics.BitmapFactory
 import android.os.Build
-import android.util.Log
-import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -20,23 +17,19 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.navigation.NavController
 import androidx.lifecycle.viewmodel.compose.viewModel
-import coil.compose.AsyncImage
-import coil.compose.rememberAsyncImagePainter
 import com.example.repaircomputerapplication_finalproject.data.ScreenRoutes
 import com.example.repaircomputerapplication_finalproject.screens.LoadingScreen
 import com.example.repaircomputerapplication_finalproject.viewModel.ContextDataStore.dataStore
 import com.example.repaircomputerapplication_finalproject.viewModel.DisplayViewModel.RepairDetailViewModel
-import com.example.repaircomputerapplication_finalproject.viewModel.formatTimestamp
+import com.example.repaircomputerapplication_finalproject.utils.formatTimestamp
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 

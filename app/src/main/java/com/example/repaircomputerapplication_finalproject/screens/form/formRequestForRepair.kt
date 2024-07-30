@@ -238,6 +238,69 @@ fun formRequestForRepair(navController: NavController, formRequestViewModel: for
                 }
                 Button(
                     onClick = {
+                        showDialog = true
+                    }
+                ) {
+                    Text("Submit")
+                }
+            }
+        }
+    }
+
+    if (showDialog) {
+        var alertMessage: String by remember { mutableStateOf("") }
+        var titleMessage: String by remember { mutableStateOf("") }
+        if (role == "Technician") {
+            if (deviceId == "" ||
+                selectedBuilding == "กรุณาเลือกข้อมูล" ||
+                repairDetails == ""
+            ) {
+                titleMessage = "เกิดข้อผิดพลาด"
+                alertMessage = "กรุณากรอกข้อมูลให้ครบ"
+            } else if (!checkEmployeeData(emp_Fnm, emp_Lnm)) {
+                titleMessage = "เกิดข้อผิดพลาด"
+                alertMessage = "ไม่พบข้อมูลผู้ใช้งาน"
+            } else if (!checkEquipmentId(deviceId)) {
+                titleMessage = "เกิดข้อผิดพลาด"
+                alertMessage = "ไม่พบข้อมูลอุปกรณ์"
+            } else if (!checkBuildingId(buildingId)) {
+                titleMessage = "เกิดข้อผิดพลาด"
+                alertMessage = "ไม่พบข้อมูลตึกอาคาร"
+            } else if (imageUri1?.path == null || imageUri2?.path == null || imageUri3?.path == null) {
+                titleMessage = "เกิดข้อผิดพลาด"
+                alertMessage = "กรุณาใส่รูปภาพให้ครบ"
+            } else {
+                titleMessage = "แจ้งเตือน"
+                alertMessage = "กรุณาตรวจสอบข้อมูลการแจ้งซ่อมให้ครบถ้วน คุณต้องการแจ้งซ่อมใช่หรือไม่?"
+            }
+        }else{
+            if (deviceId == "" ||
+                selectedBuilding == "กรุณาเลือกข้อมูล" ||
+                repairDetails == ""
+            ) {
+                titleMessage = "เกิดข้อผิดพลาด"
+                alertMessage = "กรุณากรอกข้อมูลให้ครบ"
+            }  else if (!checkEquipmentId(deviceId)) {
+                titleMessage = "เกิดข้อผิดพลาด"
+                alertMessage = "ไม่พบข้อมูลอุปกรณ์"
+            } else if (!checkBuildingId(buildingId)) {
+                titleMessage = "เกิดข้อผิดพลาด"
+                alertMessage = "ไม่พบข้อมูลตึกอาคาร"
+            } else if (imageUri1?.path == null || imageUri2?.path == null || imageUri3?.path == null) {
+                titleMessage = "เกิดข้อผิดพลาด"
+                alertMessage = "กรุณาใส่รูปภาพให้ครบ"
+            } else {
+                titleMessage = "แจ้งเตือน"
+                alertMessage = "กรุณาตรวจสอบข้อมูลการแจ้งซ่อมให้ครบถ้วน คุณต้องการแจ้งซ่อมใช่หรือไม่?"
+            }
+        }
+        AlertDialog(
+            onDismissRequest = { showDialog = false },
+            title = { Text(titleMessage) },
+            text = { Text(alertMessage) },
+            confirmButton = {
+                Button(onClick = {
+                    if(titleMessage == "แจ้งเตือน"){
                         if (role == "Technician") {
                             if (checkEmployeeData(emp_Fnm, emp_Lnm) &&
                                 checkEquipmentId(deviceId) &&
@@ -260,7 +323,12 @@ fun formRequestForRepair(navController: NavController, formRequestViewModel: for
                                 Log.d(TAG, "formRequestForRepair: ${imageUri1?.path}, ${imageUri2?.path}, ${imageUri3?.path}")
                             }
                         } else {
-                            if (checkEquipmentId(deviceId) && checkBuildingId(buildingId) && repairDetails.isNotBlank()) {
+                            if (checkEquipmentId(deviceId) &&
+                                checkBuildingId(buildingId) &&
+                                repairDetails.isNotBlank() &&
+                                imageUri1?.path?.isNotEmpty() == true &&
+                                imageUri2?.path?.isNotEmpty() == true &&
+                                imageUri3?.path?.isNotEmpty() == true) {
                                 showDialog = false  // เปิดใช้งาน Dialog หากข้อมูลไม่ครบ
                                 vmodel.uploadImage(imageUri1!!, 1)
                                 vmodel.uploadImage(imageUri2!!, 2)
@@ -273,41 +341,18 @@ fun formRequestForRepair(navController: NavController, formRequestViewModel: for
                                 showDialog = true
                             }
                         }
+                        showDialog = false
+                    }else{
+                        showDialog = false
                     }
-                ) {
-                    Text("Submit")
-                }
-            }
-        }
-    }
-
-    if (showDialog) {
-        var alertMessage: String by remember { mutableStateOf("") }
-        if (role == "Technician") {
-            if (deviceId == "" ||
-                selectedBuilding == "กรุณาเลือกข้อมูล" ||
-                repairDetails == ""
-            ) {
-                alertMessage = "กรุณากรอกข้อมูลให้ครบ"
-            } else if (!checkEmployeeData(emp_Fnm, emp_Lnm)) {
-                alertMessage = "ไม่พบข้อมูลผู้ใช้งาน"
-            } else if (!checkEquipmentId(deviceId)) {
-                alertMessage = "ไม่พบข้อมูลอุปกรณ์"
-            } else if (!checkBuildingId(buildingId)) {
-                alertMessage = "ไม่พบข้อมูลตึกอาคาร"
-            } else if (imageUri1?.path == null || imageUri2?.path == null || imageUri3?.path == null) {
-                alertMessage = "กรุณาใส่รูปภาพ"
-            } else {
-                alertMessage = ""
-            }
-        }
-        AlertDialog(
-            onDismissRequest = { showDialog = false },
-            title = { Text("Missing Information") },
-            text = { Text("$alertMessage") },
-            confirmButton = {
-                Button(onClick = { showDialog = false }) {
+                }) {
                     Text("OK")
+                }
+            },
+            dismissButton = {
+                if(titleMessage == "แจ้งเตือน")
+                Button(onClick = { showDialog = false }) {
+                    Text(text = "Cancel")
                 }
             }
         )

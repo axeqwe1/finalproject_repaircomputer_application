@@ -210,7 +210,6 @@ fun BottomStatCard(title: String, value: String, color: Color) {
 
 @Composable
 fun ExportReportComponent(context: Context, viewModel: ReportViewModel = viewModel()) {
-    val context = LocalContext.current
     val calendar = Calendar.getInstance()
 
     var startDate by remember { mutableStateOf("") }
