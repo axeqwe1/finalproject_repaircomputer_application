@@ -28,6 +28,5 @@ fun RootNav(){
     NavHost(navController = navController, startDestination =  startDestination){
         AuthNav(navController)
         homeGraph(navController)
-        dashBoard(navController)
     }
 }

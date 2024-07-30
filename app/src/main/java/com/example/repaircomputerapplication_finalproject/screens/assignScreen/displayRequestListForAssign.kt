@@ -34,18 +34,6 @@ import kotlinx.coroutines.flow.map
 import java.text.SimpleDateFormat
 import java.util.*
 
-data class RepairRequest(
-    val id: String,
-    val equipmentName: String,
-    val description: String,
-    val building: String,
-    val roomNumber: String,
-    val floor: String,
-    val department: String,
-    val reporter: String,
-    val assignee: String?,
-    val date: Date
-)
 
 @Composable
 fun displayRequestListForAssign(navController: NavHostController,viewModel:AssignWorkViewModel = viewModel()) {

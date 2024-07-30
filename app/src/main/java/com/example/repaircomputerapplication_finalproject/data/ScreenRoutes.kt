@@ -59,7 +59,6 @@ sealed class ScreenRoutes(val route:String){
         object Dashboard : ScreenRoutes("dashboard_screen")
 
 
-
         //---------------------------DetailRequest
         object detailRepair:ScreenRoutes("detail_screen?rrid={rrid}&userType={userType}"){
                 fun passRridAndUserType(rrid:String,userType:String):String{

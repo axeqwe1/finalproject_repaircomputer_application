@@ -27,6 +27,11 @@ data class BottomNavigationBarList(
                     icon = Icons.Filled.Home,
                     route = ScreenRoutes.Dashboard.route
                 ),
+                BottomNavigationBarList(
+                    label = "REPORT",
+                    icon = Icons.Filled.List,
+                    route = ScreenRoutes.Report.route
+                ),
             )
         }else{
             return listOf(

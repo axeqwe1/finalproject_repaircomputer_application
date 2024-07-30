@@ -64,7 +64,7 @@ fun LoginScreen (navController: NavController,loginViewModel: AuthViewModel = vi
         if (isLogin.value) {
             isLoading.value = false
             if(role.value == "Chief"){
-                navController.navigate(ScreenRoutes.DashboardNav.route) {
+                navController.navigate(ScreenRoutes.HomeNav.route) {
                     popUpTo(ScreenRoutes.AuthNav.route) { inclusive = true }
                 }
             }else{

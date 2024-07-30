@@ -7,6 +7,7 @@ import com.example.repaircomputerapplication_finalproject.model.BuildingData
 import com.example.repaircomputerapplication_finalproject.model.BuildingRequest
 import com.example.repaircomputerapplication_finalproject.model.ChiefData
 import com.example.repaircomputerapplication_finalproject.model.DashboardModel
+import com.example.repaircomputerapplication_finalproject.model.DateForReport
 import com.example.repaircomputerapplication_finalproject.model.DepartmentData
 import com.example.repaircomputerapplication_finalproject.model.DepartmentRequest
 import com.example.repaircomputerapplication_finalproject.model.EmployeeData
@@ -16,6 +17,7 @@ import com.example.repaircomputerapplication_finalproject.model.EquipmentTypeDat
 import com.example.repaircomputerapplication_finalproject.model.EquipmentTypeRequest
 import com.example.repaircomputerapplication_finalproject.model.LevelOfDamageData
 import com.example.repaircomputerapplication_finalproject.model.LevelOfDamageRequest
+import com.example.repaircomputerapplication_finalproject.model.RepairReport
 import com.example.repaircomputerapplication_finalproject.model.RequestForRepairData
 import com.example.repaircomputerapplication_finalproject.model.RequestListResponse
 import com.example.repaircomputerapplication_finalproject.model.RequestResponse
@@ -210,6 +212,12 @@ interface IAPIService {
     //-------------------------->Report
     @GET("/report/dashboard-data")
     suspend fun getDashboardData():Response<DashboardModel>
+
+    @POST("/report/export-csv")
+    suspend fun exportCSV(@Body dateForReport: DateForReport):Response<ResponseBody>
+
+    @GET("/report/report-data")
+    suspend fun getReportData(@Body dateForReport: DateForReport):Response<List<RepairReport>>
 }
 
 

@@ -46,7 +46,9 @@ import com.example.repaircomputerapplication_finalproject.BottomNavigationBar
 import com.example.repaircomputerapplication_finalproject.component.TopAppBarDynamic
 import com.example.repaircomputerapplication_finalproject.data.BottomNavigationBarList
 import com.example.repaircomputerapplication_finalproject.data.ScreenRoutes
+import com.example.repaircomputerapplication_finalproject.graph.DashBoardHost
 import com.example.repaircomputerapplication_finalproject.graph.MenuNavGraph
+import com.example.repaircomputerapplication_finalproject.screens.reportscreen.DashboardScreen
 import com.example.repaircomputerapplication_finalproject.viewModel.HomeViewModel
 import com.example.repaircomputerapplication_finalproject.viewModel.LogoutResult
 import com.example.repaircomputerapplication_finalproject.viewModel.ContextDataStore.dataStore
@@ -119,7 +121,12 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel = view
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 // ส่วนของเนื้อหาหน้า Home
-                MenuNavGraph(navHostController)
+                if(role.value != "Chief"){
+                    MenuNavGraph(navHostController)
+                }else{
+                    DashBoardHost(navHostController)
+                }
+
 
                 // Put UI Here
             }

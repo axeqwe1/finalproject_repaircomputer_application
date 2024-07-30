@@ -2,6 +2,7 @@ package com.example.repaircomputerapplication_finalproject.screens.reportscreen
 
 import android.app.DatePickerDialog
 import android.content.ContentValues.TAG
+import android.content.Context
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -59,7 +60,6 @@ fun DashboardScreen(viewModel: ReportViewModel = viewModel(),homeViewModel: Home
     val pendingTasks = remember { mutableStateOf(0) }
     val receiveTask= remember { mutableStateOf(0) }
     val completedTasks = remember { mutableStateOf(0) }
-    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val context = LocalContext.current
     var role = remember { mutableStateOf("") }
     val logoutResult by homeViewModel.logoutResult.collectAsState(initial = null)
@@ -86,47 +86,18 @@ fun DashboardScreen(viewModel: ReportViewModel = viewModel(),homeViewModel: Home
             completedTasks.value = dashboardData.SuccessWork ?: 0
         }
     }
-    Scaffold(
-        modifier = Modifier
-            .fillMaxSize()
-            .nestedScroll(scrollBehavior.nestedScrollConnection),
-        topBar = {
-            TopAppBarDynamic(navController, scrollBehavior, homeViewModel)
-        },
-        bottomBar = {
-            val navBackStackEntry by navController.currentBackStackEntryAsState()
-            val currentDestination = navBackStackEntry?.destination
-            val shouldShowBottomBar = BottomNavigationBarList().bottomNavigation(role.value).any { it.route == currentDestination?.route }
-            Box(modifier = Modifier.fillMaxWidth()) {
-                AnimatedVisibility(
-                    visible = shouldShowBottomBar,
-                    enter = fadeIn(animationSpec = tween(durationMillis = 700)),
-                    exit = shrinkOut(animationSpec = tween(durationMillis = 700)),
-                ) {
-                    BottomAppBar(
-                        containerColor = Color.Transparent,
-                        contentColor = Color.Transparent,
-                    ) {}
-                    BottomNavigationBar(navController)
-                }
-            }
-        }
-    ) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .background(Color(0xFFB3E5FC))
-                .padding(innerPadding)
         ) {
-            TopStats(totalTasks.value, pendingTasks.value, receiveTask.value)
+            TopStats(completedTasks.value, pendingTasks.value, receiveTask.value)
             Spacer(modifier = Modifier.height(16.dp))
-            MiddleStats(completedTasks.value)
+            MiddleStats(totalTasks.value)
             Spacer(modifier = Modifier.height(3.dp))
-            BottomStats(pendingTasks.value, totalTasks.value, receiveTask.value)
+            BottomStats(context,pendingTasks.value, totalTasks.value, receiveTask.value)
 
         }
-    }
-
 }
 
 @Composable
@@ -138,7 +109,7 @@ fun TopStats(totalTasks: Int, pendingTasks: Int, receiveTask: Int) {
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        StatCard("งานทั้งหมด", totalTasks.toString(), Color(0xFF03DAC5), Modifier.weight(1f))
+        StatCard("งานที่เสร็จสิ้น", totalTasks.toString(), Color(0xFF2EFF38), Modifier.weight(1f))
         Spacer(modifier = Modifier.width(8.dp))
         StatCard("งานค้าง", pendingTasks.toString(), Color(0xFFFFC107), Modifier.weight(1f))
         Spacer(modifier = Modifier.width(8.dp))
@@ -202,7 +173,7 @@ fun MiddleStats(completeTaskCount:Int) {
 }
 
 @Composable
-fun BottomStats(pendingOrders: Int, products: Int, customers: Int) {
+fun BottomStats(context: Context,pendingOrders: Int, products: Int, customers: Int) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -211,7 +182,7 @@ fun BottomStats(pendingOrders: Int, products: Int, customers: Int) {
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        ExportReportComponent()
+        ExportReportComponent(context)
 //        BottomStatCard("Pending Orders", pendingOrders.toString(), Color(0xFF6200EE))
 //        BottomStatCard("Products", products.toString(), Color(0xFF03DAC5))
 //        BottomStatCard("Customers", customers.toString(), Color(0xFFFFC107))
@@ -238,7 +209,7 @@ fun BottomStatCard(title: String, value: String, color: Color) {
 }
 
 @Composable
-fun ExportReportComponent() {
+fun ExportReportComponent(context: Context, viewModel: ReportViewModel = viewModel()) {
     val context = LocalContext.current
     val calendar = Calendar.getInstance()
 
@@ -250,14 +221,14 @@ fun ExportReportComponent() {
     val datePickerDialogStart = DatePickerDialog(
         context,
         { _: DatePicker, year: Int, month: Int, dayOfMonth: Int ->
-            startDate = "$dayOfMonth/${month + 1}/$year"
+            startDate = "$dayOfMonth-${month + 1}-$year"
         }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH)
     )
 
     val datePickerDialogEnd = DatePickerDialog(
         context,
         { _: DatePicker, year: Int, month: Int, dayOfMonth: Int ->
-            endDate = "$dayOfMonth/${month + 1}/$year"
+            endDate = "$dayOfMonth-${month + 1}-$year"
         }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH)
     )
 
@@ -315,6 +286,7 @@ fun ExportReportComponent() {
             onClick = {
                 if (isDateValid(startDate, endDate)) {
                     // Implement export report logic
+                    viewModel.exportReport(context,startDate,endDate)
                 } else {
                     dialogMessage = "เลือกเวลาให้ถูกต้อง"
                     showDialog = true
@@ -348,7 +320,7 @@ fun ExportReportComponent() {
 private fun isDateValid(startDate: String, endDate: String): Boolean {
     if (startDate.isEmpty() || endDate.isEmpty()) return true
 
-    val dateFormat = java.text.SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+    val dateFormat = java.text.SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
     return try {
         val start = dateFormat.parse(startDate)
         val end = dateFormat.parse(endDate)
