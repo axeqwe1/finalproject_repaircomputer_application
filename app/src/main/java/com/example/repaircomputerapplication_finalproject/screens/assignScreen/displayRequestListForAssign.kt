@@ -40,7 +40,8 @@ fun displayRequestListForAssign(navController: NavHostController,viewModel:Assig
     val backlogList = viewModel.backlogData.collectAsState().value
     var admin_id by remember { mutableStateOf("") }
     val context = LocalContext.current
-    LaunchedEffect(backlogList){
+    LaunchedEffect(Unit){
+        viewModel.loadData()
         admin_id = context.dataStore.data.map {item ->
             item[stringPreferencesKey("userId")]
         }.first() ?: "null"

@@ -46,7 +46,6 @@ fun DetailRepairScreen(
     val imagePainters by viewModel.imagePainters.collectAsState()
     val scrollState = rememberScrollState()
     val context = LocalContext.current
-
     var _rrid by remember { mutableStateOf("") }
     var eq_id by remember { mutableStateOf("") }
     var eq_name by remember { mutableStateOf("") }
@@ -105,11 +104,16 @@ fun DetailRepairScreen(
             technicianName = "${data!!.receive_repair.technician.firstname} ${data!!.receive_repair.technician.lastname}"
             dateReceive = data!!.receive_repair.date_receive.toString()
             if (lastRepairDetail != null) {
+                val lastDescription = lastRepairDetail?.rd_description?.split(':') ?: listOf()
                 rd_id = lastRepairDetail.rd_id.toString()
                 detail = lastRepairDetail.rd_description ?: "ยังไม่กรอกข้อมูล"
                 levelOfDamage = lastRepairDetail.levelOfDamage?.loed_Name ?: "ยังไม่กรอกข้อมูล"
                 detailTimeStamp = data!!.receive_repair.repair_details.lastOrNull()?.timestamp.toString()
-                detailDescription = data!!.receive_repair.repair_details.last().rd_description?.split(':')?.get(1) ?: "..."
+                if(lastDescription.size <= 1){
+                    detailDescription = lastRepairDetail?.rd_description.toString()
+                }else{
+                    detailDescription = lastDescription.getOrNull(1)?.trim() ?: "..."
+                }
                 hasDetail = true
             } else {
                 hasDetail = false
@@ -151,10 +155,10 @@ fun DetailRepairScreen(
                     val typography = MaterialTheme.typography
                     Column(modifier = Modifier.weight(2f)) {
                         Spacer(modifier = Modifier.padding(12.dp))
-                        Text("${requestStatus}", style = typography.subtitle1.copy(color = Color.Blue))
+                        Text(requestStatus, style = typography.subtitle1.copy(color = Color.Blue))
                         if (hasDetail) {
-                            Text("${formatTimestamp(detailTimeStamp)}", style = typography.body2.copy(color = Color.DarkGray))
-                            Text("${detailDescription}", style = typography.body2.copy(color = Color.DarkGray))
+                            Text(formatTimestamp(detailTimeStamp), style = typography.body2.copy(color = Color.DarkGray))
+                            Text(detailDescription, style = typography.body2.copy(color = Color.DarkGray))
                         }
                     }
                     Box(
@@ -192,7 +196,7 @@ fun DetailRepairScreen(
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(text = "ชื่อผู้รับงาน: $technicianName", fontSize = 18.sp)
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text(text = "วันที่รับงาน: $dateReceive", fontSize = 18.sp)
+                    Text(text = "วันที่รับงาน: ${formatTimestamp(dateReceive)} ", fontSize = 18.sp)
                 }
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(text = "รายละเอียด :", fontSize = 18.sp)
@@ -215,7 +219,7 @@ fun DetailRepairScreen(
                             .height(100.dp)
                             .background(Color.White)
                             .padding(8.dp),
-                        text = detail
+                        text = if(detail.split(':').size > 1) detail.split(':')[1] else detail
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(text = "ระดับความเสียหาย : $levelOfDamage", fontSize = 18.sp)
@@ -255,11 +259,10 @@ fun DetailRepairScreen(
                 }
             }
             Spacer(modifier = Modifier.height(16.dp))
-            BtnType(userType, hasDetail, navController, admin_id, _rrid, rd_id)
+            BtnType(userType, hasDetail, navController, admin_id, _rrid, rd_id,requestStatus)
             Spacer(modifier = Modifier.height(24.dp))
         }
     }
-
     if (showDialog) {
         selectedImage?.let { imageBytes ->
             val bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
@@ -284,36 +287,46 @@ fun BtnType(
     navController: NavController,
     admin_id: String,
     rrid: String,
-    rd_id: String
+    rd_id: String,
+    requestStatus:String
 ) {
     var BtnName by remember { mutableStateOf("") }
     var route by remember { mutableStateOf("") }
     var show by remember { mutableStateOf(true) }
     var isUpdate by remember { mutableStateOf(false) }
-    when (userType) {
-        "Admin" -> {
-            if (hasDetail) {
-                show = false
-            } else {
-                BtnName = "จ่ายงาน"
-                route = ScreenRoutes.TechnicianListBacklog.passAdminIdAndRrid(admin_id, rrid)
+        when (userType) {
+            "Admin" -> {
+                if (hasDetail) {
+                    show = false
+                    isUpdate = true
+                } else {
+                    BtnName = "จ่ายงาน"
+                    route = ScreenRoutes.TechnicianListBacklog.passAdminIdAndRrid(admin_id, rrid)
+                }
             }
-        }
-        "Technician" -> {
-            if (hasDetail) {
-                BtnName = "อัพเดทงาน"
-                route = ScreenRoutes.addDetailRepair.passRrceIdAndIsUpdate(rrid, rd_id, false)
-                isUpdate = true
-            } else {
-                BtnName = "กรอกรายละเอียด"
-                route = ScreenRoutes.addDetailRepair.passRrceIdAndIsUpdate(rrid, rd_id, false)
+            "Technician" -> {
+                if(requestStatus != "ส่งคืนเสร็จสิ้น"){
+                    if (hasDetail) {
+                        BtnName = "อัพเดทงาน"
+                        route = ScreenRoutes.addDetailRepair.passRrceIdAndIsUpdate(rrid, rd_id, false)
+                        isUpdate = true
+                    } else {
+                        BtnName = "เพิ่มรายละเอียด"
+                        route = ScreenRoutes.addDetailRepair.passRrceIdAndIsUpdate(rrid, rd_id, false)
+                        isUpdate = false
+                    }
+                }else{
+                    show = false
+                    isUpdate = false
+                }
+            }
+            else -> {
+                show = false
                 isUpdate = false
             }
         }
-        else -> show = false
-    }
+    Column(modifier = Modifier.fillMaxSize()) {
     if (show) {
-        Column(modifier = Modifier.fillMaxSize()) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -335,35 +348,35 @@ fun BtnType(
                 )
             }
             Spacer(modifier = Modifier.height(16.dp))
-            if (isUpdate) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(
-                            color = Color(0xFFCCFFCC), // Light green background color
-                            shape = RoundedCornerShape(16.dp) // Rounded corners
-                        )
-                        .clickable {
-                            navController.navigate(
-                                ScreenRoutes.addDetailRepair.passRrceIdAndIsUpdate(
-                                    rrid,
-                                    rd_id,
-                                    true
-                                )
-                            )
-                        }
-                        .padding(16.dp), // Padding for the button
-                    contentAlignment = Alignment.Center // Center the text inside the button
-                ) {
-                    Text(
-                        text = "แก้ไขข้อมูล", // Button text
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.Black // Text color
-                    )
-                }
-            }
-            Spacer(modifier = Modifier.height(16.dp))
         }
     }
+    if (isUpdate) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    color = Color(0xFFCCFFCC), // Light green background color
+                    shape = RoundedCornerShape(16.dp) // Rounded corners
+                )
+                .clickable {
+                    navController.navigate(
+                        ScreenRoutes.addDetailRepair.passRrceIdAndIsUpdate(
+                            rrid,
+                            rd_id,
+                            true
+                        )
+                    )
+                }
+                .padding(16.dp), // Padding for the button
+            contentAlignment = Alignment.Center // Center the text inside the button
+        ) {
+            Text(
+                text = "แก้ไขข้อมูล", // Button text
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.Black // Text color
+            )
+        }
+    }
+    Spacer(modifier = Modifier.height(16.dp))
 }

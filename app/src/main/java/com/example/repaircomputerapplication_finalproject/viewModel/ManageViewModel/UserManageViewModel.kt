@@ -89,9 +89,10 @@ class UserManageViewModel(
                     else -> throw IllegalArgumentException("Unknown user type: $userType")
                 }
                 if (result.isSuccessful) {
-                    Toast.makeText(getApplication(), result.body().toString(), Toast.LENGTH_SHORT).show()
+                    Log.d(TAG, "addUser: Success Response: ${result.body()}")
                 } else {
-                    Toast.makeText(getApplication(), "Failed to add user ${result.body().toString()}", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(getApplication(), "${result.errorBody()?.string()}", Toast.LENGTH_LONG).show()
+                    Log.d(TAG, "addUser: Error Response: ${result.errorBody()?.string()}")
                 }
             } catch (e: Exception) {
                 Toast.makeText(getApplication(), e.toString(), Toast.LENGTH_SHORT).show()
@@ -108,8 +109,8 @@ class UserManageViewModel(
         password: String,
         phone: String,
         department: String,
-        status:String
-    ){
+        status: String
+    ) {
         viewModelScope.launch {
             val response = RetrofitInstance.apiService
             val userModel = UserModel(
@@ -131,20 +132,21 @@ class UserManageViewModel(
             )
             try {
                 val result = when (userType) {
-                    "Admin" -> response.editAdmin(userId.toInt(),userModel)
-                    "Technician" -> response.editTechnician(userId.toInt(),techModel)
-                    "Employee" -> response.editEmployee(userId.toInt(),userModel)
-                    "Chief" -> response.editChief(userId.toInt(),userModel)
+                    "Admin" -> response.editAdmin(userId.toInt(), userModel)
+                    "Technician" -> response.editTechnician(userId.toInt(), techModel)
+                    "Employee" -> response.editEmployee(userId.toInt(), userModel)
+                    "Chief" -> response.editChief(userId.toInt(), userModel)
                     else -> throw IllegalArgumentException("Unknown user type: $userType")
                 }
+                Log.d(TAG, "editUser: Request Data: ${userModel}")
                 if (result.isSuccessful) {
-                    Toast.makeText(getApplication(), result.body().toString(), Toast.LENGTH_SHORT).show()
+                    Log.d(TAG, "editUser: Success Response: ${result.body()}")
                 } else {
-                    Toast.makeText(getApplication(), "Failed to Edit user", Toast.LENGTH_SHORT).show()
+                    Log.d(TAG, "editUser: Error Response: ${result.errorBody()?.string()}")
                 }
             } catch (e: Exception) {
                 Toast.makeText(getApplication(), e.toString(), Toast.LENGTH_SHORT).show()
-                Log.e("UserManageViewModel", "Error adding user: $e")
+                Log.e("UserManageViewModel", "Error editing user: $e")
             }
         }
     }

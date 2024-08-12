@@ -1,6 +1,5 @@
 package com.example.repaircomputerapplication_finalproject.viewModel
 
-import SessionManager
 import android.app.Application
 import android.content.ContentValues.TAG
 import android.util.Log
@@ -16,8 +15,6 @@ import com.example.repaircomputerapplication_finalproject.viewModel.ContextDataS
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import kotlin.Exception
-
 
 class AuthViewModel(application: Application): AndroidViewModel(application) {
     private val dataStore = application.dataStore
@@ -29,30 +26,24 @@ class AuthViewModel(application: Application): AndroidViewModel(application) {
             try {
                 val response = RetrofitInstance.apiService.userLogin(UserRequest(email, password))
                 if (response.isSuccessful && response.body()?.message == "Logged in successfully!") {
-                    response.body()?.userSession?.let{
-                        item -> saveUserId(item.userId,item.role,item.IsLogin)
+                    response.body()?.userSession?.let { item ->
+                        saveUserId(item.userId, item.role, item.IsLogin)
                         _loginResult.value = item.IsLogin
                     }
                     Log.d(TAG, response.body()!!.toString())
-
                 } else {
                     Log.d(TAG, "login: ${response.body()}")
                     Toast.makeText(getApplication(), "${response.body()?.message}", Toast.LENGTH_SHORT).show()
+                    _loginResult.value = false
                 }
             } catch (e: Exception) {
                 Toast.makeText(getApplication(), e.toString(), Toast.LENGTH_SHORT).show()
                 Log.d(TAG, "login: $e")
+                _loginResult.value = false
             }
         }
     }
-    suspend fun checkConnection(): Boolean {
-        return try {
-            val response = RetrofitInstance.apiService.checkConnection()
-            response.success
-        } catch (e: Exception) {
-            false
-        }
-    }
+
     private suspend fun saveUserId(userId: Int, role: String, isLogin: Boolean) {
         val userIdKey = stringPreferencesKey("userId")
         val roleKey = stringPreferencesKey("role")
@@ -64,6 +55,3 @@ class AuthViewModel(application: Application): AndroidViewModel(application) {
         }
     }
 }
-
-
-

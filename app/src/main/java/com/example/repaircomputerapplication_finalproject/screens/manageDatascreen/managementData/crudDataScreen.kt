@@ -1,7 +1,9 @@
 package com.example.repaircomputerapplication_finalproject.screens.form.formManageData
 
 import android.content.ContentValues.TAG
+import android.os.Build
 import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
@@ -28,8 +30,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.repaircomputerapplication_finalproject.data.ScreenRoutes
 import com.example.repaircomputerapplication_finalproject.model.*
+import com.example.repaircomputerapplication_finalproject.utils.formatTimestamp
 import com.example.repaircomputerapplication_finalproject.viewModel.ManageViewModel.DataManageViewModel
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun crudDataScreen(dataType: String?, navController: NavController, viewModel: DataManageViewModel = viewModel()) {
     var searchQuery by remember { mutableStateOf(TextFieldValue("")) }
@@ -39,6 +43,9 @@ fun crudDataScreen(dataType: String?, navController: NavController, viewModel: D
     val equipmentTypeList = viewModel.eqc.collectAsState().value
     val techStatusList = viewModel.techStatus.collectAsState().value
     val loedList = viewModel.loed.collectAsState().value
+    LaunchedEffect(buildingList,departmentList,equipmentList,equipmentTypeList,techStatusList,loedList,searchQuery){
+        viewModel.LoadData()
+    }
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(onClick = {
@@ -218,6 +225,7 @@ fun DepartmentItem(dataType: String?,item: DepartmentData, navController: NavCon
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun EquipmentItem(dataType: String?,Eqitem: EquipmentData, navController: NavController, viewModel: DataManageViewModel) {
@@ -267,7 +275,7 @@ fun EquipmentItem(dataType: String?,Eqitem: EquipmentData, navController: NavCon
             Text(text = "ชื่ออุปกรณ์: ${Eqitem.eq_name}", fontSize = 14.sp)
             Text(text = "สถานะ: ${Eqitem.eq_status}", fontSize = 14.sp)
             Text(text = "หน่วยนับ: ${Eqitem.eq_unit}", fontSize = 14.sp)
-            Text(text = "วันเริ่มใช้งานอุปกรณ์: ${Eqitem.eq_start_date}", fontSize = 14.sp)
+            Text(text = "วันเริ่มใช้งานอุปกรณ์: ${formatTimestamp(Eqitem.eq_start_date)}", fontSize = 14.sp)
             Text(text = "ชื่อประเภทอุปกรณ์: $eqcName", fontSize = 14.sp)
         }
     }

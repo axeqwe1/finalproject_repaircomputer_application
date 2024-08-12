@@ -1,6 +1,7 @@
 package com.example.repaircomputerapplication_finalproject.component
 
 import android.content.ContentValues.TAG
+import android.net.Uri
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.material.icons.Icons
@@ -30,6 +31,7 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
 import androidx.wear.compose.material.Icon
 import androidx.wear.compose.material.Text
 import com.example.repaircomputerapplication_finalproject.data.BottomNavigationBarList
@@ -45,29 +47,41 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TopAppBarDynamic(navController: NavController,scrollBehavior: TopAppBarScrollBehavior,homeViewModel: HomeViewModel) {
-    val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route ?: ""
+fun TopAppBarDynamic(navController: NavController, scrollBehavior: TopAppBarScrollBehavior, homeViewModel: HomeViewModel) {
     val context = LocalContext.current
     var role = remember { mutableStateOf("") }
+    val navBackStackEntry = navController.currentBackStackEntryAsState().value
+    val currentStack = navBackStackEntry?.destination
+    val isUpdate = remember { mutableStateOf(false) }
 
+    if(currentStack?.route?.contains("isUpdate") == true){
+        isUpdate.value = navBackStackEntry.arguments?.getBoolean("isUpdate") == true
+    }
     LaunchedEffect(context) {
         role.value = context.dataStore.data.map { preferences ->
             preferences[stringPreferencesKey("role")] ?: ""
         }.first()
     }
+
+    val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route ?: ""
+    Log.d(TAG, "Current Route: $currentRoute")
+    val screenTitle = getScreenTitle(currentRoute,isUpdate.value)
+
     TopAppBar(
         modifier = Modifier.background(Color.Transparent),
-        title = { Text(
-            text = currentRoute,
-            color = Color.Black,
-            fontSize = 24.sp
-        ) },
+        title = {
+            Text(
+                text = screenTitle,
+                color = Color.Black,
+                fontSize = 24.sp
+            )
+        },
         navigationIcon = {
             val navBackStackEntry by navController.currentBackStackEntryAsState()
             val currentDestination = navBackStackEntry?.destination
-            val topNavBarDestination = BottomNavigationBarList().bottomNavigation(role.value).any() {it.route == currentDestination?.route}
+            val topNavBarDestination = BottomNavigationBarList().bottomNavigation(role.value).any { it.route == currentDestination?.route }
             Log.d(TAG, "TopAppBarDynamic: ${currentDestination?.route}")
-            if(!topNavBarDestination){
+            if (!topNavBarDestination) {
                 IconButton(onClick = { navController.navigateUp() }) {
                     Icon(imageVector = Icons.Filled.ArrowBackIosNew, contentDescription = "Go Back", tint = Color.Black)
                 }
@@ -76,9 +90,9 @@ fun TopAppBarDynamic(navController: NavController,scrollBehavior: TopAppBarScrol
         actions = {
             val navBackStackEntry by navController.currentBackStackEntryAsState()
             val currentDestination = navBackStackEntry?.destination
-            val topNavBarDestination = BottomNavigationBarList().bottomNavigation(role.value).any() {it.route == currentDestination?.route}
-            if(topNavBarDestination && currentDestination?.route == ScreenRoutes.Menu.route || topNavBarDestination && currentDestination?.route == ScreenRoutes.Dashboard.route){
-                TextButton(onClick = {homeViewModel.logout()}) {
+            val topNavBarDestination = BottomNavigationBarList().bottomNavigation(role.value).any { it.route == currentDestination?.route }
+            if (topNavBarDestination && (currentDestination?.route == ScreenRoutes.Menu.route || currentDestination?.route == ScreenRoutes.Dashboard.route)) {
+                TextButton(onClick = { homeViewModel.logout() }) {
                     Text(text = "Logout", color = MaterialTheme.colorScheme.error)
                 }
             }
@@ -87,3 +101,39 @@ fun TopAppBarDynamic(navController: NavController,scrollBehavior: TopAppBarScrol
     )
 }
 
+fun getScreenTitle(route: String,isUpdate:Boolean): String {
+    return when {
+        route.startsWith(ScreenRoutes.Home.route) -> "Home"
+        route.startsWith(ScreenRoutes.Notification.route) -> "แจ้งเตือน"
+        route.startsWith(ScreenRoutes.RequestRepairList.route) -> "รายการแจ้งซ่อม"
+        route.startsWith(ScreenRoutes.LoginScreens.route) -> "ล็อคอิน"
+        route.startsWith(ScreenRoutes.Menu.route) -> "หน้าเมนูหลัก"
+        route.startsWith(ScreenRoutes.checkConnection.route) -> "Connecting....."
+        route.startsWith(ScreenRoutes.ManageMenu.route) -> "Manage Menu"
+        route.startsWith(ScreenRoutes.UserManageMenu.route) -> "เลือกจัดการข้อมูลผู้ใช้งาน"
+        route.startsWith(ScreenRoutes.DataManageMenu.route) -> "เลือกจัดการข้อมูลทั่วไป"
+        route.startsWith(ScreenRoutes.ManageUserScreen.route) -> "จัดการข้อมูลผู้ใช้งาน"
+        route.startsWith(ScreenRoutes.ManageDataScreen.route) -> "จัดการข้อมูลทั่วไป"
+        route.startsWith(ScreenRoutes.FormRequestForRepair.route) -> "แจ้งซ่อม"
+        route.startsWith(ScreenRoutes.AddUserForm.route) -> "กรอกข้อมูลผู้ใช้งาน"
+        route.startsWith(ScreenRoutes.DataForm.route) -> "กรอกข้อมูลทั่วไป"
+        route.startsWith(ScreenRoutes.Report.route) -> "รายงาน"
+        route.startsWith(ScreenRoutes.Dashboard.route) -> "Dashboard"
+        route.startsWith(ScreenRoutes.detailRepair.route) -> "รายละเอียดแจ้งซ่อม"
+        route.startsWith(ScreenRoutes.addDetailRepair.route) -> getAddDetailRepairTitle(route,isUpdate)
+        route.startsWith(ScreenRoutes.statusDetail.route) -> "รายละเอียดสถานะการซ่อม"
+        route.startsWith(ScreenRoutes.AssignWork.route) -> "จ่ายงาน"
+        route.startsWith(ScreenRoutes.TechnicianListBacklog.route) -> "รายชื่อช่างเทคนิคสำหรับจ่ายงาน"
+        else -> route // Default case to handle any unmatched routes
+    }
+}
+
+fun getAddDetailRepairTitle(route: String,isUpdate: Boolean): String {
+
+    // Use these values to return the appropriate title
+    return if (isUpdate) {
+        "แก้ไขข้อมูลของงาน"
+    } else {
+        "เพิ่มรายละเอียดงาน"
+    }
+}

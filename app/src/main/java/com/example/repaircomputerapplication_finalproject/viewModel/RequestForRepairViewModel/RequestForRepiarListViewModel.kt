@@ -92,7 +92,7 @@ class RequestForRepiarListViewModel(application: Application):AndroidViewModel(a
     fun getEmployeeFullName(Emp_Id:Int):String{
         empList.value?.forEach {items ->
             if(items.emp_id == Emp_Id){
-                return items.firstname ?: ""
+                return "${items.firstname ?: ""} ${items.lastname ?: ""}"
             }
         }
         return "Fail to get Employee Name"

@@ -1,5 +1,7 @@
 package com.example.repaircomputerapplication_finalproject.screens
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -28,11 +30,13 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import com.example.repaircomputerapplication_finalproject.viewModel.NotificationViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.repaircomputerapplication_finalproject.`api-service`.ConnectionChecker
+import com.example.repaircomputerapplication_finalproject.utils.formatTimestamp
 import com.example.repaircomputerapplication_finalproject.viewModel.ContextDataStore.dataStore
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun NotificationScreen(viewModel: NotificationViewModel = viewModel()){
     val vmodel = viewModel
@@ -64,7 +68,7 @@ fun NotificationScreen(viewModel: NotificationViewModel = viewModel()){
                             ){
                                 Column(modifier = Modifier.fillMaxWidth()) {
                                     androidx.wear.compose.material.Text("${item.noti_message} \n")
-                                    androidx.wear.compose.material.Text("${item.timestamp} \n")
+                                    androidx.wear.compose.material.Text("${formatTimestamp(item.timestamp)} \n")
                                 }
                             }
                         }

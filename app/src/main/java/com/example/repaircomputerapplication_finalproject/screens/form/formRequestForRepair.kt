@@ -83,12 +83,10 @@ fun formRequestForRepair(navController: NavController, formRequestViewModel: for
         var isFound = false
         if (firstName != "" && lastName != "") {
             employeeList?.forEach { items ->
+                Log.d(TAG, "checkEmployeeData: ${items.firstname} and $firstName")
                 if (items.firstname == firstName && items.lastname == lastName) {
                     isFound = true
                     empId = items.emp_id
-                } else {
-                    isFound = false
-                    empId = null
                 }
             }
         }
@@ -350,9 +348,10 @@ fun formRequestForRepair(navController: NavController, formRequestViewModel: for
                 }
             },
             dismissButton = {
-                if(titleMessage == "แจ้งเตือน")
-                Button(onClick = { showDialog = false }) {
-                    Text(text = "Cancel")
+                if(titleMessage == "แจ้งเตือน"){
+                    Button(onClick = { showDialog = false }) {
+                        Text(text = "Cancel")
+                    }
                 }
             }
         )

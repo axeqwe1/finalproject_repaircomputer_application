@@ -145,13 +145,13 @@ interface IAPIService {
     suspend fun addChief(@Body chiefData: UserModel):Response<ChiefData>
     //---------------------------->EditUser
     @PUT("managementuser/updateadmin/{id}")
-    suspend fun editAdmin(@Path("id") admin_id:Int,@Body adminData: UserModel):Response<AdminData>
+    suspend fun editAdmin(@Path("id") admin_id:Int,@Body adminData: UserModel):Response<ResponseBody>
     @PUT("managementuser/updateemployee/{id}")
-    suspend fun editEmployee(@Path("id") emp_id:Int,@Body employeeData: UserModel):Response<EmployeeData>
+    suspend fun editEmployee(@Path("id") emp_id:Int,@Body employeeData: UserModel):Response<ResponseBody>
     @PUT("managementuser/updatetechnician/{id}")
-    suspend fun editTechnician(@Path("id") tech_id:Int,@Body technicianData: TechnicianBody):Response<TechnicianData>
+    suspend fun editTechnician(@Path("id") tech_id:Int,@Body technicianData: TechnicianBody):Response<ResponseBody>
     @PUT("managementuser/updatechief/{id}")
-    suspend fun editChief(@Path("id") chief_id:Int,@Body chiefData: UserModel):Response<ChiefData>
+    suspend fun editChief(@Path("id") chief_id:Int,@Body chiefData: UserModel):Response<ResponseBody>
     //----------------------------------> Get a specific user by ID
     @GET("managementuser/getadmin/{id}")
     suspend fun getAdminById(@Path("id") admin_id: Int): Response<AdminData>

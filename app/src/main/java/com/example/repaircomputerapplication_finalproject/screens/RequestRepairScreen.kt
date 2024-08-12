@@ -1,7 +1,9 @@
 package com.example.repaircomputerapplication_finalproject.screens
 
 import android.content.ContentValues.TAG
+import android.os.Build
 import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -24,6 +26,7 @@ import androidx.navigation.NavHostController
 import com.example.repaircomputerapplication_finalproject.`api-service`.ConnectionChecker
 import com.example.repaircomputerapplication_finalproject.component.ToggleComponent
 import com.example.repaircomputerapplication_finalproject.data.ScreenRoutes
+import com.example.repaircomputerapplication_finalproject.utils.formatTimestamp
 import com.example.repaircomputerapplication_finalproject.viewModel.ContextDataStore.dataStore
 import com.example.repaircomputerapplication_finalproject.viewModel.RequestForRepairViewModel.RequestForRepiarListViewModel
 import kotlinx.coroutines.delay
@@ -32,6 +35,7 @@ import kotlinx.coroutines.flow.map
 import java.text.SimpleDateFormat
 import java.util.*
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun RequestRepairScreen(navController: NavHostController, viewModel: RequestForRepiarListViewModel = viewModel()) {
     val requestList = viewModel.requestList.collectAsState().value ?: emptyList()
@@ -45,6 +49,8 @@ fun RequestRepairScreen(navController: NavHostController, viewModel: RequestForR
     var searchQuery by remember { mutableStateOf("") }
     val context = LocalContext.current
     var isLoading by remember{ mutableStateOf(true) }
+    var showDialog by remember { mutableStateOf(false) }
+
     LaunchedEffect(Unit) {
         if(ConnectionChecker.checkConnection()){
             viewModel.loadData()
@@ -62,7 +68,6 @@ fun RequestRepairScreen(navController: NavHostController, viewModel: RequestForR
         if (requestList.isEmpty() || eqtList.isEmpty() || empList.isEmpty() || buildList.isEmpty() || departList.isEmpty() || techList.isEmpty()) {
             Text(text = "ไม่มีคำขอ")
         } else {
-            Log.d(TAG, "RequestRepairScreen: $requestList")
             Column(Modifier.fillMaxSize()) {
                 Spacer(modifier = Modifier.height(16.dp))
                 OutlinedTextField(
@@ -81,20 +86,9 @@ fun RequestRepairScreen(navController: NavHostController, viewModel: RequestForR
                 }
                 // Filter the requestList based on the currentMode and searchQuery
                 val filteredRequestList = requestList.filter { item ->
-                    // Parse the ISO 8601 timestamp
-                    val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault())
-                    dateFormat.timeZone = TimeZone.getTimeZone("UTC")
-                    val date: Date = try {
-                        dateFormat.parse(item.timestamp) ?: Date()
-                    } catch (e: Exception) {
-                        Date()
-                    }
-                    // Format the date to a readable format
-                    val displayFormat = SimpleDateFormat("MM/dd/yyyy", Locale.getDefault())
-                    val formattedDate = displayFormat.format(date)
                     val isInSearchQuery = searchQuery.isEmpty() ||
                             item.rrid.toString().contains(searchQuery, ignoreCase = true) ||
-                            formattedDate.contains(searchQuery, ignoreCase = true) ||
+                            formatTimestamp(item.timestamp).split(",")[0].contains(searchQuery, ignoreCase = true) ||
                             viewModel.getDepartmentName(item.employee.departmentId ?: 0).contains(searchQuery, ignoreCase = true) ||
                             viewModel.getEmployeeFullName(item.employee_id ?: 0).contains(searchQuery, ignoreCase = true) ||
                             item.eq_id.toString().contains(searchQuery, ignoreCase = true)
@@ -148,6 +142,12 @@ fun RequestRepairScreen(navController: NavHostController, viewModel: RequestForR
                                     color = Color.Gray
                                 )
                                 Spacer(modifier = Modifier.height(8.dp))
+                                Text(text = "ผู้แจ้ง : ${viewModel.getEmployeeFullName(item.employee_id ?: 0)}")
+                                if(item.receive_repair != null){
+                                    Text(text = "ผู้รับงาน: ${viewModel.getTechnicianName(item.receive_repair.tech_id ?: 0) ?: "ไม่มี"}")
+                                } else{
+                                    Text(text = "ผู้รับงาน: ไม่มี")
+                                }
                                 Row {
                                     Column(modifier = Modifier.weight(1f)) {
                                         Text(text = "ชื่อตึก  : ${viewModel.getBuildingName(item.building_id ?: 0)}")
@@ -156,26 +156,7 @@ fun RequestRepairScreen(navController: NavHostController, viewModel: RequestForR
                                         Text(text = "หน่วยงาน: ${viewModel.getDepartmentName(item.employee.departmentId ?: 0)}")
                                     }
                                     Column(modifier = Modifier.weight(1f)) {
-                                        Text(text = "ผู้แจ้ง : ${viewModel.getEmployeeFullName(item.employee_id ?: 0)}")
-                                        if(item.receive_repair != null){
-                                            Text(text = "ผู้รับงาน: ${viewModel.getTechnicianName(item.receive_repair.tech_id ?: 0) ?: "ไม่มี"}")
-                                        } else{
-                                            Text(text = "ผู้รับงาน: ไม่มี")
-                                        }
-                                        // Parse the ISO 8601 timestamp
-                                        val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault())
-                                        dateFormat.timeZone = TimeZone.getTimeZone("UTC")
-                                        val date: Date = try {
-                                            dateFormat.parse(item.timestamp) ?: Date()
-                                        } catch (e: Exception) {
-                                            Date()
-                                        }
-
-                                        // Format the date to a readable format
-                                        val displayFormat = SimpleDateFormat("MM/dd/yyyy", Locale.getDefault())
-                                        val formattedDate = displayFormat.format(date)
-
-                                        Text(text = "วันที่แจ้ง: ${formattedDate}")
+                                        Text(text = "วันที่แจ้ง: ${formatTimestamp(item.timestamp).split(",")[0]}")
                                     }
                                 }
                             }

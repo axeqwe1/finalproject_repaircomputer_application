@@ -37,7 +37,6 @@ fun formAddDetail(rrid: String, _rd_id: String, isUpdate: Boolean, navController
     var showDialog by remember { mutableStateOf(false) }
     var validationError by remember { mutableStateOf<String?>(null) }
     val requestStatus = listOf(
-        "กำลังส่งการแจ้งซ่อม",
         "กำลังดำเนินการ",
         "เสร็จสิ้นแล้ว",
         "กำลังส่งคืน",
@@ -62,10 +61,10 @@ fun formAddDetail(rrid: String, _rd_id: String, isUpdate: Boolean, navController
     }
     fun recordData(){
         if(selectRequestText == "เสร็จสิ้นแล้ว"){
-            repairDetail = "เสร็จสิ้นแล้ว"
+            repairDetail = "การซ่อมเสร็จสิ้นแล้ว"
         }
         if(selectRequestText == "กำลังส่งคืน"){
-            repairDetail = "กำลังส่งคืน"
+            repairDetail = "กำลังส่งคืนอุปกรณ์"
         }
         if (isUpdate) {
             viewModel.UpdateDetail(
@@ -163,45 +162,44 @@ fun formAddDetail(rrid: String, _rd_id: String, isUpdate: Boolean, navController
             }
         }
         Spacer(modifier = Modifier.height(16.dp))
-
-        Column(modifier = Modifier.fillMaxWidth()) {
-            Text(text = "สถานะคำขอ", fontSize = 16.sp)
-            ExposedDropdownMenuBox(
-                expanded = loedIsExpand,
-                onExpandedChange = { loedIsExpand = it }
-            ) {
-                OutlinedTextField(
-                    value = selectRequestText,
-                    onValueChange = {},
-                    readOnly = true,
-                    label = { Text("เลือกสถานะของการซ่อม") },
-                    trailingIcon = {
-                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = loedIsExpand)
-                    },
-                    colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
-                    modifier = Modifier
-                        .menuAnchor()
-                        .fillMaxWidth()
-                )
-                ExposedDropdownMenu(
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Text(text = "สถานะคำขอ", fontSize = 16.sp)
+                ExposedDropdownMenuBox(
                     expanded = loedIsExpand,
-                    onDismissRequest = { loedIsExpand = false }
+                    onExpandedChange = { loedIsExpand = it }
                 ) {
-                    requestStatus.forEach { request ->
-                        DropdownMenuItem(
-                            text = { Text(text = request) },
-                            onClick = {
-                                selectRequestText = request
-                                loedIsExpand = false
-                            }
-                        )
+                    OutlinedTextField(
+                        value = selectRequestText,
+                        onValueChange = {},
+                        readOnly = true,
+                        label = { Text("เลือกสถานะของการซ่อม") },
+                        trailingIcon = {
+                            ExposedDropdownMenuDefaults.TrailingIcon(expanded = loedIsExpand)
+                        },
+                        colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
+                        modifier = Modifier
+                            .menuAnchor()
+                            .fillMaxWidth()
+                    )
+                    ExposedDropdownMenu(
+                        expanded = loedIsExpand,
+                        onDismissRequest = { loedIsExpand = false }
+                    ) {
+                        requestStatus.forEach { request ->
+                            DropdownMenuItem(
+                                text = { Text(text = request) },
+                                onClick = {
+                                    selectRequestText = request
+                                    loedIsExpand = false
+                                }
+                            )
+                        }
                     }
                 }
+                if (selectRequestText == "เลือกสถานะของการซ่อม") {
+                    Text(text = "กรุณาเลือกสถานะของการซ่อม", color = Color.Red, fontSize = 12.sp)
+                }
             }
-            if (selectRequestText == "เลือกสถานะของการซ่อม") {
-                Text(text = "กรุณาเลือกสถานะของการซ่อม", color = Color.Red, fontSize = 12.sp)
-            }
-        }
 
         Spacer(modifier = Modifier.height(16.dp))
         if(selectRequestText != "เสร็จสิ้นแล้ว" && selectRequestText != "กำลังส่งคืน" && selectRequestText != "ส่งคืนเสร็จสิ้น"){
@@ -243,8 +241,7 @@ fun formAddDetail(rrid: String, _rd_id: String, isUpdate: Boolean, navController
 
             Spacer(modifier = Modifier.height(16.dp))
         }
-
-        if(isUpdate == true){
+        if(isUpdate || requestData?.receive_repair?.repair_details?.lastOrNull() == null){
             Column(modifier = Modifier.fillMaxWidth()) {
                 Text(text = "ระดับความเสียหาย", fontSize = 16.sp)
                 ExposedDropdownMenuBox(
@@ -285,8 +282,6 @@ fun formAddDetail(rrid: String, _rd_id: String, isUpdate: Boolean, navController
                 }
             }
         }
-
-
 
         Spacer(modifier = Modifier.height(16.dp))
 

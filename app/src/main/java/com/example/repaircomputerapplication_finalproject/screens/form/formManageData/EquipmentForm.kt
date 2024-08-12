@@ -39,13 +39,24 @@ fun equipmentForm(isEdit: Boolean?, DataID: String?, viewModel: DataManageViewMo
     val eqList = viewModel.eq.collectAsState().value
     val eqcList = viewModel.eqc.collectAsState().value
     var btnName by remember { mutableStateOf("เพิ่มข้อมูล") }
-    LaunchedEffect(DataID,isEdit ){
+    var showDialog by remember { mutableStateOf(false) }
+    var dialogTitle by remember { mutableStateOf("") }
+    var dialogMessage by remember { mutableStateOf("") }
+    var showSuccessDialog by remember { mutableStateOf(false) }
+    var successDialogTitle by remember { mutableStateOf("") }
+    var successDialogMessage by remember { mutableStateOf("") }
+    var showConfirmationDialog by remember { mutableStateOf(false) }
+    var confirmationDialogTitle by remember { mutableStateOf("") }
+    var confirmationDialogMessage by remember { mutableStateOf("") }
+    var onConfirmAction by remember { mutableStateOf<() -> Unit>({}) }
+
+    LaunchedEffect(DataID, isEdit) {
         viewModel.LoadData()
     }
-    LaunchedEffect(eqList){
+    LaunchedEffect(eqList) {
         val eq = eqList?.find { it.eq_id.toString() == DataID }
-        Log.d(ContentValues.TAG, "buildingForm: $eqList DataId $DataID")
-        if(eq != null && DataID != null && isEdit == true){
+        Log.d(ContentValues.TAG, "equipmentForm: $eqList DataId $DataID")
+        if (eq != null && DataID != null && isEdit == true) {
             equipmentName = eq.eq_name!!
             unit = eq.eq_unit!!
             selectedStatus = eq.eq_status!!
@@ -167,22 +178,85 @@ fun equipmentForm(isEdit: Boolean?, DataID: String?, viewModel: DataManageViewMo
 
         Button(
             onClick = {
-                if(isEdit == true){
-                    if(DataID != null){
-                        viewModel.editEquipment(DataID.toInt(),equipmentName,selectedStatus,unit,eqcId.toString())
-                    }else{
-                        Toast.makeText(context,"not have DataId", Toast.LENGTH_SHORT).show()
+                if (equipmentName.isBlank() || unit.isBlank() || selectedStatus == "สถานะอุปกรณ์" || selectedType == "ประเภทอุปกรณ์") {
+                    dialogTitle = "เกิดข้อผิดพลาด"
+                    dialogMessage = "กรุณากรอกข้อมูลให้ครบถ้วน"
+                    showDialog = true
+                } else {
+                    confirmationDialogTitle = if (isEdit == true) "ยืนยันการแก้ไข" else "ยืนยันการเพิ่มข้อมูล"
+                    confirmationDialogMessage = if (isEdit == true) "คุณต้องการแก้ไขข้อมูลหรือไม่?" else "คุณต้องการเพิ่มข้อมูลหรือไม่?"
+                    onConfirmAction = {
+                        if (isEdit == true) {
+                            if (DataID != null) {
+                                viewModel.editEquipment(DataID.toInt(), equipmentName, selectedStatus, unit, eqcId.toString())
+                                successDialogTitle = "สำเร็จ"
+                                successDialogMessage = "แก้ไขข้อมูลเรียบร้อยแล้ว"
+                                showSuccessDialog = true
+                            } else {
+                                Toast.makeText(context, "ไม่พบ DataId", Toast.LENGTH_SHORT).show()
+                            }
+                        } else {
+                            viewModel.addEquipment(equipmentName, selectedStatus, unit, eqcId.toString())
+                            successDialogTitle = "สำเร็จ"
+                            successDialogMessage = "เพิ่มข้อมูลเรียบร้อยแล้ว"
+                            showSuccessDialog = true
+                        }
                     }
-                }else{
-                    viewModel.addEquipment(equipmentName, selectedStatus, unit, eqcId.toString())
+                    showConfirmationDialog = true
                 }
-
             },
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(50),
             colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFF8BC34A))
         ) {
-            Text(text = "เพิ่มข้อมูล", fontSize = 20.sp, color = Color.White)
+            Text(text = btnName, fontSize = 20.sp, color = Color.White)
+        }
+
+        if (showDialog) {
+            AlertDialog(
+                onDismissRequest = { showDialog = false },
+                title = { Text(dialogTitle) },
+                text = { Text(dialogMessage) },
+                confirmButton = {
+                    Button(onClick = { showDialog = false }) {
+                        Text("OK")
+                    }
+                }
+            )
+        }
+
+        if (showSuccessDialog) {
+            AlertDialog(
+                onDismissRequest = { showSuccessDialog = false },
+                title = { Text(successDialogTitle) },
+                text = { Text(successDialogMessage) },
+                confirmButton = {
+                    Button(onClick = { showSuccessDialog = false }) {
+                        Text("OK")
+                    }
+                }
+            )
+        }
+
+        if (showConfirmationDialog) {
+            AlertDialog(
+                onDismissRequest = { showConfirmationDialog = false },
+                title = { Text(confirmationDialogTitle) },
+                text = { Text(confirmationDialogMessage) },
+                confirmButton = {
+                    Button(onClick = {
+                        showConfirmationDialog = false
+                        onConfirmAction()
+                    }) {
+                        Text("ยืนยัน")
+                    }
+                },
+                dismissButton = {
+                    Button(onClick = { showConfirmationDialog = false }) {
+                        Text("ยกเลิก")
+                    }
+                }
+            )
         }
     }
 }
