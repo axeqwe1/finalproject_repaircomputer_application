@@ -160,7 +160,7 @@ interface IAPIService {
     @GET("managementuser/gettechnician/{id}")
     suspend fun getTechnicianById(@Path("id") eq_id: Int): Response<TechnicianData>
     @GET("managementuser/getchief/{id}")
-    suspend fun getChiefById(@Path("id") eq_id: Int): Response<EmployeeData>
+    suspend fun getChiefById(@Path("id") eq_id: Int): Response<ChiefData>
     //----------------------------------> Delete User
 
     @DELETE("managementuser/deleteadmin/{id}")

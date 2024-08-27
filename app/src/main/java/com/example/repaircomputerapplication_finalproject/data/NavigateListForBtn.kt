@@ -46,7 +46,7 @@ data class NavigateListForBtn
         if(Role == "Admin"){
             listType = listOf(
                 NavigateListForBtn(
-                    Btn_Name = "จ่ายงาน",
+                    Btn_Name = "จ่ายงานที่ค้างเกิน 3 วัน",
                     Icon = Icons.Filled.Warning,
                     Route = ScreenRoutes.AssignWork.route
                 ),

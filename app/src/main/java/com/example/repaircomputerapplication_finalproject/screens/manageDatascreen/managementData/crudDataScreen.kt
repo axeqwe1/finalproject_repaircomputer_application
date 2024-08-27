@@ -62,7 +62,7 @@ fun crudDataScreen(dataType: String?, navController: NavController, viewModel: D
                 .padding(innerPadding),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Text("DataType: $dataType", fontSize = 24.sp, color = Color.Black)
+            Text("จัดการข้อมูล: $dataType", fontSize = 24.sp, color = Color.Black)
             Spacer(modifier = Modifier.height(16.dp))
             OutlinedTextField(
                 value = searchQuery,

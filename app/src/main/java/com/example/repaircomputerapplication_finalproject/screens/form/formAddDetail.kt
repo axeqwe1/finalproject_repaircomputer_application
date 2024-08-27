@@ -48,7 +48,11 @@ fun formAddDetail(rrid: String, _rd_id: String, isUpdate: Boolean, navController
     LaunchedEffect(key1 = true) {
         requestData = viewModel.fetchRequestForRepairData(rrid.toInt())
         if (isUpdate) {
-            repairDetail = requestData?.receive_repair!!.repair_details.lastOrNull()?.rd_description.toString().split(":")[1]
+            repairDetail = if(requestData?.receive_repair!!.repair_details.lastOrNull()?.rd_description.toString().split(":").size > 1){
+                requestData?.receive_repair!!.repair_details.lastOrNull()?.rd_description.toString().split(":")[1]
+            }else{
+                ""
+            }
             selectedDamageLevel = damageLevels?.find { it.loed_id == requestData?.receive_repair!!.repair_details.lastOrNull()?.loed_id }?.loed_Name.orEmpty()
             Loed_ID = damageLevels?.find { it.loed_id == requestData?.receive_repair!!.repair_details.lastOrNull()?.loed_id }?.loed_id.toString()
             selectRequestText = requestData?.request_status.toString()

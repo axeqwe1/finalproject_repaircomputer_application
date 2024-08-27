@@ -6,18 +6,23 @@ import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.datastore.preferences.core.stringPreferencesKey
@@ -34,7 +39,6 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import java.text.SimpleDateFormat
 import java.util.*
-
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun RequestRepairScreen(navController: NavHostController, viewModel: RequestForRepiarListViewModel = viewModel()) {
@@ -47,9 +51,11 @@ fun RequestRepairScreen(navController: NavHostController, viewModel: RequestForR
     var userType by remember { mutableStateOf("") }
     var currentMode by remember { mutableStateOf("งานที่ยังไม่จ่าย") } // Track the current mode
     var searchQuery by remember { mutableStateOf("") }
+    var sortAscending by remember { mutableStateOf(true) } // State to manage sorting order
     val context = LocalContext.current
     var isLoading by remember{ mutableStateOf(true) }
     var showDialog by remember { mutableStateOf(false) }
+    var selectedFilter by remember { mutableStateOf("ทั้งหมด") }
 
     LaunchedEffect(Unit) {
         if(ConnectionChecker.checkConnection()){
@@ -78,27 +84,131 @@ fun RequestRepairScreen(navController: NavHostController, viewModel: RequestForR
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp)
                 )
+//                // Filter Group Button using Text
+                val scrollState = rememberScrollState()
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                        .horizontalScroll(scrollState), // เพิ่มการเลื่อนในแนวนอน
+                    horizontalArrangement = Arrangement.SpaceAround
+                ) {
+                    val filters = listOf("ทั้งหมด", "รหัสงาน", "วัน/เดือน/ปี", "หน่วยงาน", "ชื่อผู้แจ้ง", "รหัสอุปกรณ์")
+                    filters.forEach { filter ->
+                        Text(
+                            text = filter,
+                            modifier = Modifier
+                                .clickable {
+                                    selectedFilter = filter
+                                }
+                                .padding(6.dp),
+                            color = if (selectedFilter == filter) Color.Yellow else Color.Gray,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
+                // Filter the requestList based on the currentMode and searchQuery
+                val filteredRequestList = requestList.filter { item ->
+                    when(selectedFilter){
+                        "ทั้งหมด" -> {
+                            val isInSearchQuery = searchQuery.isEmpty() ||
+                                    item.rrid.toString().contains(searchQuery, ignoreCase = true) ||
+                                    formatTimestamp(item.timestamp).split(",")[0].contains(searchQuery, ignoreCase = true) ||
+                                    viewModel.getDepartmentName(item.employee.departmentId ?: 0).contains(searchQuery, ignoreCase = true) ||
+                                    viewModel.getEmployeeFullName(item.employee_id ?: 0).contains(searchQuery, ignoreCase = true) ||
+                                    item.eq_id.toString().contains(searchQuery, ignoreCase = true)
+                            val isInCurrentMode = when (userType) {
+                                "Admin" -> if (currentMode == "งานที่ยังไม่จ่าย") item.receive_repair == null else true
+                                "Technician" -> if (currentMode == "ไม่ได้กรอกข้อมูล") item.receive_repair.repair_details.isEmpty() else true
+                                else -> true
+                            }
+                            isInSearchQuery && isInCurrentMode
+                        }
+                        "รหัสงาน" -> {
+                            val isInSearchQuery = searchQuery.isEmpty() ||
+                                    item.rrid.toString().contains(searchQuery, ignoreCase = true)
+                            val isInCurrentMode = when (userType) {
+                                "Admin" -> if (currentMode == "งานที่ยังไม่จ่าย") item.receive_repair == null else true
+                                "Technician" -> if (currentMode == "ไม่ได้กรอกข้อมูล") item.receive_repair.repair_details.isEmpty() else true
+                                else -> true
+                            }
+                            isInSearchQuery && isInCurrentMode
+                        }
+                        "วัน/เดือน/ปี" -> {
+                            val isInSearchQuery = searchQuery.isEmpty() ||
+                                    formatTimestamp(item.timestamp).split(",")[0].contains(searchQuery, ignoreCase = true)
+                            val isInCurrentMode = when (userType) {
+                                "Admin" -> if (currentMode == "งานที่ยังไม่จ่าย") item.receive_repair == null else true
+                                "Technician" -> if (currentMode == "ไม่ได้กรอกข้อมูล") item.receive_repair.repair_details.isEmpty() else true
+                                else -> true
+                            }
+                            isInSearchQuery && isInCurrentMode
+                        }
+                        "หน่วยงาน" -> {
+                            val isInSearchQuery = searchQuery.isEmpty() ||
+                                    viewModel.getDepartmentName(item.employee.departmentId ?: 0).contains(searchQuery, ignoreCase = true)
+                            val isInCurrentMode = when (userType) {
+                                "Admin" -> if (currentMode == "งานที่ยังไม่จ่าย") item.receive_repair == null else true
+                                "Technician" -> if (currentMode == "ไม่ได้กรอกข้อมูล") item.receive_repair.repair_details.isEmpty() else true
+                                else -> true
+                            }
+                            isInSearchQuery && isInCurrentMode
+                        }
+                        "ชื่อผู้แจ้ง" -> {
+                            val isInSearchQuery = searchQuery.isEmpty() ||
+                                    viewModel.getEmployeeFullName(item.employee_id ?: 0).contains(searchQuery, ignoreCase = true)
+                            val isInCurrentMode = when (userType) {
+                                "Admin" -> if (currentMode == "งานที่ยังไม่จ่าย") item.receive_repair == null else true
+                                "Technician" -> if (currentMode == "ไม่ได้กรอกข้อมูล") item.receive_repair.repair_details.isEmpty() else true
+                                else -> true
+                            }
+                            isInSearchQuery && isInCurrentMode
+                        }
+                        "รหัสอุปกรณ์" -> {
+                            val isInSearchQuery = searchQuery.isEmpty() ||
+                                    item.eq_id.toString().contains(searchQuery, ignoreCase = true)
+                            val isInCurrentMode = when (userType) {
+                                "Admin" -> if (currentMode == "งานที่ยังไม่จ่าย") item.receive_repair == null else true
+                                "Technician" -> if (currentMode == "ไม่ได้กรอกข้อมูล") item.receive_repair.repair_details.isEmpty() else true
+                                else -> true
+                            }
+                            isInSearchQuery && isInCurrentMode
+                        }
+                        else -> {
+                            false
+                        }
+                    }
+
+                }.sortedBy { if (sortAscending) it.rrid else -it.rrid!! } // Sort by rrid
+
                 if(userType != "Employee"){
                     ToggleComponent(role = userType) { mode ->
                         currentMode = mode
                         Log.d(TAG, "RequestRepairScreen: $currentMode")
                     }
                 }
-                // Filter the requestList based on the currentMode and searchQuery
-                val filteredRequestList = requestList.filter { item ->
-                    val isInSearchQuery = searchQuery.isEmpty() ||
-                            item.rrid.toString().contains(searchQuery, ignoreCase = true) ||
-                            formatTimestamp(item.timestamp).split(",")[0].contains(searchQuery, ignoreCase = true) ||
-                            viewModel.getDepartmentName(item.employee.departmentId ?: 0).contains(searchQuery, ignoreCase = true) ||
-                            viewModel.getEmployeeFullName(item.employee_id ?: 0).contains(searchQuery, ignoreCase = true) ||
-                            item.eq_id.toString().contains(searchQuery, ignoreCase = true)
-                    val isInCurrentMode = when (userType) {
-                        "Admin" -> if (currentMode == "งานที่ยังไม่จ่าย") item.receive_repair == null else true
-                        "Technician" -> if (currentMode == "ไม่ได้กรอกข้อมูล") item.receive_repair.repair_details.isEmpty() else true
-                        else -> true
-                    }
-                    isInSearchQuery && isInCurrentMode
+                Spacer(modifier = Modifier.height(16.dp))
+                // Button to toggle sort order
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp, vertical = 1.dp),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    Text(
+                        text = if (sortAscending) "เก่า - ใหม่" else "ใหม่ - เก่า",
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(50)) // ทำให้เป็นรูปล่างโค้งกลม
+                            .background(Color.Yellow)
+                            .padding(8.dp)
+                            .clickable {
+                                sortAscending = !sortAscending
+                            },
+                        fontSize = 16.sp
+                    )
                 }
+
+
 
                 LazyColumn(modifier = Modifier.fillMaxWidth()) {
                     items(filteredRequestList) { item ->
@@ -122,7 +232,7 @@ fun RequestRepairScreen(navController: NavHostController, viewModel: RequestForR
                                     .padding(16.dp)
                             ) {
                                 Text(
-                                    text = "รหัสงาน: ${item.rrid.toString()}",
+                                    text = "รหัสงาน: ${item.rrid}",
                                     fontSize = 18.sp,
                                     fontWeight = FontWeight.Bold
                                 )
@@ -167,5 +277,3 @@ fun RequestRepairScreen(navController: NavHostController, viewModel: RequestForR
         }
     }
 }
-
-

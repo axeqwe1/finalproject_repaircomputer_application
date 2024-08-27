@@ -307,11 +307,11 @@ class DataManageViewModel(application: Application): AndroidViewModel(applicatio
                         "LevelOfDamage" -> _loed.value = _loed.value?.filterNot { it.loed_id == DataId }
                         "TechStatus" -> _techStatus.value = _techStatus.value?.filterNot { it.status_id == DataId }
                     }
-                    Toast.makeText(getApplication(), "Successfully deleted", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(getApplication(), "ลบข้อมูลเสร็จสิ้น", Toast.LENGTH_SHORT).show()
                     Log.d(TAG, "deleteData: Successfully deleted $DataType with ID $DataId")
                 } else {
                     val errorBody = result.errorBody()?.string()
-                    Toast.makeText(getApplication(), "Failed to delete: $errorBody", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(getApplication(), "$errorBody", Toast.LENGTH_LONG).show()
                     Log.e(TAG, "deleteData: Failed to delete $DataType with ID $DataId - $errorBody")
                 }
             } catch (e: Exception) {

@@ -50,6 +50,11 @@ fun formRequestForRepair(navController: NavController, formRequestViewModel: for
     val imageName2 = vmodel.uploadedFileName2.collectAsState().value
     val imageName3 = vmodel.uploadedFileName3.collectAsState().value
     var selectedBuilding by remember { mutableStateOf("กรุณาเลือกข้อมูล") }
+    var selectedFloor by remember { mutableStateOf("กรุณาเลือกชั้น") }
+    var selectedRoom by remember { mutableStateOf("กรุณาเลือกห้อง") }
+    var isBuildingExpand by remember { mutableStateOf(false) }
+    var isFloorExpand by remember { mutableStateOf(false) }
+    var isRoomExpand by remember { mutableStateOf(false) }
     var buildingId by remember { mutableStateOf(0) }
     var isExpand by remember { mutableStateOf(false) }
     val imageUri1 = vmodel.image1.collectAsState().value
@@ -118,7 +123,8 @@ fun formRequestForRepair(navController: NavController, formRequestViewModel: for
 
     // ... (ตัวแปรสำหรับเมนูดรอปดาวน์และรูปภาพ)
     if (showLoadSuccess) {
-        val sheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Expanded)
+        val sheetState =
+            rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Expanded)
         val scope = rememberCoroutineScope()
         ModalBottomSheetLayout(
             sheetState = sheetState,
@@ -182,20 +188,24 @@ fun formRequestForRepair(navController: NavController, formRequestViewModel: for
                         .fillMaxWidth()
                         .height(120.dp) // ปรับขนาดตามต้องการ
                 )
-                // dropdown
-                Row(
+                Column(
                     modifier = Modifier
-                        .fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
+                        .fillMaxSize()
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    ExposedDropdownMenuBox(expanded = isExpand, onExpandedChange = { isExpand = it }) {
+                    // Dropdown สำหรับเลือกชื่อตึก/อาคาร
+                    ExposedDropdownMenuBox(
+                        expanded = isBuildingExpand,
+                        onExpandedChange = { isBuildingExpand = it }
+                    ) {
                         OutlinedTextField(
                             value = selectedBuilding,
                             onValueChange = {},
                             readOnly = true,
                             label = { Text("เลือกตึก/อาคาร") },
                             trailingIcon = {
-                                ExposedDropdownMenuDefaults.TrailingIcon(expanded = isExpand)
+                                ExposedDropdownMenuDefaults.TrailingIcon(expanded = isBuildingExpand)
                             },
                             colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
                             modifier = Modifier
@@ -203,157 +213,259 @@ fun formRequestForRepair(navController: NavController, formRequestViewModel: for
                                 .fillMaxWidth()
                         )
                         ExposedDropdownMenu(
-                            expanded = isExpand,
+                            expanded = isBuildingExpand,
                             onDismissRequest = {
-                                isExpand = false
+                                isBuildingExpand = false
                             }
                         ) {
-                            buildingList?.forEach { item ->
+                            buildingList?.distinctBy { it.building_name }?.forEach { item ->
                                 DropdownMenuItem(
-                                    text = { Text(text = "ชื่อตึก:${item.building_name} เลขห้อง:${item.building_room_number} ชั้นตึก:${item.building_floor}") },
+                                    text = { Text(text = item.building_name) },
                                     onClick = {
                                         buildingId = item.building_id ?: 0
-                                        selectedBuilding = "ชื่อตึก:${item.building_name} เลขห้อง:${item.building_room_number} ชั้นตึก:${item.building_floor}"
-                                        isExpand = false
+                                        selectedBuilding = item.building_name
+                                        selectedFloor = "กรุณาเลือกชั้น"
+                                        selectedRoom = "กรุณาเลือกห้อง"
+                                        isBuildingExpand = false
                                     }
                                 )
                             }
                         }
                     }
-                }
-                Box(
-                    modifier = Modifier.fillMaxWidth(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .fillMaxHeight(),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        ImageUploadScreen(formRequestViewModel)
-                    }
-                }
-                Button(
-                    onClick = {
-                        showDialog = true
-                    }
-                ) {
-                    Text("Submit")
-                }
-            }
-        }
-    }
 
-    if (showDialog) {
-        var alertMessage: String by remember { mutableStateOf("") }
-        var titleMessage: String by remember { mutableStateOf("") }
-        if (role == "Technician") {
-            if (deviceId == "" ||
-                selectedBuilding == "กรุณาเลือกข้อมูล" ||
-                repairDetails == ""
-            ) {
-                titleMessage = "เกิดข้อผิดพลาด"
-                alertMessage = "กรุณากรอกข้อมูลให้ครบ"
-            } else if (!checkEmployeeData(emp_Fnm, emp_Lnm)) {
-                titleMessage = "เกิดข้อผิดพลาด"
-                alertMessage = "ไม่พบข้อมูลผู้ใช้งาน"
-            } else if (!checkEquipmentId(deviceId)) {
-                titleMessage = "เกิดข้อผิดพลาด"
-                alertMessage = "ไม่พบข้อมูลอุปกรณ์"
-            } else if (!checkBuildingId(buildingId)) {
-                titleMessage = "เกิดข้อผิดพลาด"
-                alertMessage = "ไม่พบข้อมูลตึกอาคาร"
-            } else if (imageUri1?.path == null || imageUri2?.path == null || imageUri3?.path == null) {
-                titleMessage = "เกิดข้อผิดพลาด"
-                alertMessage = "กรุณาใส่รูปภาพให้ครบ"
-            } else {
-                titleMessage = "แจ้งเตือน"
-                alertMessage = "กรุณาตรวจสอบข้อมูลการแจ้งซ่อมให้ครบถ้วน คุณต้องการแจ้งซ่อมใช่หรือไม่?"
-            }
-        }else{
-            if (deviceId == "" ||
-                selectedBuilding == "กรุณาเลือกข้อมูล" ||
-                repairDetails == ""
-            ) {
-                titleMessage = "เกิดข้อผิดพลาด"
-                alertMessage = "กรุณากรอกข้อมูลให้ครบ"
-            }  else if (!checkEquipmentId(deviceId)) {
-                titleMessage = "เกิดข้อผิดพลาด"
-                alertMessage = "ไม่พบข้อมูลอุปกรณ์"
-            } else if (!checkBuildingId(buildingId)) {
-                titleMessage = "เกิดข้อผิดพลาด"
-                alertMessage = "ไม่พบข้อมูลตึกอาคาร"
-            } else if (imageUri1?.path == null || imageUri2?.path == null || imageUri3?.path == null) {
-                titleMessage = "เกิดข้อผิดพลาด"
-                alertMessage = "กรุณาใส่รูปภาพให้ครบ"
-            } else {
-                titleMessage = "แจ้งเตือน"
-                alertMessage = "กรุณาตรวจสอบข้อมูลการแจ้งซ่อมให้ครบถ้วน คุณต้องการแจ้งซ่อมใช่หรือไม่?"
-            }
-        }
-        AlertDialog(
-            onDismissRequest = { showDialog = false },
-            title = { Text(titleMessage) },
-            text = { Text(alertMessage) },
-            confirmButton = {
-                Button(onClick = {
-                    if(titleMessage == "แจ้งเตือน"){
-                        if (role == "Technician") {
-                            if (checkEmployeeData(emp_Fnm, emp_Lnm) &&
-                                checkEquipmentId(deviceId) &&
-                                checkBuildingId(buildingId) &&
-                                repairDetails.isNotBlank() &&
-                                imageUri1?.path?.isNotEmpty() == true &&
-                                imageUri2?.path?.isNotEmpty() == true &&
-                                imageUri3?.path?.isNotEmpty() == true
+                    // Dropdown สำหรับเลือกชั้นตึก (แสดงเฉพาะเมื่อเลือกชื่อตึกแล้ว)
+                    if (selectedBuilding != "กรุณาเลือกข้อมูล") {
+                        ExposedDropdownMenuBox(
+                            expanded = isFloorExpand,
+                            onExpandedChange = { isFloorExpand = it }
+                        ) {
+                            OutlinedTextField(
+                                value = selectedFloor,
+                                onValueChange = {},
+                                readOnly = true,
+                                label = { Text("เลือกชั้นตึก") },
+                                trailingIcon = {
+                                    ExposedDropdownMenuDefaults.TrailingIcon(expanded = isFloorExpand)
+                                },
+                                colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
+                                modifier = Modifier
+                                    .menuAnchor()
+                                    .fillMaxWidth()
+                            )
+                            ExposedDropdownMenu(
+                                expanded = isFloorExpand,
+                                onDismissRequest = {
+                                    isFloorExpand = false
+                                }
                             ) {
-                                showDialog = false  // ปิดใช้งาน Dialog หากข้อมูลครบ
-                                vmodel.uploadImage(imageUri1, 1)
-                                vmodel.uploadImage(imageUri2, 2)
-                                vmodel.uploadImage(imageUri3, 3)
-                                Log.d(TAG, "formRequestForRepair: $imageName1, $imageName2, $imageName3")
-                                vmodel.sendRequest(repairDetails, empId ?: 0, buildingId, eq_id ?: 0)
-                                showLoadSuccess = true
-                            } else {
-                                // โค้ดสำหรับการดำเนินการถัดไปหากข้อมูลครบถ้วน
-                                showDialog = true
-                                Log.d(TAG, "formRequestForRepair: ${imageUri1?.path}, ${imageUri2?.path}, ${imageUri3?.path}")
-                            }
-                        } else {
-                            if (checkEquipmentId(deviceId) &&
-                                checkBuildingId(buildingId) &&
-                                repairDetails.isNotBlank() &&
-                                imageUri1?.path?.isNotEmpty() == true &&
-                                imageUri2?.path?.isNotEmpty() == true &&
-                                imageUri3?.path?.isNotEmpty() == true) {
-                                showDialog = false  // เปิดใช้งาน Dialog หากข้อมูลไม่ครบ
-                                vmodel.uploadImage(imageUri1!!, 1)
-                                vmodel.uploadImage(imageUri2!!, 2)
-                                vmodel.uploadImage(imageUri3!!, 3)
-                                vmodel.sendRequest(repairDetails, empId ?: 0, buildingId, eq_id ?: 0)
-                                Log.d(TAG, "formRequestForRepair: $empId")
-                                showLoadSuccess = true
-                            } else {
-                                // โค้ดสำหรับการดำเนินการถัดไปหากข้อมูลครบถ้วน
-                                showDialog = true
+                                buildingList?.filter { it.building_name == selectedBuilding }
+                                    ?.distinctBy { it.building_floor }
+                                    ?.forEach { item ->
+                                        DropdownMenuItem(
+                                            text = { Text(text = item.building_floor.toString()) },
+                                            onClick = {
+                                                selectedFloor = item.building_floor.toString()
+                                                selectedRoom = "กรุณาเลือกห้อง"
+                                                isFloorExpand = false
+                                            }
+                                        )
+                                    }
                             }
                         }
-                        showDialog = false
-                    }else{
-                        showDialog = false
                     }
-                }) {
-                    Text("OK")
-                }
-            },
-            dismissButton = {
-                if(titleMessage == "แจ้งเตือน"){
-                    Button(onClick = { showDialog = false }) {
-                        Text(text = "Cancel")
+
+                    // Dropdown สำหรับเลือกชื่อห้อง (แสดงเฉพาะเมื่อเลือกชั้นตึกแล้ว)
+                    if (selectedFloor != "กรุณาเลือกชั้น") {
+                        ExposedDropdownMenuBox(
+                            expanded = isRoomExpand,
+                            onExpandedChange = { isRoomExpand = it }
+                        ) {
+                            OutlinedTextField(
+                                value = selectedRoom,
+                                onValueChange = {},
+                                readOnly = true,
+                                label = { Text("เลือกเลขห้อง") },
+                                trailingIcon = {
+                                    ExposedDropdownMenuDefaults.TrailingIcon(expanded = isRoomExpand)
+                                },
+                                colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
+                                modifier = Modifier
+                                    .menuAnchor()
+                                    .fillMaxWidth()
+                            )
+                            ExposedDropdownMenu(
+                                expanded = isRoomExpand,
+                                onDismissRequest = {
+                                    isRoomExpand = false
+                                }
+                            ) {
+                                buildingList?.filter { it.building_name == selectedBuilding && it.building_floor.toString() == selectedFloor }
+                                    ?.forEach { item ->
+                                        DropdownMenuItem(
+                                            text = { Text(text = item.building_room_number) },
+                                            onClick = {
+                                                selectedRoom = item.building_room_number
+                                                isRoomExpand = false
+                                            }
+                                        )
+                                    }
+                            }
+                        }
+                    }
+
+                    Box(
+                        modifier = Modifier.fillMaxWidth(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .fillMaxHeight(),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            ImageUploadScreen(formRequestViewModel)
+                        }
+                    }
+                    Button(
+                        onClick = {
+                            showDialog = true
+                        }
+                    ) {
+                        Text("Submit")
                     }
                 }
             }
-        )
+        }
+
+        if (showDialog) {
+            var alertMessage: String by remember { mutableStateOf("") }
+            var titleMessage: String by remember { mutableStateOf("") }
+            if (role == "Technician") {
+                if (deviceId == "" ||
+                    selectedBuilding == "กรุณาเลือกข้อมูล" ||
+                    repairDetails == ""
+                ) {
+                    titleMessage = "เกิดข้อผิดพลาด"
+                    alertMessage = "กรุณากรอกข้อมูลให้ครบ"
+                } else if (!checkEmployeeData(emp_Fnm, emp_Lnm)) {
+                    titleMessage = "เกิดข้อผิดพลาด"
+                    alertMessage = "ไม่พบข้อมูลผู้ใช้งาน"
+                } else if (!checkEquipmentId(deviceId)) {
+                    titleMessage = "เกิดข้อผิดพลาด"
+                    alertMessage = "ไม่พบข้อมูลอุปกรณ์"
+                } else if (!checkBuildingId(buildingId)) {
+                    titleMessage = "เกิดข้อผิดพลาด"
+                    alertMessage = "ไม่พบข้อมูลตึกอาคาร"
+                } else if (imageUri1?.path == null || imageUri2?.path == null || imageUri3?.path == null) {
+                    titleMessage = "เกิดข้อผิดพลาด"
+                    alertMessage = "กรุณาใส่รูปภาพให้ครบ"
+                } else {
+                    titleMessage = "แจ้งเตือน"
+                    alertMessage =
+                        "กรุณาตรวจสอบข้อมูลการแจ้งซ่อมให้ครบถ้วน คุณต้องการแจ้งซ่อมใช่หรือไม่?"
+                }
+            } else {
+                if (deviceId == "" ||
+                    selectedBuilding == "กรุณาเลือกข้อมูล" ||
+                    repairDetails == ""
+                ) {
+                    titleMessage = "เกิดข้อผิดพลาด"
+                    alertMessage = "กรุณากรอกข้อมูลให้ครบ"
+                } else if (!checkEquipmentId(deviceId)) {
+                    titleMessage = "เกิดข้อผิดพลาด"
+                    alertMessage = "ไม่พบข้อมูลอุปกรณ์"
+                } else if (!checkBuildingId(buildingId)) {
+                    titleMessage = "เกิดข้อผิดพลาด"
+                    alertMessage = "ไม่พบข้อมูลตึกอาคาร"
+                } else if (imageUri1?.path == null || imageUri2?.path == null || imageUri3?.path == null) {
+                    titleMessage = "เกิดข้อผิดพลาด"
+                    alertMessage = "กรุณาใส่รูปภาพให้ครบ"
+                } else {
+                    titleMessage = "แจ้งเตือน"
+                    alertMessage =
+                        "กรุณาตรวจสอบข้อมูลการแจ้งซ่อมให้ครบถ้วน คุณต้องการแจ้งซ่อมใช่หรือไม่?"
+                }
+            }
+            AlertDialog(
+                onDismissRequest = { showDialog = false },
+                title = { Text(titleMessage) },
+                text = { Text(alertMessage) },
+                confirmButton = {
+                    Button(onClick = {
+                        if (titleMessage == "แจ้งเตือน") {
+                            if (role == "Technician") {
+                                if (checkEmployeeData(emp_Fnm, emp_Lnm) &&
+                                    checkEquipmentId(deviceId) &&
+                                    checkBuildingId(buildingId) &&
+                                    repairDetails.isNotBlank() &&
+                                    imageUri1?.path?.isNotEmpty() == true &&
+                                    imageUri2?.path?.isNotEmpty() == true &&
+                                    imageUri3?.path?.isNotEmpty() == true
+                                ) {
+                                    showDialog = false  // ปิดใช้งาน Dialog หากข้อมูลครบ
+                                    vmodel.uploadImage(imageUri1, 1)
+                                    vmodel.uploadImage(imageUri2, 2)
+                                    vmodel.uploadImage(imageUri3, 3)
+                                    Log.d(
+                                        TAG,
+                                        "formRequestForRepair: $imageName1, $imageName2, $imageName3"
+                                    )
+                                    vmodel.sendRequest(
+                                        repairDetails,
+                                        empId ?: 0,
+                                        buildingId,
+                                        eq_id ?: 0
+                                    )
+                                    showLoadSuccess = true
+                                } else {
+                                    // โค้ดสำหรับการดำเนินการถัดไปหากข้อมูลครบถ้วน
+                                    showDialog = true
+                                    Log.d(
+                                        TAG,
+                                        "formRequestForRepair: ${imageUri1?.path}, ${imageUri2?.path}, ${imageUri3?.path}"
+                                    )
+                                }
+                            } else {
+                                if (checkEquipmentId(deviceId) &&
+                                    checkBuildingId(buildingId) &&
+                                    repairDetails.isNotBlank() &&
+                                    imageUri1?.path?.isNotEmpty() == true &&
+                                    imageUri2?.path?.isNotEmpty() == true &&
+                                    imageUri3?.path?.isNotEmpty() == true
+                                ) {
+                                    showDialog = false  // เปิดใช้งาน Dialog หากข้อมูลไม่ครบ
+                                    vmodel.uploadImage(imageUri1!!, 1)
+                                    vmodel.uploadImage(imageUri2!!, 2)
+                                    vmodel.uploadImage(imageUri3!!, 3)
+                                    vmodel.sendRequest(
+                                        repairDetails,
+                                        empId ?: 0,
+                                        buildingId,
+                                        eq_id ?: 0
+                                    )
+                                    Log.d(TAG, "formRequestForRepair: $empId")
+                                    showLoadSuccess = true
+                                } else {
+                                    // โค้ดสำหรับการดำเนินการถัดไปหากข้อมูลครบถ้วน
+                                    showDialog = true
+                                }
+                            }
+                            showDialog = false
+                        } else {
+                            showDialog = false
+                        }
+                    }) {
+                        Text("OK")
+                    }
+                },
+                dismissButton = {
+                    if (titleMessage == "แจ้งเตือน") {
+                        Button(onClick = { showDialog = false }) {
+                            Text(text = "Cancel")
+                        }
+                    }
+                }
+            )
+        }
     }
 }

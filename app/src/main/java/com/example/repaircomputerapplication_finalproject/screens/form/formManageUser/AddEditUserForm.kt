@@ -88,7 +88,12 @@ fun AddUserForm(
                         phone = user.phone ?: ""
                         departmentId = user.departmentId?.toString() ?: ""
                         department = user.departmentId?.let { viewModel.getDepartmentName(it) }.toString()
-                        status = user.status_id?.toString() ?: ""
+                        statusId = user.status_id?.toString() ?: ""
+                        techStatusList.forEach { item ->
+                            if(statusId == item.status_id.toString()){
+                                status = item.receive_request_status.toString()
+                            }
+                        }
                     }
                 }
                 "Employee" -> {
@@ -165,7 +170,7 @@ fun AddUserForm(
                 showDialog = true
                 return false
             }
-            userType == "Technician" && status.isBlank() -> {
+            userType == "Technician" && status.isBlank() && isEdit == true -> {
                 titleMessage = "เกิดข้อผิดพลาด"
                 alertMessage = "กรุณาเลือกสถานะ"
                 showDialog = true
@@ -191,10 +196,10 @@ fun AddUserForm(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         if (isEdit == false) {
-            Text("UserType is $userType isEdit is false and Id Is $userId", fontSize = 24.sp, color = Color.Black)
+            Text("เพิ่มข้อมูล", fontSize = 24.sp, color = Color.Black)
             submitBtnName = "เพิ่มข้อมูล"
         } else {
-            Text("UserType is $userType isEdit is true and Id Is $userId", fontSize = 24.sp, color = Color.Black)
+            Text("แก้ไขข้อมูล", fontSize = 24.sp, color = Color.Black)
             submitBtnName = "แก้ไขข้อมูล"
         }
 
@@ -301,7 +306,7 @@ fun AddUserForm(
         Spacer(modifier = Modifier.height(8.dp))
 
         // Dropdown for Status
-        if (userType == "Technician") {
+        if (userType == "Technician" && isEdit == true) {
             ExposedDropdownMenuBox(
                 expanded = expandedStatus,
                 onExpandedChange = { expandedStatus = !expandedStatus }
@@ -405,7 +410,14 @@ fun AddUserForm(
                                 showDialog = true
                             }
                         } else {
+
                             if (userType == "Technician") {
+                                techStatusList.forEach {
+                                        item ->
+                                    if(item.receive_request_status == "A"){
+                                        statusId = item.status_id.toString()
+                                    }
+                                }
                                 viewModel.addUser(
                                     userType ?: "null",
                                     firstName,
@@ -425,7 +437,7 @@ fun AddUserForm(
                                     password,
                                     phone,
                                     departmentId,
-                                    "0"
+                                    "null"
                                 )
                             }
                         }

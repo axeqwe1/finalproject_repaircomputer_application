@@ -52,7 +52,11 @@ fun StatusScreen(rrid: String?, viewModel: RepairDetailViewModel = viewModel()) 
                     val detail = repairDetails[index]
                     val isCurrent = index == 0 // ตรวจสอบว่าเป็นข้อมูลล่าสุดหรือไม่
                     val title = detail.rd_description!!.split(":")[0]
-                    val description = detail.rd_description!!.split(":")[1]
+                    val description:String = if(detail.rd_description.split(":").size > 1){
+                        detail.rd_description.split(":")[1]
+                    }else{
+                        ""
+                    }
                     StatusItem(title, description, formatTimestamp(detail.timestamp ?: "null"), isCurrent)
                 }
             }

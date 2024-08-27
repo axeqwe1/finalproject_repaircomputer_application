@@ -165,16 +165,17 @@ class UserManageViewModel(
                 if (result.isSuccessful) {
                     result.body()?.let {
                         Log.d(TAG, "deleteUser: Successfully deleted $userType with ID $userId - ${it.message}")
-                        Toast.makeText(getApplication(), it.message, Toast.LENGTH_SHORT).show()
+                        Toast.makeText(getApplication(), "ลบข้อมูลเสร็จสิ้น", Toast.LENGTH_SHORT).show()
                     }
                 } else {
                     val errorBody = result.errorBody()?.string()
                     Log.e(TAG, "deleteUser: Failed to delete $userType with ID $userId - $errorBody")
-                    Toast.makeText(getApplication(), "Failed to delete: $errorBody", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(getApplication(), "$errorBody", Toast.LENGTH_LONG).show()
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "deleteUser: Exception while deleting $userType with ID $userId", e)
-                Toast.makeText(getApplication(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                Log.e(TAG, "Error: ${e.message}", e)
+                Toast.makeText(getApplication(), "${e.message}", Toast.LENGTH_SHORT).show()
             }
         }
     }

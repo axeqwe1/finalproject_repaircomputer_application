@@ -32,7 +32,7 @@ fun crudUserScreen(userType:String?,navController: NavController,viewModel:UserM
     val techList = viewModel.tech.collectAsState().value ?: emptyList()
     val empList = viewModel.emp.collectAsState().value ?: emptyList()
     val chiefList = viewModel.chief.collectAsState().value ?: emptyList()
-    LaunchedEffect(adminList,techList,empList,chiefList){
+    LaunchedEffect(adminList,techList,empList,chiefList,searchQuery){
         if (userType != null){
             viewModel.loadData(userType)
         }
@@ -53,7 +53,7 @@ fun crudUserScreen(userType:String?,navController: NavController,viewModel:UserM
                 .padding(innerPading),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Text("UserType : $userType", fontSize = 24.sp, color = Color.Black)
+            Text("จัดการข้อมูล : $userType", fontSize = 24.sp, color = Color.Black)
             Spacer(modifier = Modifier.height(16.dp))
             OutlinedTextField(
                 value = searchQuery,
