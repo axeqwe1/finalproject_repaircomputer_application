@@ -10,6 +10,7 @@ import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import com.example.repaircomputerapplication_finalproject.R
 import com.example.repaircomputerapplication_finalproject.Websocket.MyWebSocketClient
+import com.example.repaircomputerapplication_finalproject.repository.NotificationRepository
 import java.net.URI
 
 class WebSocketService : Service() {
@@ -18,7 +19,10 @@ class WebSocketService : Service() {
     override fun onCreate() {
         super.onCreate()
         val uri = URI("ws://192.168.1.33:8001")
-        webSocketClient = MyWebSocketClient(uri, this)
+        webSocketClient = MyWebSocketClient(uri, this) {
+            // Callback ที่จะถูกเรียกเมื่อมีการแจ้งเตือนใหม่เข้ามา
+            NotificationRepository.incrementNotificationCount() // อัปเดตจำนวนการแจ้งเตือนใน Repository
+        }
         webSocketClient.connect()
         startForegroundService()
     }

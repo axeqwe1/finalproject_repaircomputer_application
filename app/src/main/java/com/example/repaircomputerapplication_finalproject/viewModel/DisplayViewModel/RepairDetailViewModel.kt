@@ -12,13 +12,14 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.ResponseBody
+import retrofit2.HttpException
 
 class RepairDetailViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _detailData = MutableStateFlow<detailRepairData?>(null)
     val detailData = _detailData.asStateFlow()
 
-    private val _imagePainters = MutableStateFlow<List<ByteArray>>(emptyList())
+    private val _imagePainters = MutableStateFlow<List<ByteArray?>>(emptyList())
     val imagePainters = _imagePainters.asStateFlow()
 
     fun loadData(dataId: String) {
@@ -49,17 +50,33 @@ class RepairDetailViewModel(application: Application) : AndroidViewModel(applica
     }
 
     private suspend fun fetchImages(imageNames: String) {
-        val imageList = imageNames.split(",").map { imageName ->
+        val imageList = imageNames.split(",").mapNotNull { imageName ->
             fetchImage(imageName)
         }
         _imagePainters.value = imageList
     }
 
-    private suspend fun fetchImage(imageName: String): ByteArray {
-        val response: ResponseBody = RetrofitInstance.apiService.getImage(imageName)
-        val inputStream = response.byteStream()
-        val data = inputStream.readBytes()
-        inputStream.close()
-        return data
+    private suspend fun fetchImage(imageName: String): ByteArray? {
+        return try {
+            val response = RetrofitInstance.apiService.getImage(imageName)
+            if (response.isSuccessful) {
+                response.body()?.byteStream()?.use { inputStream ->
+                    inputStream.readBytes()
+                }
+            } else {
+                // ถ้าไม่ได้รูปภาพ ให้ส่งค่า null กลับมาและจัดการสถานะที่ไม่ใช่ 200
+                null
+            }
+        } catch (e: HttpException) {
+            if (e.code() == 404) {
+                // จัดการข้อผิดพลาด 404 (ไม่พบรูปภาพ) โดยการส่งค่า null กลับไป
+                null
+            } else {
+                // จัดการข้อผิดพลาดอื่นๆ ถ้ามี
+                e.printStackTrace()
+                null
+            }
+        }
     }
+
 }

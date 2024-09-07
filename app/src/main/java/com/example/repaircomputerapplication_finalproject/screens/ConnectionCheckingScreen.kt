@@ -1,21 +1,29 @@
 package com.example.repaircomputerapplication_finalproject.screens
 
+import android.content.Context
+import android.content.Intent
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.example.repaircomputerapplication_finalproject.Websocket.WebSocketService
 import com.example.repaircomputerapplication_finalproject.api_service.RetrofitInstance
 import com.example.repaircomputerapplication_finalproject.graph.RootNav
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ConnectionCheckingScreen(navController:NavController) {
     val apiService = RetrofitInstance.apiService
+    val context = LocalContext.current
     var isConnected by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf("") }
     val coroutineScope = rememberCoroutineScope()
@@ -35,6 +43,8 @@ fun ConnectionCheckingScreen(navController:NavController) {
             if (result) {
                 isConnected = true
                 errorMessage = ""
+                startWebSocketService(context)
+                break
             } else {
                 isConnected = false
                 errorMessage = "Failed to connect to the server"
@@ -61,5 +71,14 @@ fun ConnectionCheckingScreen(navController:NavController) {
         } else {
             CircularProgressIndicator()
         }
+    }
+}
+// ฟังก์ชันสำหรับเริ่มต้น WebSocketService
+private fun startWebSocketService(context: Context) {
+    val intent = Intent(context, WebSocketService::class.java)
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        context.startForegroundService(intent)
+    } else {
+        context.startService(intent)
     }
 }

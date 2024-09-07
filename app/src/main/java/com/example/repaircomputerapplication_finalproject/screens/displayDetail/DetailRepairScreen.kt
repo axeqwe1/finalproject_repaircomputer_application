@@ -231,7 +231,7 @@ fun DetailRepairScreen(
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(400.dp)
+                            .height(100.dp)
                             .background(Color.Gray)
                     ) {
                         Text("No Images", modifier = Modifier.align(Alignment.Center))
@@ -243,17 +243,20 @@ fun DetailRepairScreen(
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         imagePainters.forEach { imageBytes ->
-                            val bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
-                            Image(
-                                bitmap = bitmap.asImageBitmap(),
-                                contentDescription = null,
-                                modifier = Modifier
-                                    .size(100.dp)
-                                    .clickable {
-                                        selectedImage = imageBytes
-                                        showDialog = true
-                                    }
-                            )
+                            val bitmap =
+                                imageBytes?.let { BitmapFactory.decodeByteArray(imageBytes, 0, it.size) }
+                            if (bitmap != null) {
+                                Image(
+                                    bitmap = bitmap.asImageBitmap(),
+                                    contentDescription = null,
+                                    modifier = Modifier
+                                        .size(100.dp)
+                                        .clickable {
+                                            selectedImage = imageBytes
+                                            showDialog = true
+                                        }
+                                )
+                            }
                         }
                     }
                 }
@@ -299,7 +302,13 @@ fun BtnType(
                 if (hasDetail) {
                     show = false
                     isUpdate = true
-                } else {
+                }else if(requestStatus != "กำลังส่งการแจ้งซ่อม") {
+                    show = false
+                    isUpdate = false
+                }
+                else {
+                    show = true
+                    isUpdate = false
                     BtnName = "จ่ายงาน"
                     route = ScreenRoutes.TechnicianListBacklog.passAdminIdAndRrid(admin_id, rrid)
                 }

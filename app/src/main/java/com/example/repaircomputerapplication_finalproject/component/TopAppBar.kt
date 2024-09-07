@@ -7,6 +7,7 @@ import androidx.compose.foundation.background
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowBackIosNew
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AlertDialogDefaults.containerColor
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
@@ -21,10 +22,12 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.datastore.preferences.core.stringPreferencesKey
@@ -53,6 +56,7 @@ fun TopAppBarDynamic(navController: NavController, scrollBehavior: TopAppBarScro
     val navBackStackEntry = navController.currentBackStackEntryAsState().value
     val currentStack = navBackStackEntry?.destination
     val isUpdate = remember { mutableStateOf(false) }
+    var showLogoutDialog by remember { mutableStateOf(false) } // ตัวแปรสำหรับควบคุมการแสดง AlertDialog
 
     if(currentStack?.route?.contains("isUpdate") == true){
         isUpdate.value = navBackStackEntry.arguments?.getBoolean("isUpdate") == true
@@ -92,13 +96,47 @@ fun TopAppBarDynamic(navController: NavController, scrollBehavior: TopAppBarScro
             val currentDestination = navBackStackEntry?.destination
             val topNavBarDestination = BottomNavigationBarList().bottomNavigation(role.value).any { it.route == currentDestination?.route }
             if (topNavBarDestination && (currentDestination?.route == ScreenRoutes.Menu.route || currentDestination?.route == ScreenRoutes.Dashboard.route)) {
-                TextButton(onClick = { homeViewModel.logout() }) {
+                TextButton(onClick = { showLogoutDialog = true }) { // แสดง AlertDialog เมื่อกดปุ่ม Logout
                     Text(text = "Logout", color = MaterialTheme.colorScheme.error)
                 }
             }
         },
         scrollBehavior = scrollBehavior
     )
+
+    // แสดง AlertDialog สำหรับยืนยันการออกจากระบบ
+    if (showLogoutDialog) {
+        AlertDialog(
+            onDismissRequest = { showLogoutDialog = false },
+            title = {
+                Text(
+                    text = "Logout Confirmation",
+                    color = Color.Black, // ปรับสีข้อความให้ชัดเจนขึ้น
+                    fontWeight = FontWeight.Bold // เพิ่มน้ำหนักตัวอักษรให้ดูชัดขึ้น
+                )
+            },
+            text = {
+                Text(
+                    text = "คุณต้องการออกจากระบบใช่หรือไม่?",
+                    color = Color.Black // ปรับสีข้อความให้ชัดเจนขึ้น
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showLogoutDialog = false
+                        homeViewModel.logout()
+                    }) {
+                    Text("ใช่", color = Color.Black) // ปรับสีข้อความให้ชัดเจนขึ้น
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showLogoutDialog = false }) {
+                    Text(text = "ยกเลิก", color = Color.Black) // ปรับสีข้อความให้ชัดเจนขึ้น
+                }
+            },
+        )
+    }
 }
 
 fun getScreenTitle(route: String,isUpdate:Boolean): String {

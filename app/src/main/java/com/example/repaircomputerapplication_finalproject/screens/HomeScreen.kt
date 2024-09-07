@@ -1,9 +1,7 @@
 package com.example.repaircomputerapplication_finalproject.screens
 
 import android.annotation.SuppressLint
-import android.content.ContentValues.TAG
 import android.os.Build
-import android.util.Log
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.compose.animation.AnimatedVisibility
@@ -22,7 +20,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -32,28 +29,24 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.sp
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.example.repaircomputerapplication_finalproject.BottomNavigationBar
+import com.example.repaircomputerapplication_finalproject.component.BottomNavigationBar
 import com.example.repaircomputerapplication_finalproject.component.TopAppBarDynamic
 import com.example.repaircomputerapplication_finalproject.data.BottomNavigationBarList
 import com.example.repaircomputerapplication_finalproject.data.ScreenRoutes
 import com.example.repaircomputerapplication_finalproject.graph.DashBoardHost
 import com.example.repaircomputerapplication_finalproject.graph.MenuNavGraph
-import com.example.repaircomputerapplication_finalproject.screens.reportscreen.DashboardScreen
 import com.example.repaircomputerapplication_finalproject.viewModel.HomeViewModel
 import com.example.repaircomputerapplication_finalproject.viewModel.LogoutResult
 import com.example.repaircomputerapplication_finalproject.viewModel.ContextDataStore.dataStore
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 
 @RequiresApi(Build.VERSION_CODES.O)

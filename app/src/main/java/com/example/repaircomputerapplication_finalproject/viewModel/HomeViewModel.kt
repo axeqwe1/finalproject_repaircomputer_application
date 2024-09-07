@@ -13,17 +13,39 @@ import com.example.repaircomputerapplication_finalproject.api_service.RetrofitIn
 import com.example.repaircomputerapplication_finalproject.model.AdminData
 import com.example.repaircomputerapplication_finalproject.model.ChiefData
 import com.example.repaircomputerapplication_finalproject.model.EmployeeData
+import com.example.repaircomputerapplication_finalproject.model.NotificationReadRequest
 import com.example.repaircomputerapplication_finalproject.model.TechnicianData
+import com.example.repaircomputerapplication_finalproject.repository.NotificationRepository
 import com.example.repaircomputerapplication_finalproject.viewModel.ContextDataStore.dataStore
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 class HomeViewModel(application: Application): AndroidViewModel(application) {
     private val dataStore = application.dataStore
     private val _logoutResult = MutableStateFlow<LogoutResult?>(null)
+    private val _notificationCount = MutableStateFlow(0)
+    val notificationCount: StateFlow<Int> = NotificationRepository.notificationCount
     val logoutResult: StateFlow<LogoutResult?> = _logoutResult
     val sessionManager:SessionManager = SessionManager(application)
 
+
+    // SharedFlow สำหรับรับข้อมูลจาก WebSocket
+    private val _notificationsFlow = MutableSharedFlow<Int>()
+    val notificationsFlow: SharedFlow<Int> = _notificationsFlow
+
+
+    init {
+        // สังเกตการเปลี่ยนแปลงของ _notificationsFlow และอัปเดต notificationCount
+        viewModelScope.launch {
+            _notificationsFlow.collect { count ->
+                _notificationCount.value = count
+            }
+        }
+    }
     fun logout(){
         viewModelScope.launch{
             val response = RetrofitInstance.apiService.userLogout()
@@ -35,6 +57,65 @@ class HomeViewModel(application: Application): AndroidViewModel(application) {
                 }
             } catch (e: Exception) {
                     _logoutResult.value = LogoutResult.Failure(e.message ?: "Unknown error occurred")
+            }
+        }
+    }
+
+    // ฟังก์ชันสำหรับดึงข้อมูลแจ้งเตือนใหม่จากเซิร์ฟเวอร์
+    fun fetchNotifications() {
+        viewModelScope.launch {
+            try {
+                val id = dataStore.data.map { item ->
+                    item[stringPreferencesKey("userId")]
+                }.first()
+                val role = dataStore.data.map { item ->
+                    item[stringPreferencesKey("role")]
+                }.first()
+
+                val response = RetrofitInstance.apiService.getNotification(id = id!!.toInt(), role = role!!.toString())
+                if (response.isSuccessful) {
+                    val notifications = response.body()?.data ?: emptyList()
+                    val unreadNotifications = notifications.filter { it.isRead == false }
+                    updateNotificationCount(unreadNotifications.size) // กำหนดจำนวนแจ้งเตือนใหม่
+                } else {
+                    throw Exception("Failed to fetch notifications: ${response.message()}")
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error fetching notifications: ${e.message}")
+            }
+        }
+    }
+
+    // ฟังก์ชันสำหรับอัปเดตจำนวนแจ้งเตือน
+    fun updateNotificationCount(count: Int) {
+        NotificationRepository.setNotificationCount(count)
+    }
+
+    // รีเซ็ตจำนวนแจ้งเตือนเมื่อเข้าไปดูในหน้า "แจ้งเตือน"
+    fun resetNotificationCount() {
+        markAsReadNotification()
+        NotificationRepository.resetNotificationCount()
+    }
+
+    private fun markAsReadNotification(){
+        viewModelScope.launch {
+            try {
+                val id = dataStore.data.map { item ->
+                    item[stringPreferencesKey("userId")]
+                }.first()
+                val role= dataStore.data.map { item ->
+                    item[stringPreferencesKey("role")]
+                }.first()
+                val response = RetrofitInstance.apiService.markAsReadNotification(
+                    NotificationReadRequest(id!!,role!!)
+                )
+                if(response.isSuccessful){
+                    Log.d(TAG, "markAsReadNotification: ${response.body()}")
+                }else{
+                    throw Exception("Fail to Mark As Read")
+                }
+            }catch (e:Exception){
+                Log.d(TAG, "markAsReadNotification: $e")
             }
         }
     }

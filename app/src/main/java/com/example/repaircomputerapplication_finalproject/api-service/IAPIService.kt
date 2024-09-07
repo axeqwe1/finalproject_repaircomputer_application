@@ -17,6 +17,7 @@ import com.example.repaircomputerapplication_finalproject.model.EquipmentTypeDat
 import com.example.repaircomputerapplication_finalproject.model.EquipmentTypeRequest
 import com.example.repaircomputerapplication_finalproject.model.LevelOfDamageData
 import com.example.repaircomputerapplication_finalproject.model.LevelOfDamageRequest
+import com.example.repaircomputerapplication_finalproject.model.NotificationReadRequest
 import com.example.repaircomputerapplication_finalproject.model.RepairReport
 import com.example.repaircomputerapplication_finalproject.model.RequestForRepairData
 import com.example.repaircomputerapplication_finalproject.model.RequestListResponse
@@ -195,7 +196,7 @@ interface IAPIService {
     suspend fun uploadImage(@Part body: MultipartBody.Part): Response<UploadResponse>
     //-------------------------->Get Image
     @GET("images/{imageName}")
-    suspend fun getImage(@Path("imageName") imageName: String): ResponseBody
+    suspend fun getImage(@Path("imageName") imageName: String): Response<ResponseBody>
     //-------------------------->Assign Work
     @POST("action/assign")
     suspend fun assignWork(@Body AssignWorkBody: AssignWorkBody):Response<messageBody>
@@ -218,6 +219,10 @@ interface IAPIService {
 
     @POST("/report/report-data")
     suspend fun getReportData(@Body dateForReport: DateForReport):Response<List<RepairReport>>
+
+    //-------------------------->Mark As Read Notification
+    @POST("/display/notifications/markAsRead")
+    suspend fun markAsReadNotification(@Body request: NotificationReadRequest):Response<ResponseBody>
 }
 
 

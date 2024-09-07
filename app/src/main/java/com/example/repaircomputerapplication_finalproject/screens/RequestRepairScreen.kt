@@ -187,12 +187,12 @@ fun RequestRepairScreen(navController: NavHostController, viewModel: RequestForR
                         Log.d(TAG, "RequestRepairScreen: $currentMode")
                     }
                 }
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.padding(vertical = 8.dp))
                 // Button to toggle sort order
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 24.dp, vertical = 1.dp),
+                        .padding(horizontal = 24.dp),
                     horizontalArrangement = Arrangement.End
                 ) {
                     Text(

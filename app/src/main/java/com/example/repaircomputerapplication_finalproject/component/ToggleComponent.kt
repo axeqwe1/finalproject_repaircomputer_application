@@ -35,10 +35,10 @@ fun ToggleComponent(role: String, onModeChange: (String) -> Unit) {
 
     Row(
         modifier = Modifier
-            .padding(16.dp)
+            .padding(horizontal = 16.dp)
             .background(Color(0xFFD0E6F8), RoundedCornerShape(50.dp))
             .fillMaxWidth()
-            .padding(4.dp),
+            .padding(6.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {

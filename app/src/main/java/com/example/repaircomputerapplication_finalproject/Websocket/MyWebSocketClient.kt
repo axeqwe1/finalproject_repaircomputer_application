@@ -15,9 +15,12 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.OnLifecycleEvent
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelStoreOwner
 import com.example.repaircomputerapplication_finalproject.R
 import com.example.repaircomputerapplication_finalproject.model.NotificationMessage
 import com.example.repaircomputerapplication_finalproject.viewModel.ContextDataStore.dataStore
+import com.example.repaircomputerapplication_finalproject.viewModel.HomeViewModel
 import com.google.gson.Gson
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -30,7 +33,8 @@ import java.net.URI
 
 class MyWebSocketClient(
     serverUri: URI,
-    private val context: Context
+    private val context: Context,
+    private val onNewNotification: () -> Unit // Callback เพื่ออัปเดตจำนวนการแจ้งเตือนใน ViewModel
 ) : WebSocketClient(serverUri), LifecycleObserver {
 
     override fun onOpen(handshakedata: ServerHandshake) {
@@ -49,6 +53,7 @@ class MyWebSocketClient(
             val notificationMessage = parseMessage(message)
             if(role == notificationMessage.role && userId == notificationMessage.user_id){
                 showNotification(context, notificationMessage.title,notificationMessage.message)
+                onNewNotification() // เรียก Callback เมื่อมีการแจ้งเตือนใหม่
             }
         }
     }
