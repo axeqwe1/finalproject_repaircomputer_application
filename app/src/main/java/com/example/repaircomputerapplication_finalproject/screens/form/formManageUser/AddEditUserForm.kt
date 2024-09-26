@@ -57,9 +57,12 @@ fun AddUserForm(
     var statusId by remember { mutableStateOf("") }
     var departmentId by remember { mutableStateOf("") }
 
+    val showErrorDialog = viewModel.showErrorDialog.collectAsState().value
+    val errorMessage = viewModel.errorMessage.collectAsState().value
+
     LaunchedEffect(true) {
         if (userType != null) {
-            viewModel.loadData(userType)
+            viewModel.loadData()
         }
     }
 
@@ -391,6 +394,9 @@ fun AddUserForm(
                                         departmentId,
                                         statusId
                                     )
+                                    if(!showErrorDialog){
+                                        showSuccessDialog = true
+                                    }
                                 } else {
                                     viewModel.editUser(
                                         userType ?: "null",
@@ -403,6 +409,9 @@ fun AddUserForm(
                                         departmentId,
                                         "0"
                                     )
+                                    if(!showErrorDialog){
+                                        showSuccessDialog = true
+                                    }
                                 }
                             } else {
                                 titleMessage = "เกิดข้อผิดพลาด"
@@ -410,7 +419,6 @@ fun AddUserForm(
                                 showDialog = true
                             }
                         } else {
-
                             if (userType == "Technician") {
                                 techStatusList.forEach {
                                         item ->
@@ -428,6 +436,9 @@ fun AddUserForm(
                                     departmentId,
                                     statusId
                                 )
+                                if(!showErrorDialog){
+                                    showSuccessDialog = true
+                                }
                             } else {
                                 viewModel.addUser(
                                     userType ?: "null",
@@ -437,11 +448,13 @@ fun AddUserForm(
                                     password,
                                     phone,
                                     departmentId,
-                                    "null"
+                                    "0"
                                 )
+                                if(!showErrorDialog){
+                                    showSuccessDialog = true
+                                }
                             }
                         }
-                        showSuccessDialog = true
                     }) {
                         Text("ยืนยัน")
                     }
@@ -454,14 +467,30 @@ fun AddUserForm(
             )
         }
 
-        if (showSuccessDialog) {
+        if (showSuccessDialog && !showErrorDialog) {
             AlertDialog(
                 onDismissRequest = { showSuccessDialog = false },
                 title = { Text("สำเร็จ") },
                 text = { Text(if (isEdit == true) "แก้ไขข้อมูลสำเร็จ" else "เพิ่มข้อมูลสำเร็จ") },
                 confirmButton = {
-                    Button(onClick = { showSuccessDialog = false }) {
+                    Button(onClick = {
+                        showSuccessDialog = false
+
+                    }) {
                         Text("OK")
+                    }
+                }
+            )
+        }
+        if (showErrorDialog) {
+            showSuccessDialog = false
+            androidx.compose.material3.AlertDialog(
+                onDismissRequest = { viewModel.resetErrorDialog() },
+                title = { androidx.compose.material3.Text("เกิดข้อผิดพลาด") },
+                text = { androidx.compose.material3.Text(errorMessage) },
+                confirmButton = {
+                    androidx.compose.material3.Button(onClick = { viewModel.resetErrorDialog() }) {
+                        androidx.compose.material3.Text("ตกลง")
                     }
                 }
             )

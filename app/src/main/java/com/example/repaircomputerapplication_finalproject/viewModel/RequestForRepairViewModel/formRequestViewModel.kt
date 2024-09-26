@@ -12,6 +12,7 @@ import com.example.repaircomputerapplication_finalproject.model.EmployeeData
 import com.example.repaircomputerapplication_finalproject.model.EquipmentData
 import com.example.repaircomputerapplication_finalproject.model.sendRequest
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -51,28 +52,46 @@ class formRequestViewModel(application: Application) : AndroidViewModel(applicat
     private val newFileName2 = "Defective_" + dateFormat.format(now) + ".jpg"
     private val newFileName3 = "Overview_" + dateFormat.format(now) + ".jpg"
 
+    // State for showing the alert dialog
+    private val _showErrorDialog = MutableStateFlow(false)
+    val showErrorDialog: StateFlow<Boolean> get() = _showErrorDialog
+
+    // State for the error message
+    private val _errorMessage = MutableStateFlow("")
+    val errorMessage = _errorMessage.asStateFlow()
     init {
         loadData()
     }
 
-    fun sendRequest(description: String, employeeId: Int, buildingId: Int, equipmentId: Int) {
-        viewModelScope.launch {
-            try {
-                val response = RetrofitInstance
-                    .apiService
-                    .sendRequestForRepair(
-                        sendRequest(description, "$newFileName1,$newFileName2,$newFileName3", employeeId, buildingId, equipmentId)
-                    )
+    suspend fun sendRequest(description: String, employeeId: Int, buildingId: Int, equipmentId: Int) {
+        try {
+            val response = RetrofitInstance
+                .apiService
+                .sendRequestForRepair(
+                    sendRequest(description, "$newFileName1,$newFileName2,$newFileName3", employeeId, buildingId, equipmentId)
+                )
+            Log.d(TAG, "SendRequest: ${response.body()}")
+            if (response.isSuccessful) {
                 Log.d(TAG, "SendRequest: ${response.body()}")
-                if (response.isSuccessful) {
-                    Log.d(TAG, "SendRequest: ${response.body()}")
-                }
-            } catch (e: Exception) {
-                Log.e(TAG, "SendRequest: ${e}")
+            } else {
+                // Extract error message from backend response
+                val errorResponse = response.errorBody()?.string()
+                _errorMessage.value = errorResponse ?: "เกิดข้อผิดพลาด ไม่สามารถดำเนินการได้"
+                _showErrorDialog.value = true
+                Log.d(TAG, "errorResponse: ${errorResponse} \n boolean is ${_showErrorDialog.value}")
             }
+        } catch (e: Exception) {
+            Log.e(TAG, "SendRequest: ${e}")
+            _errorMessage.value = "เกิดข้อผิดพลาด: ${e.message}"
+            _showErrorDialog.value = true
         }
     }
 
+    // Function to reset the dialog state
+    fun resetErrorDialog() {
+        _showErrorDialog.value = false
+        _errorMessage.value = ""
+    }
     private fun loadData() {
         viewModelScope.launch {
             try {
@@ -129,54 +148,52 @@ class formRequestViewModel(application: Application) : AndroidViewModel(applicat
         }
     }
 
-    fun uploadImage(imageUri: Uri, imageIndex: Int) {
-        viewModelScope.launch {
-            try {
-                val inputStream = getApplication<Application>().contentResolver.openInputStream(imageUri)
-                val imageBytes = inputStream?.readBytes()
-                inputStream?.close()
-                val newFileName = when (imageIndex) {
-                    1 -> newFileName1
-                    2 -> newFileName2
-                    3 -> newFileName3
-                    else -> ""
-                }
-                val filePart = MultipartBody.Part.createFormData(
-                    "image",
-                    newFileName,
-                    imageBytes!!.toRequestBody("image/jpeg".toMediaTypeOrNull())
-                )
-                val response = RetrofitInstance.apiService.uploadImage(filePart)
-                Log.d(TAG, "uploadImage: ${response.isSuccessful}")
-                if (response.isSuccessful) {
-                    when (imageIndex) {
-                        1 -> {
-                            _uploadedFileName1.value = newFileName
-                            _uploadedStatus1.value = true
-                        }
-                        2 -> {
-                            _uploadedFileName2.value = newFileName
-                            _uploadedStatus2.value = true
-                        }
-                        3 -> {
-                            _uploadedFileName3.value = newFileName
-                            _uploadedStatus3.value = true
-                        }
+    suspend fun uploadImage(imageUri: Uri, imageIndex: Int) {
+        try {
+            val inputStream = getApplication<Application>().contentResolver.openInputStream(imageUri)
+            val imageBytes = inputStream?.readBytes()
+            inputStream?.close()
+            val newFileName = when (imageIndex) {
+                1 -> newFileName1
+                2 -> newFileName2
+                3 -> newFileName3
+                else -> ""
+            }
+            val filePart = MultipartBody.Part.createFormData(
+                "image",
+                newFileName,
+                imageBytes!!.toRequestBody("image/jpeg".toMediaTypeOrNull())
+            )
+            val response = RetrofitInstance.apiService.uploadImage(filePart)
+            Log.d(TAG, "uploadImage: ${response.isSuccessful}")
+            if (response.isSuccessful) {
+                when (imageIndex) {
+                    1 -> {
+                        _uploadedFileName1.value = newFileName
+                        _uploadedStatus1.value = true
                     }
-                } else {
-                    when (imageIndex) {
-                        1 -> _uploadedStatus1.value = false
-                        2 -> _uploadedStatus2.value = false
-                        3 -> _uploadedStatus3.value = false
+                    2 -> {
+                        _uploadedFileName2.value = newFileName
+                        _uploadedStatus2.value = true
+                    }
+                    3 -> {
+                        _uploadedFileName3.value = newFileName
+                        _uploadedStatus3.value = true
                     }
                 }
-            } catch (e: Exception) {
-                Log.e(TAG, "uploadImage: ${e}")
+            } else {
                 when (imageIndex) {
                     1 -> _uploadedStatus1.value = false
                     2 -> _uploadedStatus2.value = false
                     3 -> _uploadedStatus3.value = false
                 }
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "uploadImage: ${e}")
+            when (imageIndex) {
+                1 -> _uploadedStatus1.value = false
+                2 -> _uploadedStatus2.value = false
+                3 -> _uploadedStatus3.value = false
             }
         }
     }

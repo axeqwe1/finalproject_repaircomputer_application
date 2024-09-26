@@ -22,6 +22,7 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 import java.io.InputStream
+import java.util.regex.Pattern
 
 open class ReportViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -77,8 +78,9 @@ open class ReportViewModel(application: Application) : AndroidViewModel(applicat
             if (response.isSuccessful) {
                 Log.d(TAG, "downloadCSV: Success")
                 response.body()?.let { responseBody ->
-                    saveCSVToFile(context, responseBody)
-                    Log.d(TAG, "downloadCSV: ${responseBody}")
+                    val filename = extractFileName(response.headers()["Content-Disposition"])
+                    saveCSVToFile(context, responseBody,filename)
+                    Log.d(TAG, "downloadCSV: ${responseBody} filename ${filename}")
                 }
             } else {
                 Log.e("ReportViewModel", "Failed to export CSV")
@@ -90,9 +92,17 @@ open class ReportViewModel(application: Application) : AndroidViewModel(applicat
             // Handle the exception
         }
     }
-
-    private fun saveCSVToFile(context: Context, body: ResponseBody) {
-        val fileName = "exported_report.csv"
+    private fun extractFileName(contentDisposition: String?): String {
+        if (contentDisposition != null) {
+            val pattern = Pattern.compile("filename=\"?([^\";]*)\"?")
+            val matcher = pattern.matcher(contentDisposition)
+            if (matcher.find()) {
+                return matcher.group(1) ?: "exported_report.csv" // Default filename if extraction fails
+            }
+        }
+        return "exported_report.csv" // Fallback filename if header is missing
+    }
+    private fun saveCSVToFile(context: Context, body: ResponseBody,fileName: String) {
         val downloadsPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
         val file = File(downloadsPath, fileName)
 

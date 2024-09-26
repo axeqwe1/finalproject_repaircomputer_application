@@ -36,9 +36,11 @@ class formAddDetailViewModel(application: Application):AndroidViewModel(applicat
                 updateDetailRequest(loed_id.toInt(),rd_description,request_status)
             )
             if(response.isSuccessful){
-                Toast.makeText(getApplication(),"${response.body()}",Toast.LENGTH_SHORT)
-            }else{
-                throw Exception("${response.errorBody()}")
+                Log.d(TAG, "UpdateDetail: ${response.body()}")
+                Toast.makeText(getApplication(),"แก้ไขเสร็จสิ้น",Toast.LENGTH_SHORT).show()
+            }else {
+                val errorBody = response.errorBody()?.string() ?: "Unknown error"
+                throw Exception(errorBody)
             }
         }
     }

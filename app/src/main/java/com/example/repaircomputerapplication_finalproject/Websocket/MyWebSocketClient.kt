@@ -24,6 +24,7 @@ import com.example.repaircomputerapplication_finalproject.viewModel.HomeViewMode
 import com.google.gson.Gson
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
@@ -40,7 +41,6 @@ class MyWebSocketClient(
     override fun onOpen(handshakedata: ServerHandshake) {
         Log.d("WebSocket", "Opened")
     }
-
     override fun onMessage(message: String) {
         Log.d("WebSocket", "Message received: $message")
         CoroutineScope(Dispatchers.Main).launch {
@@ -59,7 +59,10 @@ class MyWebSocketClient(
     }
 
     override fun onClose(code: Int, reason: String, remote: Boolean) {
-        Log.d("WebSocket", "Closed")
+        Log.d("WebSocket", "Closed Reason $reason")
+        CoroutineScope(Dispatchers.IO).launch {
+            reconnect() // ใช้ฟังก์ชัน reconnect ที่มีอยู่ใน WebSocketClient
+        }
     }
 
     override fun onError(ex: Exception) {

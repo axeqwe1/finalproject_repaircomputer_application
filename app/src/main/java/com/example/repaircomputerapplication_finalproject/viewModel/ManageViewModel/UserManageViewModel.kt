@@ -18,6 +18,7 @@ import com.example.repaircomputerapplication_finalproject.model.TechnicianData
 import com.example.repaircomputerapplication_finalproject.model.UserModel
 import com.example.repaircomputerapplication_finalproject.model.techStatusData
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import retrofit2.Response
@@ -44,20 +45,34 @@ class UserManageViewModel(
     private val _techStatus = MutableStateFlow<List<techStatusData>?>(null)
     val techStatus = _techStatus.asStateFlow()
 
-    fun loadData(userType: String) {
+    // State for showing the alert dialog
+    private val _showErrorDialog = MutableStateFlow(false)
+    val showErrorDialog: StateFlow<Boolean> get() = _showErrorDialog
+
+    // State for the error message
+    private val _errorMessage = MutableStateFlow("")
+    val errorMessage = _errorMessage.asStateFlow()
+
+    fun resetErrorDialog() {
+        _showErrorDialog.value = false
+        _errorMessage.value = ""
+    }
+
+    init {
+        loadData()
+    }
+    fun loadData() {
         viewModelScope.launch {
             _department.value = fetchDepartmentData()
             _techStatus.value = fetchTechStatusData()
+            _admin.value = fetchAdminData()
+            _tech.value = fetchTechnicianData()
+            _emp.value = fetchEmployeeData()
+            _chief.value = fetchChiefData()
             Log.d(TAG, "loadData: ${_department.value}")
-            when (userType) {
-                "Admin" -> _admin.value = fetchAdminData()
-                "Technician" -> _tech.value = fetchTechnicianData()
-                "Employee" -> _emp.value = fetchEmployeeData()
-                "Chief" -> _chief.value = fetchChiefData()
-                else -> Log.e("UserManageViewModel", "Unknown user type: $userType")
             }
         }
-    }
+
 
     fun addUser(
         userType: String,
@@ -78,12 +93,20 @@ class UserManageViewModel(
                 password,
                 phone,
                 department.toInt(),
+            )
+            val techModel = TechnicianBody(
+                firstname,
+                lastname,
+                email,
+                password,
+                phone,
+                department.toInt(),
                 status.toInt()
             )
             try {
                 val result = when (userType) {
                     "Admin" -> response.addAdmin(userModel)
-                    "Technician" -> response.addTechnician(userModel)
+                    "Technician" -> response.addTechnician(techModel)
                     "Employee" -> response.addEmployee(userModel)
                     "Chief" -> response.addChief(userModel)
                     else -> throw IllegalArgumentException("Unknown user type: $userType")
@@ -93,6 +116,9 @@ class UserManageViewModel(
                 } else {
                     Toast.makeText(getApplication(), "${result.errorBody()?.string()}", Toast.LENGTH_LONG).show()
                     Log.d(TAG, "addUser: Error Response: ${result.errorBody()?.string()}")
+                    val errorResponse = result.errorBody()?.string()
+                    _errorMessage.value = errorResponse ?: "เกิดข้อผิดพลาด ไม่สามารถดำเนินการได้"
+                    _showErrorDialog.value = true
                 }
             } catch (e: Exception) {
                 Toast.makeText(getApplication(), e.toString(), Toast.LENGTH_SHORT).show()
@@ -143,6 +169,9 @@ class UserManageViewModel(
                     Log.d(TAG, "editUser: Success Response: ${result.body()}")
                 } else {
                     Log.d(TAG, "editUser: Error Response: ${result.errorBody()?.string()}")
+                    val errorResponse = result.errorBody()?.string()
+                    _errorMessage.value = errorResponse ?: "เกิดข้อผิดพลาด ไม่สามารถดำเนินการได้"
+                    _showErrorDialog.value = true
                 }
             } catch (e: Exception) {
                 Toast.makeText(getApplication(), e.toString(), Toast.LENGTH_SHORT).show()
@@ -175,7 +204,7 @@ class UserManageViewModel(
             } catch (e: Exception) {
                 Log.e(TAG, "deleteUser: Exception while deleting $userType with ID $userId", e)
                 Log.e(TAG, "Error: ${e.message}", e)
-                Toast.makeText(getApplication(), "${e.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(getApplication(), "เกิดข้อผิดพลาดไม่สามารถนำเนินการได้", Toast.LENGTH_SHORT).show()
             }
         }
     }

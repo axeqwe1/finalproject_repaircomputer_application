@@ -1,4 +1,5 @@
 import android.content.ContentValues.TAG
+import android.net.Uri
 import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -8,18 +9,11 @@ import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
@@ -32,6 +26,11 @@ import com.example.repaircomputerapplication_finalproject.viewModel.RequestForRe
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @Composable
@@ -42,13 +41,11 @@ fun formRequestForRepair(navController: NavController, formRequestViewModel: for
     var deviceId by remember { mutableStateOf("") }
     var empId: Int? by remember { mutableStateOf(null) }
     var repairDetails by remember { mutableStateOf("") }
-    // ตัวแปรสำหรับ DropdownMenu
+
+    // Dropdown menu variables
     val equipmentList = vmodel.equipmentResult.collectAsState().value
     val buildingList = vmodel.buildingResult.collectAsState().value
     val employeeList = vmodel.employeeList.collectAsState().value
-    val imageName1 = vmodel.uploadedFileName1.collectAsState().value
-    val imageName2 = vmodel.uploadedFileName2.collectAsState().value
-    val imageName3 = vmodel.uploadedFileName3.collectAsState().value
     var selectedBuilding by remember { mutableStateOf("กรุณาเลือกข้อมูล") }
     var selectedFloor by remember { mutableStateOf("กรุณาเลือกชั้น") }
     var selectedRoom by remember { mutableStateOf("กรุณาเลือกห้อง") }
@@ -56,7 +53,6 @@ fun formRequestForRepair(navController: NavController, formRequestViewModel: for
     var isFloorExpand by remember { mutableStateOf(false) }
     var isRoomExpand by remember { mutableStateOf(false) }
     var buildingId by remember { mutableStateOf(0) }
-    var isExpand by remember { mutableStateOf(false) }
     val imageUri1 = vmodel.image1.collectAsState().value
     val imageUri2 = vmodel.image2.collectAsState().value
     val imageUri3 = vmodel.image3.collectAsState().value
@@ -66,11 +62,17 @@ fun formRequestForRepair(navController: NavController, formRequestViewModel: for
     var emp_Lnm by remember { mutableStateOf("") }
     var eq_id: Int? by remember { mutableStateOf(null) }
     var isLoading by remember { mutableStateOf(true) }
+
+    val showErrorDialog = vmodel.showErrorDialog.collectAsState().value
+    val errorMessage = vmodel.errorMessage.collectAsState().value
+
+    val coroutineScope = rememberCoroutineScope()
     LaunchedEffect(Unit) {
         if (ConnectionChecker.checkConnection()) {
             isLoading = false
         }
     }
+
     LaunchedEffect(key1 = true) {
         val roleData = context.dataStore.data.map { items ->
             items[stringPreferencesKey("role")]
@@ -86,7 +88,7 @@ fun formRequestForRepair(navController: NavController, formRequestViewModel: for
 
     fun checkEmployeeData(firstName: String, lastName: String): Boolean {
         var isFound = false
-        if (firstName != "" && lastName != "") {
+        if (firstName.isNotEmpty() && lastName.isNotEmpty()) {
             employeeList?.forEach { items ->
                 Log.d(TAG, "checkEmployeeData: ${items.firstname} and $firstName")
                 if (items.firstname == firstName && items.lastname == lastName) {
@@ -121,25 +123,6 @@ fun formRequestForRepair(navController: NavController, formRequestViewModel: for
         return isFound
     }
 
-    // ... (ตัวแปรสำหรับเมนูดรอปดาวน์และรูปภาพ)
-    if (showLoadSuccess) {
-        val sheetState =
-            rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Expanded)
-        val scope = rememberCoroutineScope()
-        ModalBottomSheetLayout(
-            sheetState = sheetState,
-            sheetContent = {
-                LoadSuccessScreen(onContinueClicked = { /* Handle continue action */ })
-            },
-        ) {}
-        LaunchedEffect(key1 = true) {
-            delay(5000)
-            navController.navigate(ScreenRoutes.MenuNav.route) {
-                popUpTo(ScreenRoutes.FormRequestForRepair.route)
-            }
-            sheetState.hide()
-        }
-    } else {
         if (isLoading) {
             LoadingScreen()
         } else {
@@ -151,26 +134,19 @@ fun formRequestForRepair(navController: NavController, formRequestViewModel: for
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 if (role == "Technician") {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                    ) {
+                    Row(modifier = Modifier.fillMaxWidth()) {
                         OutlinedTextField(
                             value = emp_Fnm,
                             onValueChange = { emp_Fnm = it },
                             label = { Text("ชื่อผู้แจ้ง") },
-                            modifier = Modifier
-                                .weight(1f)
-
+                            modifier = Modifier.weight(1f)
                         )
                         Spacer(modifier = Modifier.padding(3.dp))
                         OutlinedTextField(
                             value = emp_Lnm,
                             onValueChange = { emp_Lnm = it },
                             label = { Text("นามสกุลผู้แจ้ง") },
-                            modifier = Modifier
-                                .weight(1f)
-
+                            modifier = Modifier.weight(1f)
                         )
                     }
                 }
@@ -179,14 +155,13 @@ fun formRequestForRepair(navController: NavController, formRequestViewModel: for
                     onValueChange = { deviceId = it },
                     label = { Text("รหัสอุปกรณ์") }
                 )
-                // TextArea สำหรับรายละเอียด
                 OutlinedTextField(
                     value = repairDetails,
                     onValueChange = { repairDetails = it },
                     label = { Text("รายละเอียดการซ่อม") },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(120.dp) // ปรับขนาดตามต้องการ
+                        .height(120.dp)
                 )
                 Column(
                     modifier = Modifier
@@ -214,9 +189,7 @@ fun formRequestForRepair(navController: NavController, formRequestViewModel: for
                         )
                         ExposedDropdownMenu(
                             expanded = isBuildingExpand,
-                            onDismissRequest = {
-                                isBuildingExpand = false
-                            }
+                            onDismissRequest = { isBuildingExpand = false }
                         ) {
                             buildingList?.distinctBy { it.building_name }?.forEach { item ->
                                 DropdownMenuItem(
@@ -233,7 +206,6 @@ fun formRequestForRepair(navController: NavController, formRequestViewModel: for
                         }
                     }
 
-                    // Dropdown สำหรับเลือกชั้นตึก (แสดงเฉพาะเมื่อเลือกชื่อตึกแล้ว)
                     if (selectedBuilding != "กรุณาเลือกข้อมูล") {
                         ExposedDropdownMenuBox(
                             expanded = isFloorExpand,
@@ -254,9 +226,7 @@ fun formRequestForRepair(navController: NavController, formRequestViewModel: for
                             )
                             ExposedDropdownMenu(
                                 expanded = isFloorExpand,
-                                onDismissRequest = {
-                                    isFloorExpand = false
-                                }
+                                onDismissRequest = { isFloorExpand = false }
                             ) {
                                 buildingList?.filter { it.building_name == selectedBuilding }
                                     ?.distinctBy { it.building_floor }
@@ -274,7 +244,6 @@ fun formRequestForRepair(navController: NavController, formRequestViewModel: for
                         }
                     }
 
-                    // Dropdown สำหรับเลือกชื่อห้อง (แสดงเฉพาะเมื่อเลือกชั้นตึกแล้ว)
                     if (selectedFloor != "กรุณาเลือกชั้น") {
                         ExposedDropdownMenuBox(
                             expanded = isRoomExpand,
@@ -295,9 +264,7 @@ fun formRequestForRepair(navController: NavController, formRequestViewModel: for
                             )
                             ExposedDropdownMenu(
                                 expanded = isRoomExpand,
-                                onDismissRequest = {
-                                    isRoomExpand = false
-                                }
+                                onDismissRequest = { isRoomExpand = false }
                             ) {
                                 buildingList?.filter { it.building_name == selectedBuilding && it.building_floor.toString() == selectedFloor }
                                     ?.forEach { item ->
@@ -327,9 +294,9 @@ fun formRequestForRepair(navController: NavController, formRequestViewModel: for
                         }
                     }
                     Button(
-                        onClick = {
-                            showDialog = true
-                        }
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        onClick = { showDialog = true }
                     ) {
                         Text("Submit")
                     }
@@ -340,11 +307,9 @@ fun formRequestForRepair(navController: NavController, formRequestViewModel: for
         if (showDialog) {
             var alertMessage: String by remember { mutableStateOf("") }
             var titleMessage: String by remember { mutableStateOf("") }
+
             if (role == "Technician") {
-                if (deviceId == "" ||
-                    selectedBuilding == "กรุณาเลือกข้อมูล" ||
-                    repairDetails == ""
-                ) {
+                if (deviceId == "" || selectedBuilding == "กรุณาเลือกข้อมูล" || repairDetails == "") {
                     titleMessage = "เกิดข้อผิดพลาด"
                     alertMessage = "กรุณากรอกข้อมูลให้ครบ"
                 } else if (!checkEmployeeData(emp_Fnm, emp_Lnm)) {
@@ -361,14 +326,10 @@ fun formRequestForRepair(navController: NavController, formRequestViewModel: for
                     alertMessage = "กรุณาใส่รูปภาพให้ครบ"
                 } else {
                     titleMessage = "แจ้งเตือน"
-                    alertMessage =
-                        "กรุณาตรวจสอบข้อมูลการแจ้งซ่อมให้ครบถ้วน คุณต้องการแจ้งซ่อมใช่หรือไม่?"
+                    alertMessage = "กรุณาตรวจสอบข้อมูลการแจ้งซ่อมให้ครบถ้วน คุณต้องการแจ้งซ่อมใช่หรือไม่?"
                 }
             } else {
-                if (deviceId == "" ||
-                    selectedBuilding == "กรุณาเลือกข้อมูล" ||
-                    repairDetails == ""
-                ) {
+                if (deviceId == "" || selectedBuilding == "กรุณาเลือกข้อมูล" || repairDetails == "") {
                     titleMessage = "เกิดข้อผิดพลาด"
                     alertMessage = "กรุณากรอกข้อมูลให้ครบ"
                 } else if (!checkEquipmentId(deviceId)) {
@@ -382,77 +343,74 @@ fun formRequestForRepair(navController: NavController, formRequestViewModel: for
                     alertMessage = "กรุณาใส่รูปภาพให้ครบ"
                 } else {
                     titleMessage = "แจ้งเตือน"
-                    alertMessage =
-                        "กรุณาตรวจสอบข้อมูลการแจ้งซ่อมให้ครบถ้วน คุณต้องการแจ้งซ่อมใช่หรือไม่?"
+                    alertMessage = "กรุณาตรวจสอบข้อมูลการแจ้งซ่อมให้ครบถ้วน คุณต้องการแจ้งซ่อมใช่หรือไม่?"
                 }
             }
+
             AlertDialog(
                 onDismissRequest = { showDialog = false },
                 title = { Text(titleMessage) },
                 text = { Text(alertMessage) },
                 confirmButton = {
                     Button(onClick = {
-                        if (titleMessage == "แจ้งเตือน") {
-                            if (role == "Technician") {
-                                if (checkEmployeeData(emp_Fnm, emp_Lnm) &&
-                                    checkEquipmentId(deviceId) &&
-                                    checkBuildingId(buildingId) &&
-                                    repairDetails.isNotBlank() &&
-                                    imageUri1?.path?.isNotEmpty() == true &&
-                                    imageUri2?.path?.isNotEmpty() == true &&
-                                    imageUri3?.path?.isNotEmpty() == true
-                                ) {
-                                    showDialog = false  // ปิดใช้งาน Dialog หากข้อมูลครบ
-                                    vmodel.uploadImage(imageUri1, 1)
-                                    vmodel.uploadImage(imageUri2, 2)
-                                    vmodel.uploadImage(imageUri3, 3)
-                                    Log.d(
-                                        TAG,
-                                        "formRequestForRepair: $imageName1, $imageName2, $imageName3"
-                                    )
-                                    vmodel.sendRequest(
-                                        repairDetails,
-                                        empId ?: 0,
-                                        buildingId,
-                                        eq_id ?: 0
-                                    )
-                                    showLoadSuccess = true
+                        coroutineScope.launch {
+                            if (titleMessage == "แจ้งเตือน") {
+                                if (role == "Technician") {
+                                    if (checkEmployeeData(emp_Fnm, emp_Lnm) &&
+                                        checkEquipmentId(deviceId) &&
+                                        checkBuildingId(buildingId) &&
+                                        repairDetails.isNotBlank() &&
+                                        imageUri1?.path?.isNotEmpty() == true &&
+                                        imageUri2?.path?.isNotEmpty() == true &&
+                                        imageUri3?.path?.isNotEmpty() == true
+                                    ) {
+                                        showDialog = false  // ปิดใช้งาน Dialog หากข้อมูลครบ
+                                        val isSuccess = performRepairRequest(
+                                            vmodel,
+                                            repairDetails,
+                                            empId ?: 0,
+                                            buildingId,
+                                            eq_id ?: 0,
+                                            listOf(imageUri1, imageUri2, imageUri3)
+                                        )
+                                        if (isSuccess) {
+                                            showLoadSuccess = true
+                                        }
+                                    } else {
+                                        // โค้ดสำหรับการดำเนินการถัดไปหากข้อมูลครบถ้วน
+                                        showDialog = true
+                                        Log.d(TAG, "formRequestForRepair: ${imageUri1?.path}, ${imageUri2?.path}, ${imageUri3?.path}")
+                                    }
                                 } else {
-                                    // โค้ดสำหรับการดำเนินการถัดไปหากข้อมูลครบถ้วน
-                                    showDialog = true
-                                    Log.d(
-                                        TAG,
-                                        "formRequestForRepair: ${imageUri1?.path}, ${imageUri2?.path}, ${imageUri3?.path}"
-                                    )
+                                    if (checkEquipmentId(deviceId) &&
+                                        checkBuildingId(buildingId) &&
+                                        repairDetails.isNotBlank() &&
+                                        imageUri1?.path?.isNotEmpty() == true &&
+                                        imageUri2?.path?.isNotEmpty() == true &&
+                                        imageUri3?.path?.isNotEmpty() == true
+                                    ) {
+                                        showDialog = false  // เปิดใช้งาน Dialog หากข้อมูลไม่ครบ
+                                        val isSuccess = performRepairRequest(
+                                            vmodel,
+                                            repairDetails,
+                                            empId ?: 0,
+                                            buildingId,
+                                            eq_id ?: 0,
+                                            listOf(imageUri1, imageUri2, imageUri3)
+                                        )
+                                        if (isSuccess) {
+                                            showLoadSuccess = true
+                                        }
+                                        Log.d(TAG, "formRequestForRepair: $empId")
+                                    } else {
+                                        // โค้ดสำหรับการดำเนินการถัดไปหากข้อมูลครบถ้วน
+                                        showDialog = true
+                                    }
                                 }
+                                showDialog = false
                             } else {
-                                if (checkEquipmentId(deviceId) &&
-                                    checkBuildingId(buildingId) &&
-                                    repairDetails.isNotBlank() &&
-                                    imageUri1?.path?.isNotEmpty() == true &&
-                                    imageUri2?.path?.isNotEmpty() == true &&
-                                    imageUri3?.path?.isNotEmpty() == true
-                                ) {
-                                    showDialog = false  // เปิดใช้งาน Dialog หากข้อมูลไม่ครบ
-                                    vmodel.uploadImage(imageUri1!!, 1)
-                                    vmodel.uploadImage(imageUri2!!, 2)
-                                    vmodel.uploadImage(imageUri3!!, 3)
-                                    vmodel.sendRequest(
-                                        repairDetails,
-                                        empId ?: 0,
-                                        buildingId,
-                                        eq_id ?: 0
-                                    )
-                                    Log.d(TAG, "formRequestForRepair: $empId")
-                                    showLoadSuccess = true
-                                } else {
-                                    // โค้ดสำหรับการดำเนินการถัดไปหากข้อมูลครบถ้วน
-                                    showDialog = true
-                                }
+                                showDialog = false
                             }
-                            showDialog = false
-                        } else {
-                            showDialog = false
                         }
                     }) {
                         Text("OK")
@@ -467,5 +425,68 @@ fun formRequestForRepair(navController: NavController, formRequestViewModel: for
                 }
             )
         }
+    if (showLoadSuccess && !showErrorDialog) {
+        AlertDialog(
+            onDismissRequest = { showLoadSuccess = false },
+            title = { Text("แจ้งซ่อมสำเร็จ") },
+            text =  { Text("แจ้งซ่อมสำเร็จ") } ,
+            confirmButton = {
+                Button(onClick = {
+                    showLoadSuccess = false
+                    navController.navigateUp()
+                }) {
+                    Text("OK")
+                }
+            },
+            dismissButton = {
+
+            }
+        )
+    }
+    if (showErrorDialog) {
+        showLoadSuccess = false
+        AlertDialog(
+            onDismissRequest = { formRequestViewModel.resetErrorDialog() },
+            title = { Text("เกิดข้อผิดพลาด") },
+            text = { Text(errorMessage) },
+            confirmButton = {
+                Button(onClick = { formRequestViewModel.resetErrorDialog() }) {
+                    Text("ตกลง")
+                }
+            }
+        )
+    }
+}
+suspend fun performRepairRequest(
+    vmodel: formRequestViewModel,
+    repairDetails: String,
+    empId: Int,
+    buildingId: Int,
+    eq_id: Int,
+    imageUris: List<Uri>
+): Boolean = coroutineScope {
+    try {
+        // ใช้ async สำหรับการทำงานแบบคู่ขนาน
+        val sendRequest = async { vmodel.sendRequest(repairDetails, empId, buildingId, eq_id) }
+
+        // รอให้ sendRequest เสร็จสิ้นก่อน
+        sendRequest.await()
+
+        // ตรวจสอบว่าไม่มีข้อผิดพลาด
+        if (!vmodel.showErrorDialog.value) {
+            // ทำการอัปโหลดภาพ
+            val uploadJobs = imageUris.mapIndexed { index, uri ->
+                async { vmodel.uploadImage(uri, index + 1) }
+            }
+
+            // รอให้การอัปโหลดเสร็จสิ้นทั้งหมด
+            uploadJobs.awaitAll()
+            true
+        } else {
+            false
+        }
+    } catch (e: Exception) {
+        Log.e(TAG, "Error performing repair request: ${e.message}")
+        false
     }
 }

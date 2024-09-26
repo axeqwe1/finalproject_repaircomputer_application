@@ -139,7 +139,7 @@ interface IAPIService {
     @POST("managementuser/addadmin")
     suspend fun addAdmin(@Body adminData: UserModel):Response<AdminData>
     @POST("managementuser/addtechnician")
-    suspend fun addTechnician(@Body technicianData: UserModel):Response<TechnicianData>
+    suspend fun addTechnician(@Body technicianData: TechnicianBody):Response<TechnicianData>
     @POST("managementuser/addemployee")
     suspend fun addEmployee(@Body employeeData: UserModel):Response<EmployeeData>
     @POST("managementuser/addchief")

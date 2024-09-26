@@ -11,9 +11,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -24,6 +26,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -43,6 +46,7 @@ fun crudDataScreen(dataType: String?, navController: NavController, viewModel: D
     val equipmentTypeList = viewModel.eqc.collectAsState().value
     val techStatusList = viewModel.techStatus.collectAsState().value
     val loedList = viewModel.loed.collectAsState().value
+    var selectedFilter by remember { mutableStateOf("ทั้งหมด") }
     LaunchedEffect(buildingList,departmentList,equipmentList,equipmentTypeList,techStatusList,loedList,searchQuery){
         viewModel.LoadData()
     }
@@ -70,6 +74,30 @@ fun crudDataScreen(dataType: String?, navController: NavController, viewModel: D
                 label = { Text("ค้นหา") },
                 modifier = Modifier.fillMaxWidth()
             )
+            if(dataType == "Equipment"){
+                val scrollState = rememberScrollState()
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                        .horizontalScroll(scrollState), // เพิ่มการเลื่อนในแนวนอน
+                    horizontalArrangement = Arrangement.SpaceAround
+                ) {
+                    val filters = listOf("ทั้งหมด", "รหัสอุปกรณ์", "ชื่ออุปกรณ์", "ประเภทอุปกรณ์")
+                    filters.forEach { filter ->
+                        androidx.compose.material3.Text(
+                            text = filter,
+                            modifier = Modifier
+                                .clickable {
+                                    selectedFilter = filter
+                                }
+                                .padding(6.dp),
+                            color = if (selectedFilter == filter) Color.Black else Color.Gray,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
+            }
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -84,15 +112,29 @@ fun crudDataScreen(dataType: String?, navController: NavController, viewModel: D
                     {it.department_id.toString()},
                     {it.departmentName}
                 )) ?: emptyList()
-                "Equipment" -> equipmentList?.filterBySearchQuery(searchQuery.text, listOf(
-                    {it.eq_id.toString()},
-                    {it.eq_name},
-                    {
-                        equipmentTypeList?.firstOrNull() { items ->
-                            items.eqc_id == it.eqc_id
-                        }?.eqc_name
+                "Equipment" -> {
+                    when (selectedFilter) {
+                        "ทั้งหมด" -> equipmentList?.filterBySearchQuery(searchQuery.text, listOf(
+                            { it.eq_id.toString() },
+                            { it.eq_name },
+                            { equipmentTypeList?.firstOrNull { items -> items.eqc_id == it.eqc_id }?.eqc_name }
+                        )) ?: emptyList()
+
+                        "รหัสอุปกรณ์" -> equipmentList?.filterBySearchQuery(searchQuery.text, listOf {
+                            it.eq_id.toString()
+                        }) ?: emptyList()
+
+                        "ชื่ออุปกรณ์" -> equipmentList?.filterBySearchQuery(searchQuery.text, listOf {
+                            it.eq_name
+                        }) ?: emptyList()
+
+                        "ประเภทอุปกรณ์" -> equipmentList?.filterBySearchQuery(searchQuery.text, listOf {
+                            equipmentTypeList?.firstOrNull { items -> items.eqc_id == it.eqc_id }?.eqc_name
+                        }) ?: emptyList()
+
+                        else -> emptyList()
                     }
-                )) ?: emptyList()
+                }
                 "EquipmentType" -> equipmentTypeList?.filterBySearchQuery(searchQuery.text, listOf(
                     {it.eqc_id.toString()},
                     { it.eqc_name },

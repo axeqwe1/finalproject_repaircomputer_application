@@ -23,6 +23,7 @@ import com.example.repaircomputerapplication_finalproject.model.EmployeeData
 import com.example.repaircomputerapplication_finalproject.model.TechnicianData
 import com.example.repaircomputerapplication_finalproject.viewModel.ManageViewModel.UserManageViewModel
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 
 
 @Composable
@@ -32,10 +33,10 @@ fun crudUserScreen(userType:String?,navController: NavController,viewModel:UserM
     val techList = viewModel.tech.collectAsState().value ?: emptyList()
     val empList = viewModel.emp.collectAsState().value ?: emptyList()
     val chiefList = viewModel.chief.collectAsState().value ?: emptyList()
-    LaunchedEffect(adminList,techList,empList,chiefList,searchQuery){
-        if (userType != null){
-            viewModel.loadData(userType)
-        }
+    val departList = viewModel.department.collectAsState().value ?: emptyList()
+    val coroutineScope = rememberCoroutineScope()
+    LaunchedEffect(adminList, techList, empList, chiefList, searchQuery) {
+        viewModel.loadData()
     }
 
     Scaffold(
@@ -65,27 +66,27 @@ fun crudUserScreen(userType:String?,navController: NavController,viewModel:UserM
             when (userType) {
                 "Admin" -> UserList(adminList.filterBySearchQuery(searchQuery.text, listOf(
                     { it.email },
-                    { it.firstname },
-                    { it.lastname },
-                    { it.admin_id.toString() }
+                    { it.firstname + " " + it.lastname},
+                    { it.admin_id.toString() },
+                    { departList.find { department -> department.department_id == it.departmentId }?.departmentName ?: "Unknown" }
                 ))) { AdminCard(it,userType,navController) }
                 "Technician" -> UserList(techList.filterBySearchQuery(searchQuery.text, listOf(
                     { it.email },
-                    { it.firstname },
-                    { it.lastname },
-                    { it.tech_id.toString() }
+                    { it.firstname + " " + it.lastname},
+                    { it.tech_id.toString() },
+                    { departList.find { department -> department.department_id == it.departmentId }?.departmentName ?: "Unknown" }
                 ))) { TechnicianCard(it,userType,navController) }
                 "Employee" -> UserList(empList.filterBySearchQuery(searchQuery.text, listOf(
                     { it.email },
-                    { it.firstname },
-                    { it.lastname },
-                    { it.emp_id.toString() }
+                    { it.firstname + " " + it.lastname},
+                    { it.emp_id.toString() },
+                    { departList.find { department -> department.department_id == it.departmentId }?.departmentName ?: "Unknown" }
                 ))) { EmployeeCard(it,userType,navController) }
                 "Chief" -> UserList(chiefList.filterBySearchQuery(searchQuery.text, listOf(
                     { it.email },
-                    { it.firstname },
-                    { it.lastname },
-                    { it.chief_id.toString() }
+                    { it.firstname + " " + it.lastname},
+                    { it.chief_id.toString() },
+                    { departList.find { department -> department.department_id == it.departmentId }?.departmentName ?: "Unknown" }
                 ))) { ChiefCard(it,userType,navController) }
                 else -> Text("Invalid user type", color = Color.Red, modifier = Modifier.padding(16.dp))
             }
@@ -198,8 +199,11 @@ fun UserCard(
         showDialog = showDialog,
         onDismiss = { showDialog = false },
         onConfirm = {
-            viewModel.deleteUser(userType = userType ?: "null", userId = id ?: 0)
-            showDialog = false
+            if(userType != null && id != null) {
+                viewModel.deleteUser(userType = userType, userId = id)
+                showDialog = false
+                viewModel.loadData()
+            }
         }
     )
     Card(

@@ -59,7 +59,6 @@ fun ImageUploadScreen(viewModel: formRequestViewModel) {
         if (success) {
             captureImageUri1 = uri1
             viewModel.saveImageState(captureImageUri1, 1)
-            viewModel.uploadImage(captureImageUri1, 1)
         }
     }
 
@@ -67,7 +66,6 @@ fun ImageUploadScreen(viewModel: formRequestViewModel) {
         if (success) {
             captureImageUri2 = uri2
             viewModel.saveImageState(captureImageUri2, 2)
-            viewModel.uploadImage(captureImageUri2, 2)
         }
     }
 
@@ -75,7 +73,6 @@ fun ImageUploadScreen(viewModel: formRequestViewModel) {
         if (success) {
             captureImageUri3 = uri3
             viewModel.saveImageState(captureImageUri3, 3)
-            viewModel.uploadImage(captureImageUri3, 3)
         }
     }
 
@@ -83,7 +80,6 @@ fun ImageUploadScreen(viewModel: formRequestViewModel) {
         if (uri != null) {
             captureImageUri1 = uri
             viewModel.saveImageState(captureImageUri1, 1)
-            viewModel.uploadImage(captureImageUri1, 1)
         }
     }
 
@@ -91,7 +87,6 @@ fun ImageUploadScreen(viewModel: formRequestViewModel) {
         if (uri != null) {
             captureImageUri2 = uri
             viewModel.saveImageState(captureImageUri2, 2)
-            viewModel.uploadImage(captureImageUri2, 2)
         }
     }
 
@@ -99,7 +94,6 @@ fun ImageUploadScreen(viewModel: formRequestViewModel) {
         if (uri != null) {
             captureImageUri3 = uri
             viewModel.saveImageState(captureImageUri3, 3)
-            viewModel.uploadImage(captureImageUri3, 3)
         }
     }
 

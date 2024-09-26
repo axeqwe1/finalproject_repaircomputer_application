@@ -18,7 +18,7 @@ class WebSocketService : Service() {
 
     override fun onCreate() {
         super.onCreate()
-        val uri = URI("ws://192.168.1.33:8001")
+        val uri = URI("ws://192.168.1.37:8001")
         webSocketClient = MyWebSocketClient(uri, this) {
             // Callback ที่จะถูกเรียกเมื่อมีการแจ้งเตือนใหม่เข้ามา
             NotificationRepository.incrementNotificationCount() // อัปเดตจำนวนการแจ้งเตือนใน Repository
@@ -57,4 +57,7 @@ class WebSocketService : Service() {
         webSocketClient.close()
         super.onDestroy()
     }
+
+
+
 }
