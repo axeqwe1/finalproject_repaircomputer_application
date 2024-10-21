@@ -67,11 +67,19 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel = view
     }
     LaunchedEffect(logoutResult) {
         when (logoutResult) {
-            is LogoutResult.IsLogout -> navController.navigate(ScreenRoutes.AuthNav.route) {
-                popUpTo(ScreenRoutes.HomeNav.route) { inclusive = true }
+            is LogoutResult.IsLogout -> {
+                navController.navigate(ScreenRoutes.AuthNav.route) {
+                    popUpTo(ScreenRoutes.HomeNav.route) { inclusive = true }
+                }
             }
-            is LogoutResult.Failure -> Toast.makeText(context, "Login failed: ${(logoutResult as LogoutResult.Failure).error}", Toast.LENGTH_LONG).show()
-            else -> {}
+            is LogoutResult.Failure -> {
+                Toast.makeText(
+                    context,
+                    "Logout failed: ${(logoutResult as LogoutResult.Failure).error}",
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+            else -> { /* ไม่ต้องทำอะไรเพิ่มเติม */ }
         }
     }
 

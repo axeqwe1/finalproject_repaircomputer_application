@@ -30,8 +30,6 @@ class HomeViewModel(application: Application): AndroidViewModel(application) {
     private val _notificationCount = MutableStateFlow(0)
     val notificationCount: StateFlow<Int> = NotificationRepository.notificationCount
     val logoutResult: StateFlow<LogoutResult?> = _logoutResult
-    val sessionManager:SessionManager = SessionManager(application)
-
 
     // SharedFlow สำหรับรับข้อมูลจาก WebSocket
     private val _notificationsFlow = MutableSharedFlow<Int>()
@@ -52,7 +50,6 @@ class HomeViewModel(application: Application): AndroidViewModel(application) {
             try {
                 if(response.isSuccessful){
                     removeUserId()
-                    sessionManager.clearSession()
                     _logoutResult.value = LogoutResult.IsLogout
                 }
             } catch (e: Exception) {
@@ -85,7 +82,6 @@ class HomeViewModel(application: Application): AndroidViewModel(application) {
             }
         }
     }
-
     // ฟังก์ชันสำหรับอัปเดตจำนวนแจ้งเตือน
     fun updateNotificationCount(count: Int) {
         NotificationRepository.setNotificationCount(count)
@@ -130,48 +126,71 @@ class HomeViewModel(application: Application): AndroidViewModel(application) {
         }
     }
 
-    suspend fun getTechnicianData(userId:Int):TechnicianData?{
-        try {
+    suspend fun getTechnicianData(userId: Int): TechnicianData? {
+        return try {
             val response = RetrofitInstance.apiService.getTechnicianById(userId)
-            if(response.isSuccessful){
-                Log.d(TAG, "getTechnicianData: ${response.body()}")
-                return response.body()
-            }else{
-                throw Exception("fail to get Employee Name")
+            if (response.isSuccessful) {
+                val technicianData = response.body()
+                if (technicianData != null) {
+                    Log.d(TAG, "getTechnicianData: $technicianData")
+                    technicianData
+                } else {
+                    removeUserId()  // Logout หากไม่พบข้อมูล
+                    null
+                }
+            } else {
+                removeUserId()
+                throw Exception("Failed to get Technician Data")
             }
-        }catch (e:Exception){
-            throw Exception("getTechnicianData:$e")
+        } catch (e: Exception) {
+            removeUserId()
+            throw Exception("getTechnicianData: $e")
         }
-
     }
-    suspend fun getAdminData(userId:Int):AdminData?{
-        try {
+    suspend fun getAdminData(userId: Int): AdminData? {
+        return try {
             val response = RetrofitInstance.apiService.getAdminById(userId)
-            if(response.isSuccessful){
-                Log.d(TAG, "getAdminData: ${response.body()}")
-                return response.body()
-            }else{
-                throw Exception("fail to get AdminData")
+            if (response.isSuccessful) {
+                val adminData = response.body()
+                if (adminData != null) {
+                    Log.d(TAG, "getAdminData: $adminData")
+                    adminData
+                } else {
+                    removeUserId()  // Logout หากไม่พบข้อมูล
+                    null
+                }
+            } else {
+                removeUserId()
+                throw Exception("Failed to get Admin Data")
             }
-        }catch (e:Exception){
-            throw Exception("getAdminData:$e")
+        } catch (e: Exception) {
+            removeUserId()  // Logout เมื่อเกิดข้อผิดพลาด
+            throw Exception("getAdminData: $e")
         }
     }
 //
-    suspend fun getEmployeeData(userId:Int):EmployeeData?{
-        try {
-            val response = RetrofitInstance.apiService.getEmployeeById(userId)
-            if(response.isSuccessful){
-                Log.d(TAG, "getEmployeeData: ${response.body()}")
-                return response.body()
-            }else{
-                throw Exception("fail to get EmployeeData")
+suspend fun getEmployeeData(userId: Int): EmployeeData? {
+    return try {
+        val response = RetrofitInstance.apiService.getEmployeeById(userId)
+        if (response.isSuccessful) {
+            val employeeData = response.body()
+            if (employeeData != null) {
+                Log.d(TAG, "getEmployeeData: $employeeData")
+                employeeData
+            } else {
+                removeUserId()  // Logout หากไม่พบข้อมูล
+                null
             }
-        }catch (e:Exception){
-            throw Exception("getEmployeeData:$e")
+        } else {
+            removeUserId()
+            throw Exception("Failed to get Employee Data")
         }
-
+    } catch (e: Exception) {
+        removeUserId()  // Logout เมื่อเกิดข้อผิดพลาด
+        throw Exception("getEmployeeData: $e")
     }
+}
+
 //    suspend fun getChiefData(userId:Int): ChiefData?{
 //        try {
 //            val response = RetrofitInstance.apiService.getChiefById(userId)

@@ -119,7 +119,7 @@ open class ReportViewModel(application: Application) : AndroidViewModel(applicat
                 outputStream.write(buffer, 0, bytesRead)
             }
             outputStream.flush()
-            Toast.makeText(context,"Create File Success",Toast.LENGTH_SHORT).show()
+            Toast.makeText(context,"Create File Success at DIRECTORY DOWNLOADS",Toast.LENGTH_LONG).show()
             Log.d("ReportViewModel", "CSV file saved successfully")
 
             // Show a message or notification to inform the user that the file has been saved

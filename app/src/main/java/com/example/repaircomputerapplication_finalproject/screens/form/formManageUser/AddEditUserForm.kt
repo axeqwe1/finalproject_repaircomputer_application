@@ -1,3 +1,6 @@
+import android.content.ContentValues
+import android.net.Uri
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -20,6 +23,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.repaircomputerapplication_finalproject.viewModel.ManageViewModel.UserManageViewModel
+import com.example.repaircomputerapplication_finalproject.viewModel.RequestForRepairViewModel.formRequestViewModel
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -59,6 +68,7 @@ fun AddUserForm(
 
     val showErrorDialog = viewModel.showErrorDialog.collectAsState().value
     val errorMessage = viewModel.errorMessage.collectAsState().value
+    val coroutineScope = rememberCoroutineScope()
 
     LaunchedEffect(true) {
         if (userType != null) {
@@ -379,80 +389,39 @@ fun AddUserForm(
                 text = { Text(confirmationMessage) },
                 confirmButton = {
                     Button(onClick = {
-                        showConfirmationDialog = false
-                        if (isEdit == true) {
-                            if (departmentId.isNotBlank() && departmentId.toIntOrNull() != null) {
-                                if (userType == "Technician") {
-                                    viewModel.editUser(
-                                        userType ?: "null",
-                                        userId ?: "null",
-                                        firstName,
-                                        lastName,
-                                        email,
-                                        password,
-                                        phone,
-                                        departmentId,
-                                        statusId
-                                    )
-                                    if(!showErrorDialog){
-                                        showSuccessDialog = true
-                                    }
-                                } else {
-                                    viewModel.editUser(
-                                        userType ?: "null",
-                                        userId ?: "null",
-                                        firstName,
-                                        lastName,
-                                        email,
-                                        password,
-                                        phone,
-                                        departmentId,
-                                        "0"
-                                    )
-                                    if(!showErrorDialog){
-                                        showSuccessDialog = true
-                                    }
-                                }
-                            } else {
-                                titleMessage = "เกิดข้อผิดพลาด"
-                                alertMessage = "ID ของหน่วยงานไม่ถูกต้อง"
-                                showDialog = true
-                            }
-                        } else {
-                            if (userType == "Technician") {
-                                techStatusList.forEach {
-                                        item ->
-                                    if(item.receive_request_status == "A"){
+                        coroutineScope.launch {
+                            showConfirmationDialog = false
+                            if(userType == "Technician" && isEdit == false) {
+                                techStatusList.forEach { item ->
+                                    if (item.receive_request_status == "A") {
                                         statusId = item.status_id.toString()
                                     }
                                 }
-                                viewModel.addUser(
-                                    userType ?: "null",
-                                    firstName,
-                                    lastName,
-                                    email,
-                                    password,
-                                    phone,
-                                    departmentId,
-                                    statusId
-                                )
-                                if(!showErrorDialog){
+                            }
+                            val isSuccess = performAddEditUser(
+                                vmodel = viewModel,
+                                isEdit = isEdit ?: false,
+                                userType = userType ?: "null",
+                                userId = userId,
+                                firstName = firstName,
+                                lastName = lastName,
+                                email = email,
+                                password = password,
+                                phone = phone,
+                                departmentId = departmentId,
+                                statusId = if (userType == "Technician") statusId else "0"
+                            )
+                            // แก้ไขการตรวจสอบ success หรือไม่ด้วยการตรวจสอบ showErrorDialog โดยตรง
+                            if (isSuccess) {
+                                // ตรวจสอบอีกครั้งหลัง perform ว่ามี error หรือไม่
+                                if (viewModel.showErrorDialog.value) {
+                                    // ถ้ามี error ให้แสดง dialog error
+                                    showSuccessDialog = false
+                                } else {
                                     showSuccessDialog = true
                                 }
                             } else {
-                                viewModel.addUser(
-                                    userType ?: "null",
-                                    firstName,
-                                    lastName,
-                                    email,
-                                    password,
-                                    phone,
-                                    departmentId,
-                                    "0"
-                                )
-                                if(!showErrorDialog){
-                                    showSuccessDialog = true
-                                }
+                                showSuccessDialog = false
                             }
                         }
                     }) {
@@ -467,6 +436,22 @@ fun AddUserForm(
             )
         }
 
+
+// ตรวจสอบและแสดง AlertDialog
+        if (showErrorDialog) {
+            showSuccessDialog = false
+            AlertDialog(
+                onDismissRequest = { viewModel.resetErrorDialog() },  // รีเซ็ตการแสดงผลเมื่อปิด Dialog
+                title = { Text("เกิดข้อผิดพลาด") },
+                text = { Text(errorMessage ?: "เกิดข้อผิดพลาดไม่ทราบสาเหตุ") },
+                confirmButton = {
+                    Button(onClick = { viewModel.resetErrorDialog() }) {
+                        Text("ตกลง")
+                    }
+                }
+            )
+        }
+
         if (showSuccessDialog && !showErrorDialog) {
             AlertDialog(
                 onDismissRequest = { showSuccessDialog = false },
@@ -475,25 +460,71 @@ fun AddUserForm(
                 confirmButton = {
                     Button(onClick = {
                         showSuccessDialog = false
-
+                        // คุณสามารถใส่ฟังก์ชันการนำทางหลังจากแสดง AlertDialog ได้ที่นี่ เช่น:
+                        // navController.popBackStack()
                     }) {
                         Text("OK")
                     }
                 }
             )
         }
-        if (showErrorDialog) {
-            showSuccessDialog = false
-            androidx.compose.material3.AlertDialog(
-                onDismissRequest = { viewModel.resetErrorDialog() },
-                title = { androidx.compose.material3.Text("เกิดข้อผิดพลาด") },
-                text = { androidx.compose.material3.Text(errorMessage) },
-                confirmButton = {
-                    androidx.compose.material3.Button(onClick = { viewModel.resetErrorDialog() }) {
-                        androidx.compose.material3.Text("ตกลง")
-                    }
-                }
-            )
+    }
+}
+suspend fun performAddEditUser(
+    vmodel: UserManageViewModel,
+    isEdit: Boolean,
+    userType: String,
+    userId: String?,
+    firstName: String,
+    lastName: String,
+    email: String,
+    password: String,
+    phone: String,
+    departmentId: String,
+    statusId: String?
+): Boolean = coroutineScope {
+    try {
+        if (isEdit) {
+            // แก้ไขข้อมูลผู้ใช้
+           val edit = async { vmodel.editUser(
+                userType = userType,
+                userId = userId ?: "0",
+                firstname = firstName,
+                lastname = lastName,
+                email = email,
+                password = password,
+                phone = phone,
+                department = departmentId,
+                status = statusId ?: "0"
+            ) }
+            edit.await()
+            // ตรวจสอบว่าไม่มีข้อผิดพลาด
+
+        } else {
+            // เพิ่มข้อมูลผู้ใช้ใหม่
+            val add = async { vmodel.addUser(
+                userType = userType,
+                firstname = firstName,
+                lastname = lastName,
+                email = email,
+                password = password,
+                phone = phone,
+                department = departmentId,
+                status = statusId ?: "0"
+            ) }
+            add.await()
         }
+        delay(300)
+        // ตรวจสอบว่าไม่มีข้อผิดพลาด
+        if (!vmodel.showErrorDialog.value) {
+            Log.d(ContentValues.TAG, "performAddEditUser: Success")
+            true
+        } else {
+            Log.e(ContentValues.TAG, "performAddEditUser: Error occurred")
+            false
+        }
+    } catch (e: Exception) {
+        Log.e(ContentValues.TAG, "Error performing add/edit user: ${e.message}")
+        false
     }
 }

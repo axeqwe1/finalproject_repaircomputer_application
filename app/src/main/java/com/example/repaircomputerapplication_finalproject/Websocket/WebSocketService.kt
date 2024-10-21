@@ -18,16 +18,16 @@ class WebSocketService : Service() {
 
     override fun onCreate() {
         super.onCreate()
-        val uri = URI("ws://192.168.1.37:8001")
+        val uri = URI("ws://45.136.255.62//:80")
         webSocketClient = MyWebSocketClient(uri, this) {
             // Callback ที่จะถูกเรียกเมื่อมีการแจ้งเตือนใหม่เข้ามา
             NotificationRepository.incrementNotificationCount() // อัปเดตจำนวนการแจ้งเตือนใน Repository
         }
         webSocketClient.connect()
-        startForegroundService()
+        startForegroundServiceWithNotification()
     }
 
-    private fun startForegroundService() {
+    private fun startForegroundServiceWithNotification() {
         val channelId = "WebSocketServiceChannel"
         val channelName = "WebSocket Service"
 
@@ -46,7 +46,7 @@ class WebSocketService : Service() {
             .setSmallIcon(R.drawable.ic_notification)
             .build()
 
-        startForeground(1, notification)
+        startForeground(1, notification)  // เริ่ม Foreground Service ด้วย Notification
     }
 
     override fun onBind(intent: Intent?): IBinder? {

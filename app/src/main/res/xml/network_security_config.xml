@@ -1,7 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
-<network_security_config>
+<network-security-config>
+
+    <!-- ค่าเริ่มต้นปิด cleartext สำหรับโดเมนทั้งหมด -->
     <base-config cleartextTrafficPermitted="false" />
+
+    <!-- อนุญาต cleartext (ws://) สำหรับ localhost -->
     <domain-config cleartextTrafficPermitted="true">
         <domain includeSubdomains="true">localhost</domain>
     </domain-config>
-</network_security_config>
+
+    <!-- อนุญาต cleartext (ws://) สำหรับ IP ของเซิร์ฟเวอร์ -->
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">45.136.255.62</domain>  <!-- เพิ่ม IP หรือโดเมนที่ต้องการ -->
+    </domain-config>
+
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">10.0.2.2</domain>
+    </domain-config>
+
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">192.168.1.103</domain>
+    </domain-config>
+
+</network-security-config>

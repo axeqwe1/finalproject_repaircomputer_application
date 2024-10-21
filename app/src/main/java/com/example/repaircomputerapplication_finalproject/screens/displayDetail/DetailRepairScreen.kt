@@ -57,6 +57,7 @@ fun DetailRepairScreen(
     var employeeName by remember { mutableStateOf("") }
     var rr_description by remember { mutableStateOf("") }
     var hasDetail by remember { mutableStateOf(false) }
+    var hasAssign by remember { mutableStateOf(false) }
     var technicianName by remember { mutableStateOf("") }
     var dateReceive by remember { mutableStateOf("") }
     var detail by remember { mutableStateOf("ยังไม่กรอกข้อมูล") }
@@ -80,6 +81,11 @@ fun DetailRepairScreen(
             admin_id = "null"
         }
         viewModel.loadData(rrid)
+        if(data?.assign_work == null){
+            hasAssign = false
+        }else{
+            hasAssign = true
+        }
         if (data != null && data!!.receive_repair == null && data!!.assign_work == null) {
             _rrid = data!!.rrid.toString()
             eq_id = data!!.eq_id.toString()
@@ -197,6 +203,13 @@ fun DetailRepairScreen(
                     Text(text = "ชื่อผู้รับงาน: $technicianName", fontSize = 18.sp)
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(text = "วันที่รับงาน: ${formatTimestamp(dateReceive)} ", fontSize = 18.sp)
+                }
+                if(hasAssign){
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(text = "ชื่อผู้จ่ายงาน: ${viewModel.getAssignmentName(data!!.assign_work.admin_id)}", fontSize = 18.sp)
+                }else{
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(text = "ชื่อผู้จ่ายงาน: ไม่มี", fontSize = 18.sp)
                 }
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(text = "รายละเอียด :", fontSize = 18.sp)

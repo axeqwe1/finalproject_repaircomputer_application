@@ -46,6 +46,7 @@ fun NavGraphBuilder.RequestListGraph(navController: NavHostController){
         detailGraph(navController)
     }
 }
+@RequiresApi(Build.VERSION_CODES.O)
 fun NavGraphBuilder.NotiGraph(navController: NavHostController){
     navigation(route = ScreenRoutes.NotiNav.route, startDestination = ScreenRoutes.Notification.route){
         composable(route = ScreenRoutes.Notification.route)

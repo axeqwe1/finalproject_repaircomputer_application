@@ -1,10 +1,13 @@
 package com.example.repaircomputerapplication_finalproject.viewModel.DisplayViewModel
 
 import android.app.Application
+import android.content.ContentValues
+import android.util.Log
 import android.widget.Toast
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.repaircomputerapplication_finalproject.api_service.RetrofitInstance
+import com.example.repaircomputerapplication_finalproject.model.AdminData
 import com.example.repaircomputerapplication_finalproject.model.detailRepairData
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -22,13 +25,26 @@ class RepairDetailViewModel(application: Application) : AndroidViewModel(applica
     private val _imagePainters = MutableStateFlow<List<ByteArray?>>(emptyList())
     val imagePainters = _imagePainters.asStateFlow()
 
+    private var _adminList = MutableStateFlow<List<AdminData>?>(null)
+    var adminList  = _adminList.asStateFlow()
+
     fun loadData(dataId: String) {
         viewModelScope.launch {
             _detailData.value = fetchRepairDetail(dataId)
+            _adminList.value = fetchAdminData()
             _detailData.value?.rr_picture?.let { imageNames ->
                 fetchImages(imageNames)
             }
         }
+    }
+    fun getAssignmentName(adminId:Int):String{
+        Log.d(ContentValues.TAG, "getAssignMentName: ${adminList.value}")
+        adminList.value?.forEach {items ->
+            if(items.admin_id == adminId){
+                return items.firstname + " " + items.lastname
+            }
+        }
+        return "Fail to getAssignmentName"
     }
     suspend fun getDepartmentName(dep_id:Int) : String?{
         val response = RetrofitInstance.apiService.getDepartmentById(dep_id)
@@ -37,6 +53,14 @@ class RepairDetailViewModel(application: Application) : AndroidViewModel(applica
         }else{
             Toast.makeText(getApplication(),"QueryData  Fail",Toast.LENGTH_SHORT).show()
             throw Exception("Fail to Fetch department Data")
+        }
+    }
+    suspend fun fetchAdminData():List<AdminData>?{
+        val response = RetrofitInstance.apiService.getAdmins()
+        if(response.isSuccessful){
+            return response.body()
+        }else{
+            throw Exception("Fail to Fetch EquipmentData")
         }
     }
     private suspend fun fetchRepairDetail(dataId: String): detailRepairData? {

@@ -472,6 +472,7 @@ suspend fun performRepairRequest(
         // รอให้ sendRequest เสร็จสิ้นก่อน
         sendRequest.await()
 
+        delay(300)
         // ตรวจสอบว่าไม่มีข้อผิดพลาด
         if (!vmodel.showErrorDialog.value) {
             // ทำการอัปโหลดภาพ

@@ -7,6 +7,7 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.repaircomputerapplication_finalproject.api_service.RetrofitInstance
+import com.example.repaircomputerapplication_finalproject.model.AdminData
 import com.example.repaircomputerapplication_finalproject.model.BuildingData
 import com.example.repaircomputerapplication_finalproject.model.DepartmentData
 import com.example.repaircomputerapplication_finalproject.model.EmployeeData
@@ -41,6 +42,9 @@ class RequestForRepiarListViewModel(application: Application):AndroidViewModel(a
     private var _departList = MutableStateFlow<List<DepartmentData>?>(null)
     var departList  = _departList.asStateFlow()
 
+    private var _adminList = MutableStateFlow<List<AdminData>?>(null)
+    var adminList  = _adminList.asStateFlow()
+
     private var role:String = ""
     private var Id:Int? = null
 
@@ -53,6 +57,7 @@ class RequestForRepiarListViewModel(application: Application):AndroidViewModel(a
                 _techList.value = fetchTechnicianData()
                 _buildingList.value = fetchBuildingData()
                 _departList.value = fetchDepartmentData()
+                _adminList.value = fetchAdminData()
                 Log.d(TAG, "loadData: ${_requestList.value}")
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to load data: ${e.message}")
@@ -60,7 +65,15 @@ class RequestForRepiarListViewModel(application: Application):AndroidViewModel(a
             }
         }
     }
-
+    fun getAssignmentName(adminId:Int):String{
+        Log.d(TAG, "getAssignMentName: ${adminList.value}")
+        adminList.value?.forEach {items ->
+            if(items.admin_id == adminId){
+                return items.firstname + " " + items.lastname
+            }
+        }
+        return "Fail to getAssignmentName"
+    }
     fun getBuildingName (buildId:Int):String{
         Log.d(TAG, "getBuildingInfo: ${buildingList.value}")
         buildingList.value?.forEach {items ->
@@ -148,6 +161,14 @@ class RequestForRepiarListViewModel(application: Application):AndroidViewModel(a
     }
     suspend fun fetchBuildingData ():List<BuildingData>?{
         val response = RetrofitInstance.apiService.getBuildings()
+        if(response.isSuccessful){
+            return response.body()
+        }else{
+            throw Exception("Fail to Fetch EquipmentData")
+        }
+    }
+    suspend fun fetchAdminData():List<AdminData>?{
+        val response = RetrofitInstance.apiService.getAdmins()
         if(response.isSuccessful){
             return response.body()
         }else{

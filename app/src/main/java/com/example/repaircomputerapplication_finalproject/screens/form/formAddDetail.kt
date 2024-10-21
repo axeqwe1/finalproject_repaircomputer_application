@@ -65,6 +65,10 @@ fun formAddDetail(
             Loed_ID = damageLevels?.find { it.loed_id == requestData?.receive_repair!!.repair_details.lastOrNull()?.loed_id }?.loed_id.toString()
             selectRequestText = requestData?.request_status.toString()
         } else {
+            if(requestData?.receive_repair!!.repair_details.lastOrNull()?.loed_id != null){
+                Loed_ID = damageLevels?.find { it.loed_id == requestData?.receive_repair!!.repair_details.lastOrNull()?.loed_id }?.loed_id.toString()
+                Log.d(TAG, "formAddDetail: ${damageLevels?.find { it.loed_id == requestData?.receive_repair!!.repair_details.lastOrNull()?.loed_id }?.loed_id.toString()}")
+            }
             Loed_ID = damageLevels?.find { it.loed_id == requestData?.receive_repair!!.repair_details.lastOrNull()?.loed_id }?.loed_id.toString()
             selectRequestText = requestData?.request_status.toString()
         }
@@ -77,6 +81,9 @@ fun formAddDetail(
         }
         if (selectRequestText == "กำลังส่งคืน") {
             repairDetail = "กำลังส่งคืนอุปกรณ์"
+        }
+        if (selectRequestText == "ส่งคืนเสร็จสิ้น") {
+            repairDetail = ""
         }
     }
     fun recordData() {

@@ -258,6 +258,12 @@ fun RequestRepairScreen(navController: NavHostController, viewModel: RequestForR
                                 } else{
                                     Text(text = "ผู้รับงาน: ไม่มี")
                                 }
+                                if( userType == "Technician" || userType == "Admin"){
+                                    if(item.assign_work != null && item.assign_work.admin_id != null){
+                                        Text(text = "ผู้จ่ายงาน:${viewModel.getAssignmentName(item.assign_work.admin_id) ?: "ไม่มี"}")
+                                    }
+                                    Text(text = "ผู้จ่ายงาน:ไม่มี")
+                                }
                                 Row {
                                     Column(modifier = Modifier.weight(1f)) {
                                         Text(text = "ชื่อตึก  : ${viewModel.getBuildingName(item.building_id ?: 0)}")

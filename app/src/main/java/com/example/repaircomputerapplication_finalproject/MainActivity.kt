@@ -79,9 +79,19 @@ class MainActivity : ComponentActivity() {
         // เริ่มต้น Service เมื่อเปิดแอป
         Intent(this, WebSocketService::class.java).also { intent ->
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                startForegroundService(intent)
+                startForegroundService(intent) // สำหรับ Android O ขึ้นไป
             } else {
-                startService(intent)
+                startService(intent) // สำหรับ Android ต่ำกว่า O
+            }
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val permissions = arrayOf(
+                Manifest.permission.BLUETOOTH_CONNECT,
+                Manifest.permission.POST_NOTIFICATIONS
+            )
+
+            if (!permissions.all { checkSelfPermission(it) == PackageManager.PERMISSION_GRANTED }) {
+                requestPermissions(permissions, 101)
             }
         }
     }

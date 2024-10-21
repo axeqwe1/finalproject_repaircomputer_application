@@ -45,19 +45,17 @@ class UserManageViewModel(
     private val _techStatus = MutableStateFlow<List<techStatusData>?>(null)
     val techStatus = _techStatus.asStateFlow()
 
-    // State for showing the alert dialog
+    // UserManageViewModel.kt หรือ ViewModel ที่เกี่ยวข้อง
     private val _showErrorDialog = MutableStateFlow(false)
-    val showErrorDialog: StateFlow<Boolean> get() = _showErrorDialog
+    val showErrorDialog: StateFlow<Boolean> = _showErrorDialog
 
-    // State for the error message
-    private val _errorMessage = MutableStateFlow("")
-    val errorMessage = _errorMessage.asStateFlow()
+    private val _errorMessage = MutableStateFlow<String?>(null)
+    val errorMessage: StateFlow<String?> = _errorMessage
 
     fun resetErrorDialog() {
         _showErrorDialog.value = false
-        _errorMessage.value = ""
+        _errorMessage.value = null
     }
-
     init {
         loadData()
     }
@@ -114,9 +112,8 @@ class UserManageViewModel(
                 if (result.isSuccessful) {
                     Log.d(TAG, "addUser: Success Response: ${result.body()}")
                 } else {
-                    Toast.makeText(getApplication(), "${result.errorBody()?.string()}", Toast.LENGTH_LONG).show()
-                    Log.d(TAG, "addUser: Error Response: ${result.errorBody()?.string()}")
-                    val errorResponse = result.errorBody()?.string()
+                    val errorResponse: String? = result.errorBody()?.string()
+                    Log.d(TAG, "addUser: Error Response: ${result.errorBody()?.string()} ")
                     _errorMessage.value = errorResponse ?: "เกิดข้อผิดพลาด ไม่สามารถดำเนินการได้"
                     _showErrorDialog.value = true
                 }
