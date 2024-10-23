@@ -33,7 +33,7 @@ fun equipmentForm(isEdit: Boolean?, DataID: String?, viewModel: DataManageViewMo
     var showTypeDropdown by remember { mutableStateOf(false) }
     var selectedType by remember { mutableStateOf("ประเภทอุปกรณ์") }
 
-    val statusOptions = listOf("พร้อมใช้งาน", "กำลังใช้งาน", "เสียหาย")
+    val statusOptions = listOf("พร้อมใช้งาน" ,"กำลังใช้งาน", "ส่งซ่อม" , "เสียซ่อมไม่ได้")
     var eqcId by remember { mutableStateOf(0) }
     val context = LocalContext.current
     val eqList = viewModel.eq.collectAsState().value
