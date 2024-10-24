@@ -9,6 +9,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -43,7 +44,9 @@ fun formAddDetail(
     var departmentName by remember { mutableStateOf("") }
     var showDialog by remember { mutableStateOf(false) }
     var validationError by remember { mutableStateOf<String?>(null) }
-
+    var isLoading by remember { mutableStateOf(true) }
+    var isError by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf("") }
     val requestStatus = listOf(
         "กำลังดำเนินการ",
         "เสร็จสิ้นแล้ว",
@@ -53,27 +56,55 @@ fun formAddDetail(
         "ไม่พบว่าชำรุด"
     )
 
-    LaunchedEffect(key1 = true) {
-        requestData = viewModel.fetchRequestForRepairData(rrid.toInt())
-        if (isUpdate) {
-            repairDetail = if (requestData?.receive_repair!!.repair_details.lastOrNull()?.rd_description.toString().split(":").size > 1) {
-                requestData?.receive_repair!!.repair_details.lastOrNull()?.rd_description.toString().split(":")[1]
+    LaunchedEffect(key1 = damageLevels,key2 = requestData) {
+        try {
+            requestData = viewModel.fetchRequestForRepairData(rrid.toInt())
+            viewModel.LoadData()
+            if (isUpdate) {
+                if (requestData?.receive_repair?.repair_details?.isNotEmpty() == true) {
+                    val lastDetail = requestData?.receive_repair?.repair_details?.lastOrNull()
+                    repairDetail = if (lastDetail?.rd_description.toString().split(":").size > 1) {
+                        requestData?.receive_repair!!.repair_details.lastOrNull()?.rd_description.toString().split(":")[1]
+                    } else {
+                        ""
+                    }
+                    val level = damageLevels?.find { it.loed_id == lastDetail?.loed_id }
+                    if (level != null) {
+                        selectedDamageLevel = level.loed_Name.orEmpty()
+                        Loed_ID = level.loed_id.toString()
+                        Log.d(TAG, "Updated Selected Damage Level: $selectedDamageLevel")
+                    } else {
+                        Log.d(TAG, "Damage level not found for loed_id: ${lastDetail?.loed_id}")
+                    }
+                    lastDetail?.let { detail ->
+                        Loed_ID = detail.loed_id?.toString() ?: ""
+                        selectRequestText = requestData?.request_status.orEmpty()
+                        Log.d(TAG, "formAddDetail: Updated Damage Level = $selectedDamageLevel")
+                    }
+                }
             } else {
-                ""
+                if (requestData?.receive_repair?.repair_details?.isNotEmpty() == true) {
+                    val lastDetail = requestData?.receive_repair?.repair_details?.lastOrNull()
+                    lastDetail?.let { detail ->
+                        Loed_ID = detail.loed_id?.toString() ?: ""
+                        selectedDamageLevel = damageLevels?.find { it.loed_id == detail.loed_id }?.loed_Name.orEmpty()
+                        selectRequestText = requestData?.request_status.orEmpty()
+
+                        Log.d(TAG, "formAddDetail: Loed_ID = $Loed_ID")
+                    }
+                } else {
+                    Log.d(TAG, "formAddDetail: No details found")
+                }
             }
-            selectedDamageLevel = damageLevels?.find { it.loed_id == requestData?.receive_repair!!.repair_details.lastOrNull()?.loed_id }?.loed_Name.orEmpty()
-            Loed_ID = damageLevels?.find { it.loed_id == requestData?.receive_repair!!.repair_details.lastOrNull()?.loed_id }?.loed_id.toString()
-            selectRequestText = requestData?.request_status.toString()
-        } else {
-            if(requestData?.receive_repair!!.repair_details.lastOrNull()?.loed_id != null){
-                Loed_ID = damageLevels?.find { it.loed_id == requestData?.receive_repair!!.repair_details.lastOrNull()?.loed_id }?.loed_id.toString()
-                Log.d(TAG, "formAddDetail: ${damageLevels?.find { it.loed_id == requestData?.receive_repair!!.repair_details.lastOrNull()?.loed_id }?.loed_id.toString()}")
-            }
-            Loed_ID = damageLevels?.find { it.loed_id == requestData?.receive_repair!!.repair_details.lastOrNull()?.loed_id }?.loed_id.toString()
-            selectRequestText = requestData?.request_status.toString()
+            departmentName = viewModel.getDepartmentName(requestData?.employee?.departmentId ?: 0)
+        }catch (e:Exception){
+            Log.e(TAG, "formAddDetail: Error fetching data: ${e.message}", )
+            errorMessage = "เกิดข้อผิดพลาดในการโหลดข้อมูล"
+            isError = true // เปิดสถานะข้อผิดพลาด
+        }finally {
+            isLoading = false // ปิดสถานะการโหลดเมื่อเสร็จสิ้น (ทั้งสำเร็จและผิดพลาด)
         }
-        departmentName = viewModel.getDepartmentName(requestData?.employee?.departmentId ?: 0)
-        viewModel.LoadData()
+
     }
     LaunchedEffect(selectRequestText){
         if (selectRequestText == "เสร็จสิ้นแล้ว") {
@@ -150,152 +181,96 @@ fun formAddDetail(
             .padding(16.dp)
             .verticalScroll(scrollState),
     ) {
-        if (showDialog) {
-            CustomAlertDialog(
-                onConfirm = {
-                    coroutineScope.launch {
-                        if (selectRequestText != "เสร็จสิ้นแล้ว" && selectRequestText != "กำลังส่งคืน" && selectRequestText != "ส่งคืนเสร็จสิ้น" && isUpdate) {
-                            validateMode(1)
-                        }else{
-                            validateMode(2)
-                        }
-                    }
-                },
-                onDismiss = { showDialog = false }
-            )
-        }
+        if(isLoading){
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.White),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+            }
 
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp),
-            shape = RoundedCornerShape(10.dp),
-            elevation = CardDefaults.cardElevation(4.dp)
-        ) {
+        }else if (isError){
+            // แสดง Error Message เมื่อมีข้อผิดพลาด
             Column(
+                modifier = Modifier.fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Text(text = errorMessage, color = Color.Red, fontSize = 18.sp)
+                Spacer(modifier = Modifier.height(16.dp))
+                Button(onClick = { isLoading = true }) {
+                    Text("ลองอีกครั้ง")
+                }
+            }
+        }
+        else
+        {
+            if (showDialog) {
+                CustomAlertDialog(
+                    onConfirm = {
+                        coroutineScope.launch {
+                            if (selectRequestText != "เสร็จสิ้นแล้ว" && selectRequestText != "กำลังส่งคืน" && selectRequestText != "ส่งคืนเสร็จสิ้น" && isUpdate) {
+                                validateMode(1)
+                            }else{
+                                validateMode(2)
+                            }
+                        }
+                    },
+                    onDismiss = { showDialog = false }
+                )
+            }
+
+            Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp)
+                    .padding(8.dp),
+                shape = RoundedCornerShape(10.dp),
+                elevation = CardDefaults.cardElevation(4.dp)
             ) {
-                Text(text = "รหัสคำขอแจ้งซ่อม : $rrid", fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(text = "อุปกรณ์: (${requestData?.equipment?.eq_id}) ${requestData?.equipment?.eq_name}", fontSize = 16.sp)
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(text = "ชื่อผู้แจ้ง: ${requestData?.employee?.firstname} ${requestData?.employee?.lastname}", fontSize = 16.sp)
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(text = "หน่วยงาน: $departmentName", fontSize = 16.sp)
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(text = "ตึก: ${requestData?.building?.building_name} ห้อง: ${requestData?.building?.building_room_number} ชั้นตึก: ${requestData?.building?.building_floor}", fontSize = 16.sp)
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(text = "รายละเอียดอาการเสีย :")
-                TextField(
-                    value = "${requestData?.rr_description}",
-                    onValueChange = {},
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(80.dp),
-                    readOnly = true
-                )
-            }
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Column(modifier = Modifier.fillMaxWidth()) {
-            Text(text = "สถานะคำขอ", fontSize = 16.sp)
-            ExposedDropdownMenuBox(
-                expanded = loedIsExpand,
-                onExpandedChange = { loedIsExpand = it }
-            ) {
-                OutlinedTextField(
-                    value = selectRequestText,
-                    onValueChange = {},
-                    readOnly = true,
-                    label = { Text("เลือกสถานะของการซ่อม") },
-                    trailingIcon = {
-                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = loedIsExpand)
-                    },
-                    colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
-                    modifier = Modifier
-                        .menuAnchor()
-                        .fillMaxWidth()
-                )
-                ExposedDropdownMenu(
-                    expanded = loedIsExpand,
-                    onDismissRequest = { loedIsExpand = false }
+                        .padding(16.dp)
                 ) {
-                    requestStatus.forEach { request ->
-                        DropdownMenuItem(
-                            text = { Text(text = request) },
-                            onClick = {
-                                selectRequestText = request
-                                loedIsExpand = false
-                            }
-                        )
-                    }
-                }
-            }
-            if (selectRequestText == "เลือกสถานะของการซ่อม") {
-                Text(text = "กรุณาเลือกสถานะของการซ่อม", color = Color.Red, fontSize = 12.sp)
-            }
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        if (selectRequestText != "เสร็จสิ้นแล้ว" && selectRequestText != "กำลังส่งคืน" && selectRequestText != "ส่งคืนเสร็จสิ้น") {
-            Column(modifier = Modifier.fillMaxWidth()) {
-                Text(text = "รายละเอียดการซ่อม", fontSize = 16.sp)
-                TextField(
-                    value = repairDetail,
-                    onValueChange = { repairDetail = it },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(100.dp)
-                        .background(Color.White, RoundedCornerShape(8.dp)),
-                    singleLine = false,
-                    maxLines = 4
-                )
-                if (repairDetail.isBlank()) {
-                    Text(text = "กรุณากรอกรายละเอียดการซ่อม", color = Color.Red, fontSize = 12.sp)
+                    Text(text = "รหัสคำขอแจ้งซ่อม : $rrid", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(text = "อุปกรณ์: (${requestData?.equipment?.eq_id}) ${requestData?.equipment?.eq_name}", fontSize = 16.sp)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(text = "ชื่อผู้แจ้ง: ${requestData?.employee?.firstname} ${requestData?.employee?.lastname}", fontSize = 16.sp)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(text = "หน่วยงาน: $departmentName", fontSize = 16.sp)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(text = "ตึก: ${requestData?.building?.building_name} ห้อง: ${requestData?.building?.building_room_number} ชั้นตึก: ${requestData?.building?.building_floor}", fontSize = 16.sp)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(text = "รายละเอียดอาการเสีย :")
+                    TextField(
+                        value = "${requestData?.rr_description}",
+                        onValueChange = {},
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(80.dp),
+                        readOnly = true
+                    )
                 }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
-        } else if (selectRequestText == "ส่งคืนเสร็จสิ้น") {
-            Column(modifier = Modifier.fillMaxWidth()) {
-                Text(text = "ชื่อผู้รับคืน", fontSize = 16.sp)
-                TextField(
-                    value = repairDetail,
-                    onValueChange = { repairDetail = it },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(50.dp)
-                        .background(Color.White, RoundedCornerShape(8.dp)),
-                    singleLine = false,
-                    maxLines = 4
-                )
-                if (repairDetail.isBlank()) {
-                    Text(text = "กรุณากรอกชื่อผู้รับคืน", color = Color.Red, fontSize = 12.sp)
-                }
-            }
 
-            Spacer(modifier = Modifier.height(16.dp))
-        }
-
-        if (isUpdate || requestData?.receive_repair?.repair_details?.lastOrNull() == null) {
             Column(modifier = Modifier.fillMaxWidth()) {
-                Text(text = "ระดับความเสียหาย", fontSize = 16.sp)
+                Text(text = "สถานะคำขอ", fontSize = 16.sp)
                 ExposedDropdownMenuBox(
-                    expanded = isExpand,
-                    onExpandedChange = { isExpand = it }
+                    expanded = loedIsExpand,
+                    onExpandedChange = { loedIsExpand = it }
                 ) {
                     OutlinedTextField(
-                        value = selectedDamageLevel,
+                        value = selectRequestText,
                         onValueChange = {},
                         readOnly = true,
-                        label = { Text("เลือกระดับความเสียหาย") },
+                        label = { Text("เลือกสถานะของการซ่อม") },
                         trailingIcon = {
-                            ExposedDropdownMenuDefaults.TrailingIcon(expanded = isExpand)
+                            ExposedDropdownMenuDefaults.TrailingIcon(expanded = loedIsExpand)
                         },
                         colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
                         modifier = Modifier
@@ -303,60 +278,142 @@ fun formAddDetail(
                             .fillMaxWidth()
                     )
                     ExposedDropdownMenu(
-                        expanded = isExpand,
-                        onDismissRequest = { isExpand = false }
+                        expanded = loedIsExpand,
+                        onDismissRequest = { loedIsExpand = false }
                     ) {
-                        damageLevels?.forEach { level ->
+                        requestStatus.forEach { request ->
                             DropdownMenuItem(
-                                text = { Text(text = level.loed_Name.toString()) },
+                                text = { Text(text = request) },
                                 onClick = {
-                                    selectedDamageLevel = level.loed_Name.toString()
-                                    Loed_ID = level.loed_id.toString()
-                                    isExpand = false
+                                    selectRequestText = request
+                                    loedIsExpand = false
                                 }
                             )
                         }
                     }
                 }
-                if (selectedDamageLevel == "เลือกระดับความเสียหาย") {
-                    Text(text = "กรุณาเลือกระดับความเสียหาย", color = Color.Red, fontSize = 12.sp)
+                if (selectRequestText == "เลือกสถานะของการซ่อม") {
+                    Text(text = "กรุณาเลือกสถานะของการซ่อม", color = Color.Red, fontSize = 12.sp)
                 }
             }
-        }
 
-        Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-        if (validationError != null) {
-            showDialog = false
-            AlertDialog(
-                onDismissRequest = { validationError = null }, // ปิด Dialog เมื่อผู้ใช้คลิกนอก Dialog
-                title = {
-                    Text(text = "เกิดข้อผิดพลาด")
-                },
-                text = {
-                    Text(text = validationError ?: "An unknown error occurred")
-                },
-                confirmButton = {
-                    Button(
-                        onClick = { validationError = null } // ปิด Dialog เมื่อผู้ใช้กด OK
-                    ) {
-                        Text("OK")
+            if (selectRequestText != "เสร็จสิ้นแล้ว" && selectRequestText != "กำลังส่งคืน" && selectRequestText != "ส่งคืนเสร็จสิ้น") {
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Text(text = "รายละเอียดการซ่อม", fontSize = 16.sp)
+                    TextField(
+                        value = repairDetail,
+                        onValueChange = { repairDetail = it },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(100.dp)
+                            .background(Color.White, RoundedCornerShape(8.dp)),
+                        singleLine = false,
+                        maxLines = 4
+                    )
+                    if (repairDetail.isBlank()) {
+                        Text(text = "กรุณากรอกรายละเอียดการซ่อม", color = Color.Red, fontSize = 12.sp)
                     }
                 }
-            )
-        }
 
-        Button(
-            onClick = { showDialog = true },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(50.dp)
-        ) {
-            Text("บันทึก")
+                Spacer(modifier = Modifier.height(16.dp))
+            } else if (selectRequestText == "ส่งคืนเสร็จสิ้น") {
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Text(text = "ชื่อผู้รับคืน", fontSize = 16.sp)
+                    TextField(
+                        value = repairDetail,
+                        onValueChange = { repairDetail = it },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(50.dp)
+                            .background(Color.White, RoundedCornerShape(8.dp)),
+                        singleLine = false,
+                        maxLines = 4
+                    )
+                    if (repairDetail.isBlank()) {
+                        Text(text = "กรุณากรอกชื่อผู้รับคืน", color = Color.Red, fontSize = 12.sp)
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+            }
+
+            if (isUpdate || requestData?.receive_repair?.repair_details?.lastOrNull() == null) {
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Text(text = "ระดับความเสียหาย", fontSize = 16.sp)
+                    ExposedDropdownMenuBox(
+                        expanded = isExpand,
+                        onExpandedChange = { isExpand = it }
+                    ) {
+                        OutlinedTextField(
+                            value = selectedDamageLevel,
+                            onValueChange = {},
+                            readOnly = true,
+                            label = { Text("เลือกระดับความเสียหาย") },
+                            trailingIcon = {
+                                ExposedDropdownMenuDefaults.TrailingIcon(expanded = isExpand)
+                            },
+                            colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
+                            modifier = Modifier
+                                .menuAnchor()
+                                .fillMaxWidth()
+                        )
+                        ExposedDropdownMenu(
+                            expanded = isExpand,
+                            onDismissRequest = { isExpand = false }
+                        ) {
+                            damageLevels?.forEach { level ->
+                                DropdownMenuItem(
+                                    text = { Text(text = level.loed_Name.toString()) },
+                                    onClick = {
+                                        selectedDamageLevel = level.loed_Name.toString()
+                                        Loed_ID = level.loed_id.toString()
+                                        isExpand = false
+                                    }
+                                )
+                            }
+                        }
+                    }
+                    if (selectedDamageLevel == "เลือกระดับความเสียหาย") {
+                        Text(text = "กรุณาเลือกระดับความเสียหาย", color = Color.Red, fontSize = 12.sp)
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            if (validationError != null) {
+                showDialog = false
+                AlertDialog(
+                    onDismissRequest = { validationError = null }, // ปิด Dialog เมื่อผู้ใช้คลิกนอก Dialog
+                    title = {
+                        Text(text = "เกิดข้อผิดพลาด")
+                    },
+                    text = {
+                        Text(text = validationError ?: "An unknown error occurred")
+                    },
+                    confirmButton = {
+                        Button(
+                            onClick = { validationError = null } // ปิด Dialog เมื่อผู้ใช้กด OK
+                        ) {
+                            Text("OK")
+                        }
+                    }
+                )
+            }
+
+            Button(
+                onClick = { showDialog = true },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp)
+            ) {
+                Text("บันทึก")
+            }
         }
     }
 }
-
 @Composable
 fun CustomAlertDialog(onConfirm: () -> Unit, onDismiss: () -> Unit) {
     AlertDialog(
