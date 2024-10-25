@@ -44,32 +44,6 @@ data class RepairItem(
     val totalRequestCount: Int
 )
 
-val sampleRepairs = listOf(
-    RepairItem("01-01-2023", "Dell Inspiron", "Laptop", 5, "John Doe", 100),
-    RepairItem("02-01-2023", "HP LaserJet", "Printer", 3, "Jane Smith", 100),
-    RepairItem("03-01-2023", "Epson X123", "Projector", 10, "Mike Johnson", 100) ,
-    RepairItem("01-01-2023", "Dell Inspiron", "Laptop", 5, "John Doe", 100),
-    RepairItem("02-01-2023", "HP LaserJet", "Printer", 3, "Jane Smith", 100),
-    RepairItem("03-01-2023", "Epson X123", "Projector", 10, "Mike Johnson", 100),
-    RepairItem("01-01-2023", "Dell Inspiron", "Laptop", 5, "John Doe", 100),
-    RepairItem("02-01-2023", "HP LaserJet", "Printer", 3, "Jane Smith", 100),
-    RepairItem("03-01-2023", "Epson X123", "Projector", 10, "Mike Johnson", 100) ,
-    RepairItem("01-01-2023", "Dell Inspiron", "Laptop", 5, "John Doe", 100),
-    RepairItem("02-01-2023", "HP LaserJet", "Printer", 3, "Jane Smith", 100),
-    RepairItem("03-01-2023", "Epson X123", "Projector", 10, "Mike Johnson", 100),
-    RepairItem("01-01-2023", "Dell Inspiron", "Laptop", 5, "John Doe", 100),
-    RepairItem("02-01-2023", "HP LaserJet", "Printer", 3, "Jane Smith", 100),
-    RepairItem("03-01-2023", "Epson X123", "Projector", 10, "Mike Johnson", 100) ,
-    RepairItem("01-01-2023", "Dell Inspiron", "Laptop", 5, "John Doe", 100),
-    RepairItem("02-01-2023", "HP LaserJet", "Printer", 3, "Jane Smith", 100),
-    RepairItem("03-01-2023", "Epson X123", "Projector", 10, "Mike Johnson", 100),
-    RepairItem("01-01-2023", "Dell Inspiron", "Laptop", 5, "John Doe", 100),
-    RepairItem("02-01-2023", "HP LaserJet", "Printer", 3, "Jane Smith", 100),
-    RepairItem("03-01-2023", "Epson X123", "Projector", 10, "Mike Johnson", 100) ,
-    RepairItem("01-01-2023", "Dell Inspiron", "Laptop", 5, "John Doe", 100),
-    RepairItem("02-01-2023", "HP LaserJet", "Printer", 3, "Jane Smith", 100),
-    RepairItem("03-01-2023", "Epson X123", "Projector", 10, "Mike Johnson", 100)
-)
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -145,7 +119,7 @@ fun ReportListScreen(navController: NavController, viewModel: ReportViewModel = 
                     .wrapContentWidth(Alignment.CenterHorizontally)
             )
             Text(
-                text = "ประเภท",
+                text = "สถานะ",
                 fontWeight = FontWeight.Bold,
                 fontSize = 12.sp,
                 modifier = Modifier
@@ -192,8 +166,8 @@ fun ReportListScreen(navController: NavController, viewModel: ReportViewModel = 
                             )
                         }
                         Spacer(modifier = Modifier.padding(vertical = 5.dp))
-                        Text(text = repair!!.eq_name, fontSize = 10.sp, modifier = Modifier.weight(1f).wrapContentWidth(Alignment.CenterHorizontally))
-                        Text(text = repair!!.eqc_name, fontSize = 10.sp, modifier = Modifier.weight(1f).wrapContentWidth(Alignment.CenterHorizontally))
+                        Text(text = "${repair!!.eq_name}(${repair!!.eqc_name})", fontSize = 10.sp, modifier = Modifier.weight(1f).wrapContentWidth(Alignment.CenterHorizontally))
+                        Text(text = repair!!.request_status, fontSize = 10.sp, modifier = Modifier.weight(1f).wrapContentWidth(Alignment.CenterHorizontally))
                         Text(text = repair!!.repair_count.toString(), fontSize = 10.sp, modifier = Modifier.weight(1f).wrapContentWidth(Alignment.CenterHorizontally))
                         if (repair.firstname.isNullOrBlank() || repair.firstname.isNullOrBlank()) {
                             Text(text = "ไม่มีผู้รับงาน", fontSize = 10.sp, modifier = Modifier.weight(1f).wrapContentWidth(Alignment.CenterHorizontally))

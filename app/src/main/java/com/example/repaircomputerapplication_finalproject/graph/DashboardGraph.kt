@@ -14,7 +14,7 @@ import com.example.repaircomputerapplication_finalproject.screens.HomeScreen
 import com.example.repaircomputerapplication_finalproject.screens.NotificationScreen
 import com.example.repaircomputerapplication_finalproject.screens.reportscreen.DashboardScreen
 import com.example.repaircomputerapplication_finalproject.screens.reportscreen.ReportListScreen
-import com.example.repaircomputerapplication_finalproject.screens.reportscreen.sampleRepairs
+
 
 
 @RequiresApi(Build.VERSION_CODES.O)
