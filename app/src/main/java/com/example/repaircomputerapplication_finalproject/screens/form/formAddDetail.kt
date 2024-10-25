@@ -56,10 +56,12 @@ fun formAddDetail(
         "ไม่พบว่าชำรุด"
     )
 
+    LaunchedEffect(key1 = true){
+        viewModel.LoadData()
+        requestData = viewModel.fetchRequestForRepairData(rrid.toInt())
+    }
     LaunchedEffect(key1 = damageLevels,key2 = requestData) {
         try {
-            requestData = viewModel.fetchRequestForRepairData(rrid.toInt())
-            viewModel.LoadData()
             if (isUpdate) {
                 if (requestData?.receive_repair?.repair_details?.isNotEmpty() == true) {
                     val lastDetail = requestData?.receive_repair?.repair_details?.lastOrNull()
@@ -351,9 +353,7 @@ fun formAddDetail(
                             onValueChange = {},
                             readOnly = true,
                             label = { Text("เลือกระดับความเสียหาย") },
-                            trailingIcon = {
-                                ExposedDropdownMenuDefaults.TrailingIcon(expanded = isExpand)
-                            },
+                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = isExpand) },
                             colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
                             modifier = Modifier
                                 .menuAnchor()
@@ -365,9 +365,9 @@ fun formAddDetail(
                         ) {
                             damageLevels?.forEach { level ->
                                 DropdownMenuItem(
-                                    text = { Text(text = level.loed_Name.toString()) },
+                                    text = { Text(level.loed_Name ?: "") },
                                     onClick = {
-                                        selectedDamageLevel = level.loed_Name.toString()
+                                        selectedDamageLevel = level.loed_Name.orEmpty()
                                         Loed_ID = level.loed_id.toString()
                                         isExpand = false
                                     }
