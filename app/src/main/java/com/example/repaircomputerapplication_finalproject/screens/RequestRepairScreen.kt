@@ -261,8 +261,9 @@ fun RequestRepairScreen(navController: NavHostController, viewModel: RequestForR
                                 if( userType == "Technician" || userType == "Admin"){
                                     if(item.assign_work != null && item.assign_work.admin_id != null){
                                         Text(text = "ผู้จ่ายงาน:${viewModel.getAssignmentName(item.assign_work.admin_id) ?: "ไม่มี"}")
+                                    }else{
+                                        Text(text = "ผู้จ่ายงาน:ไม่มี")
                                     }
-                                    Text(text = "ผู้จ่ายงาน:ไม่มี")
                                 }
                                 Row {
                                     Column(modifier = Modifier.weight(1f)) {
