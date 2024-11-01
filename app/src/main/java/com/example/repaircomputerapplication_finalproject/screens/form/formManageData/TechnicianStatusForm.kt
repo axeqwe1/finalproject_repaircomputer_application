@@ -65,7 +65,7 @@ fun technicianStatusForm(isEdit: Boolean?, DataID: String?, viewModel: DataManag
                     techStatus = it
                 }
             },
-            placeholder = { Text("สถานะการรับงาน") },
+            placeholder = { Text("สถานะของช่าง") },
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(50)
         )
