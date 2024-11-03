@@ -27,22 +27,13 @@ import kotlinx.coroutines.launch
 class HomeViewModel(application: Application): AndroidViewModel(application) {
     private val dataStore = application.dataStore
     private val _logoutResult = MutableStateFlow<LogoutResult?>(null)
-    private val _notificationCount = MutableStateFlow(0)
     val notificationCount: StateFlow<Int> = NotificationRepository.notificationCount
     val logoutResult: StateFlow<LogoutResult?> = _logoutResult
 
-    // SharedFlow สำหรับรับข้อมูลจาก WebSocket
-    private val _notificationsFlow = MutableSharedFlow<Int>()
-    val notificationsFlow: SharedFlow<Int> = _notificationsFlow
 
 
     init {
-        // สังเกตการเปลี่ยนแปลงของ _notificationsFlow และอัปเดต notificationCount
-        viewModelScope.launch {
-            _notificationsFlow.collect { count ->
-                _notificationCount.value = count
-            }
-        }
+
     }
     fun logout(){
         viewModelScope.launch{
