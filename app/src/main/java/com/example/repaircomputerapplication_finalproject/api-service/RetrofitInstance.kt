@@ -15,6 +15,13 @@ object RetrofitInstance {
 
     val client = OkHttpClient.Builder()
         .addInterceptor(logging)
+        .addInterceptor { chain ->
+            val originalRequest = chain.request()
+            val newRequest = originalRequest.newBuilder()
+                .header("Accept-Encoding", "identity") // ปิดการบีบอัด
+                .build()
+            chain.proceed(newRequest)
+        }
         .build()
 
     private val retrofit: Retrofit = Retrofit.Builder()

@@ -7,20 +7,13 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
 import android.util.Log
-import androidx.compose.ui.platform.LocalContext
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.datastore.preferences.core.stringPreferencesKey
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleObserver
-import androidx.lifecycle.OnLifecycleEvent
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelStoreOwner
 import com.example.repaircomputerapplication_finalproject.R
 import com.example.repaircomputerapplication_finalproject.model.NotificationMessage
 import com.example.repaircomputerapplication_finalproject.viewModel.ContextDataStore.dataStore
-import com.example.repaircomputerapplication_finalproject.viewModel.HomeViewModel
 import com.google.gson.Gson
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -28,21 +21,74 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
-import org.java_websocket.client.WebSocketClient
-import org.java_websocket.handshake.ServerHandshake
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.WebSocket
+import okhttp3.WebSocketListener
+import okio.ByteString
 import java.net.URI
 
 class MyWebSocketClient(
-    serverUri: URI,
     private val context: Context,
     private val onNewNotification: () -> Unit // Callback เพื่ออัปเดตจำนวนการแจ้งเตือนใน ViewModel
-) : WebSocketClient(serverUri), LifecycleObserver {
+) {
+    private val client = OkHttpClient()
+    private lateinit var webSocket: WebSocket
 
-    override fun onOpen(handshakedata: ServerHandshake) {
-        Log.d("WebSocket", "Opened")
+    init {
+        connectWebSocket()
     }
-    override fun onMessage(message: String) {
-        Log.d("WebSocket", "Message received: $message")
+
+    private fun connectWebSocket() {
+        val request = Request.Builder().url("ws://45.136.255.62:80").build()
+        webSocket = client.newWebSocket(request, object : WebSocketListener() {
+            override fun onOpen(webSocket: WebSocket, response: okhttp3.Response) {
+                Log.d("WebSocket", "Opened")
+            }
+
+            override fun onMessage(webSocket: WebSocket, text: String) {
+                Log.d("WebSocket", "Message received: $text")
+                handleMessage(text)
+                CoroutineScope(Dispatchers.Main).launch {
+                    val role = context.dataStore.data.map { items ->
+                        items[stringPreferencesKey("role")]
+                    }.first()
+                    val userId = context.dataStore.data.map { items ->
+                        items[stringPreferencesKey("userId")]
+                    }.first()
+                    val notificationMessage = parseMessage(text)
+                    if(role == notificationMessage.role && userId == notificationMessage.user_id){
+                        showNotification(context, notificationMessage.title,notificationMessage.message)
+                        onNewNotification() // เรียก Callback เมื่อมีการแจ้งเตือนใหม่
+                    }
+                }
+            }
+
+            override fun onMessage(webSocket: WebSocket, bytes: ByteString) {
+                Log.d("WebSocket", "Binary message received")
+                handleMessage(bytes.utf8())
+            }
+
+            override fun onClosing(webSocket: WebSocket, code: Int, reason: String) {
+                Log.d("WebSocket", "Closing with reason: $reason")
+                webSocket.close(1000, null)
+            }
+
+            override fun onFailure(webSocket: WebSocket, t: Throwable, response: okhttp3.Response?) {
+                Log.e("WebSocket", "Error", t)
+                reconnect()
+            }
+        })
+    }
+
+    private fun reconnect() {
+        CoroutineScope(Dispatchers.IO).launch {
+            delay(5000) // รอ 5 วินาทีก่อนเชื่อมต่อใหม่
+            connectWebSocket()
+        }
+    }
+
+    private fun handleMessage(message: String) {
         CoroutineScope(Dispatchers.Main).launch {
             val role = context.dataStore.data.map { items ->
                 items[stringPreferencesKey("role")]
@@ -51,32 +97,11 @@ class MyWebSocketClient(
                 items[stringPreferencesKey("userId")]
             }.first()
             val notificationMessage = parseMessage(message)
-            if(role == notificationMessage.role && userId == notificationMessage.user_id){
-                showNotification(context, notificationMessage.title,notificationMessage.message)
-                onNewNotification() // เรียก Callback เมื่อมีการแจ้งเตือนใหม่
+            if (role == notificationMessage.role && userId == notificationMessage.user_id) {
+                showNotification(context, notificationMessage.title, notificationMessage.message)
+                onNewNotification()
             }
         }
-    }
-
-    override fun onClose(code: Int, reason: String, remote: Boolean) {
-        Log.d("WebSocket", "Closed Reason $reason")
-        CoroutineScope(Dispatchers.IO).launch {
-            reconnect() // ใช้ฟังก์ชัน reconnect ที่มีอยู่ใน WebSocketClient
-        }
-    }
-
-    override fun onError(ex: Exception) {
-        Log.e("WebSocket", "Error", ex)
-    }
-
-    @OnLifecycleEvent(Lifecycle.Event.ON_START)
-    fun connectWebSocket() {
-        this.connect()
-    }
-
-    @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
-    fun disconnectWebSocket() {
-        this.close()
     }
 
     private fun parseMessage(message: String): NotificationMessage {
@@ -108,11 +133,14 @@ class MyWebSocketClient(
                     Manifest.permission.POST_NOTIFICATIONS
                 ) != PackageManager.PERMISSION_GRANTED
             ) {
-                // ถ้าสิทธิ์ไม่ได้รับการอนุญาต เราก็ไม่สามารถแสดงการแจ้งเตือนได้
                 Log.e("WebSocket", "Permission not granted to post notifications")
                 return
             }
             notify(1, builder.build())
         }
+    }
+
+    fun disconnectWebSocket() {
+        webSocket.close(1000, "Service destroyed")
     }
 }
