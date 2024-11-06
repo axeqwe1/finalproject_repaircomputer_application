@@ -9,26 +9,23 @@ import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import com.example.repaircomputerapplication_finalproject.R
+import com.example.repaircomputerapplication_finalproject.Websocket.MyWebSocketClient
 import com.example.repaircomputerapplication_finalproject.repository.NotificationRepository
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.WebSocket
-import okhttp3.WebSocketListener
-import okio.ByteString
+import java.net.URI
 
 class WebSocketService : Service() {
-    private lateinit var webSocket: MyWebSocketClient
-    private val client = OkHttpClient()
+    private lateinit var webSocketClient: MyWebSocketClient
 
     override fun onCreate() {
         super.onCreate()
-        webSocket = MyWebSocketClient(this){
+        val uri = URI("ws://45.136.255.62:80") // แก้ไข URL ให้ถูกต้อง
+        webSocketClient = MyWebSocketClient(uri, this) {
             // Callback ที่จะถูกเรียกเมื่อมีการแจ้งเตือนใหม่เข้ามา
             NotificationRepository.incrementNotificationCount() // อัปเดตจำนวนการแจ้งเตือนใน Repository
         }
+        webSocketClient.connect()
         startForegroundServiceWithNotification()
     }
-
 
     private fun startForegroundServiceWithNotification() {
         val channelId = "WebSocketServiceChannel"
@@ -57,8 +54,10 @@ class WebSocketService : Service() {
     }
 
     override fun onDestroy() {
-        webSocket.disconnectWebSocket()
-        client.dispatcher.executorService.shutdown() // ปิด OkHttpClient
+        webSocketClient.close()
         super.onDestroy()
     }
+
+
+
 }

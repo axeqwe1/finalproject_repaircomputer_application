@@ -36,13 +36,14 @@ import java.util.*
 
 
 @Composable
-fun displayRequestListForAssign(navController: NavHostController,viewModel:AssignWorkViewModel = viewModel()) {
+fun displayRequestListForAssign(navController: NavHostController, viewModel: AssignWorkViewModel = viewModel()) {
     val backlogList = viewModel.backlogData.collectAsState().value
     var admin_id by remember { mutableStateOf("") }
     val context = LocalContext.current
-    LaunchedEffect(Unit){
+
+    LaunchedEffect(Unit) {
         viewModel.loadData()
-        admin_id = context.dataStore.data.map {item ->
+        admin_id = context.dataStore.data.map { item ->
             item[stringPreferencesKey("userId")]
         }.first() ?: "null"
     }
@@ -50,11 +51,14 @@ fun displayRequestListForAssign(navController: NavHostController,viewModel:Assig
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFD0E6F8)) // Background color similar to the image
+            .background(Color(0xFFD0E6F8))
             .padding(16.dp)
     ) {
         if (backlogList != null) {
-            items(backlogList.data) { item ->
+            // Sort backlogList data by rrid in ascending order
+            val sortedBacklogList = backlogList.data.sortedBy { it.rrid }
+
+            items(sortedBacklogList) { item ->
                 OutlinedCard(
                     modifier = Modifier
                         .padding(vertical = 8.dp)
@@ -62,14 +66,15 @@ fun displayRequestListForAssign(navController: NavHostController,viewModel:Assig
                         .clickable {
                             navController.navigate(
                                 ScreenRoutes
-                                .TechnicianListBacklog
-                                .passAdminIdAndRrid(admin_id = admin_id, rrid = item.rrid.toString() )
-                            ) },
+                                    .TechnicianListBacklog
+                                    .passAdminIdAndRrid(admin_id = admin_id, rrid = item.rrid.toString())
+                            )
+                        },
                     shape = RoundedCornerShape(16.dp),
                 ) {
                     Column(
                         modifier = Modifier
-                            .background(Color.White) // Changed background to White for better contrast
+                            .background(Color.White)
                             .padding(16.dp)
                     ) {
                         Text(
@@ -95,7 +100,6 @@ fun displayRequestListForAssign(navController: NavHostController,viewModel:Assig
                                 Text(text = "หน่วยงาน: ${viewModel.getDepartmentName(item.employee.departmentId!!)}")
                             }
                             Column(modifier = Modifier.weight(1f)) {
-                                // Parse the ISO 8601 timestamp
                                 val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault())
                                 dateFormat.timeZone = TimeZone.getTimeZone("UTC")
                                 val date: Date = try {
@@ -104,7 +108,6 @@ fun displayRequestListForAssign(navController: NavHostController,viewModel:Assig
                                     Date()
                                 }
 
-                                // Format the date to a readable format
                                 val displayFormat = SimpleDateFormat("MM/dd/yyyy", Locale.getDefault())
                                 val formattedDate = displayFormat.format(date)
                                 Text(text = "ผู้แจ้ง : ${item.employee.firstname}   ${item.employee.lastname}")
@@ -118,7 +121,6 @@ fun displayRequestListForAssign(navController: NavHostController,viewModel:Assig
         }
     }
 }
-
 
 @Preview(showBackground = true)
 @Composable

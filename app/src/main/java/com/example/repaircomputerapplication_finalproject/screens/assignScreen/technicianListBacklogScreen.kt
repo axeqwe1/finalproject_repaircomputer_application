@@ -42,8 +42,12 @@ fun technicianListBacklogScreen(navController: NavController, admin_id: String, 
             .padding(16.dp)
     ) {
         techList?.let { list ->
-            items(list) { item ->
+            // Sort the list to show 'Available' status first, then by 'tech_id' in ascending order
+            val sortedList = list.sortedWith(
+                compareBy({ it.status_id != 2 }, { it.tech_id })
+            )
 
+            items(sortedList) { item ->
                 var backlog by remember { mutableStateOf(TechBacklogCount()) }
                 LaunchedEffect(item.tech_id) {
                     if (item.tech_id != null) {
@@ -71,6 +75,7 @@ fun technicianListBacklogScreen(navController: NavController, admin_id: String, 
         }
     }
 }
+
 
 @Composable
 fun ItemCard(
