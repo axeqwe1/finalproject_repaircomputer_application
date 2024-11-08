@@ -204,12 +204,14 @@ fun DetailRepairScreen(
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(text = "วันที่รับงาน: ${formatTimestamp(dateReceive)} ", fontSize = 18.sp)
                 }
-                if(hasAssign){
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(text = "ชื่อผู้จ่ายงาน: ${viewModel.getAssignmentName(data!!.assign_work.admin_id)}", fontSize = 18.sp)
-                }else{
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(text = "ชื่อผู้จ่ายงาน: ไม่มี", fontSize = 18.sp)
+                if(userType != "Employee"){
+                    if(hasAssign){
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(text = "ชื่อผู้จ่ายงาน: ${viewModel.getAssignmentName(data!!.assign_work.admin_id)}", fontSize = 18.sp)
+                    }else{
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(text = "ชื่อผู้จ่ายงาน: ไม่มี", fontSize = 18.sp)
+                    }
                 }
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(text = "รายละเอียด :", fontSize = 18.sp)

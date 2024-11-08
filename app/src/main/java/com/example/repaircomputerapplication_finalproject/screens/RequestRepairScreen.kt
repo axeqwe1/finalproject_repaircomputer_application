@@ -242,12 +242,17 @@ fun RequestRepairScreen(navController: NavHostController, viewModel: RequestForR
                                     fontWeight = FontWeight.Bold
                                 )
                                 Text(
-                                    text ="ชื่ออุปกรณ์: ${ item.equipment.eq_name ?: "null" }",
+                                    text ="ชื่ออุปกรณ์: ${ item.equipment.eq_name ?: "null"}",
                                     fontSize = 18.sp,
                                     fontWeight = FontWeight.Bold
                                 )
                                 Text(
-                                    text = item.rr_description,
+                                    text ="ประเภทอุปกรณ์: ${viewModel.getEquipmetType(item.equipment.eqc_id ?: 0) }",
+                                    fontSize = 18.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                Text(
+                                    text = "รายละเอียด : " + item.rr_description,
                                     fontSize = 14.sp,
                                     color = Color.Gray
                                 )

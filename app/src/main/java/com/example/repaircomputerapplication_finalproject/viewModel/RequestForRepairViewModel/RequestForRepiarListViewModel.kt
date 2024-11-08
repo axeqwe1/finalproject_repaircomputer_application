@@ -12,6 +12,7 @@ import com.example.repaircomputerapplication_finalproject.model.BuildingData
 import com.example.repaircomputerapplication_finalproject.model.DepartmentData
 import com.example.repaircomputerapplication_finalproject.model.EmployeeData
 import com.example.repaircomputerapplication_finalproject.model.EquipmentData
+import com.example.repaircomputerapplication_finalproject.model.EquipmentTypeData
 import com.example.repaircomputerapplication_finalproject.model.TechnicianData
 import com.example.repaircomputerapplication_finalproject.model.detailRepairData
 import com.example.repaircomputerapplication_finalproject.viewModel.ContextDataStore.dataStore
@@ -45,6 +46,8 @@ class RequestForRepiarListViewModel(application: Application):AndroidViewModel(a
     private var _adminList = MutableStateFlow<List<AdminData>?>(null)
     var adminList  = _adminList.asStateFlow()
 
+    private var _equipmentList = MutableStateFlow<List<EquipmentTypeData>?>(null)
+    var equipmentList = _equipmentList.asStateFlow()
     private var role:String = ""
     private var Id:Int? = null
 
@@ -58,12 +61,23 @@ class RequestForRepiarListViewModel(application: Application):AndroidViewModel(a
                 _buildingList.value = fetchBuildingData()
                 _departList.value = fetchDepartmentData()
                 _adminList.value = fetchAdminData()
+                _equipmentList.value = fetchEquipmentTypeData()
                 Log.d(TAG, "loadData: ${_requestList.value}")
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to load data: ${e.message}")
                 // จัดการสถานะข้อผิดพลาดที่เหมาะสมที่นี่
             }
         }
+    }
+
+    fun getEquipmetType(eqc_id:Int):String{
+        Log.d(TAG, "getEquipmentType: ${_equipmentList.value}")
+        _equipmentList.value?.forEach {items ->
+            if(items.eqc_id == eqc_id){
+                return items.eqc_name
+            }
+        }
+        return "Fail to getAssignmentName"
     }
     fun getAssignmentName(adminId:Int):String{
         Log.d(TAG, "getAssignMentName: ${adminList.value}")
@@ -128,6 +142,14 @@ class RequestForRepiarListViewModel(application: Application):AndroidViewModel(a
     }
     suspend fun fetchTechnicianData ():List<TechnicianData>?{
         val response = RetrofitInstance.apiService.getTechnicians()
+        if(response.isSuccessful){
+            return response.body()
+        }else{
+            throw Exception("Fail to Fetch Employee")
+        }
+    }
+    suspend fun fetchEquipmentTypeData():List<EquipmentTypeData>?{
+        val response = RetrofitInstance.apiService.getEquipmentTypes()
         if(response.isSuccessful){
             return response.body()
         }else{
