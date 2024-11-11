@@ -18,6 +18,7 @@ class WebSocketService : Service() {
 
     override fun onCreate() {
         super.onCreate()
+        //localhost ws://10.0.2.2:80 = or hostserver = ws://45.136.255.62:80
         val uri = URI("ws://45.136.255.62:80") // แก้ไข URL ให้ถูกต้อง
         webSocketClient = MyWebSocketClient(uri, this) {
             // Callback ที่จะถูกเรียกเมื่อมีการแจ้งเตือนใหม่เข้ามา

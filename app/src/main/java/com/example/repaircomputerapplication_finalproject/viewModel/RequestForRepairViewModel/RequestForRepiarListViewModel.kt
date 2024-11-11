@@ -46,11 +46,14 @@ class RequestForRepiarListViewModel(application: Application):AndroidViewModel(a
     private var _adminList = MutableStateFlow<List<AdminData>?>(null)
     var adminList  = _adminList.asStateFlow()
 
-    private var _equipmentList = MutableStateFlow<List<EquipmentTypeData>?>(null)
-    var equipmentList = _equipmentList.asStateFlow()
+    private var _equipmentTypeList = MutableStateFlow<List<EquipmentTypeData>?>(null)
+    var equipmentTypeList = _equipmentTypeList.asStateFlow()
     private var role:String = ""
     private var Id:Int? = null
 
+    init {
+        loadData()
+    }
     fun loadData() {
         viewModelScope.launch {
             try {
@@ -61,7 +64,7 @@ class RequestForRepiarListViewModel(application: Application):AndroidViewModel(a
                 _buildingList.value = fetchBuildingData()
                 _departList.value = fetchDepartmentData()
                 _adminList.value = fetchAdminData()
-                _equipmentList.value = fetchEquipmentTypeData()
+                _equipmentTypeList.value = fetchEquipmentTypeData()
                 Log.d(TAG, "loadData: ${_requestList.value}")
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to load data: ${e.message}")
@@ -71,8 +74,8 @@ class RequestForRepiarListViewModel(application: Application):AndroidViewModel(a
     }
 
     fun getEquipmetType(eqc_id:Int):String{
-        Log.d(TAG, "getEquipmentType: ${_equipmentList.value}")
-        _equipmentList.value?.forEach {items ->
+        Log.d(TAG, "getEquipmentType: ${_equipmentTypeList.value}")
+        _equipmentTypeList.value?.forEach {items ->
             if(items.eqc_id == eqc_id){
                 return items.eqc_name
             }

@@ -25,6 +25,7 @@ object RetrofitInstance {
         .build()
 
     private val retrofit: Retrofit = Retrofit.Builder()
+            //localhost http://10.0.2.2:8000/ = or hostserver = http://45.136.255.62:8000/
         .baseUrl("http://45.136.255.62:8000/")
         .client(client)
         .addConverterFactory(GsonConverterFactory.create())

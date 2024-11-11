@@ -48,6 +48,7 @@ fun RequestRepairScreen(navController: NavHostController, viewModel: RequestForR
     val buildList = viewModel.buildingList.collectAsState().value ?: emptyList()
     val departList = viewModel.departList.collectAsState().value ?: emptyList()
     val techList = viewModel.techList.collectAsState().value ?: emptyList()
+    val equipmentTypeList = viewModel.equipmentTypeList.collectAsState().value ?: emptyList()
     var userType by remember { mutableStateOf("") }
     var currentMode by remember { mutableStateOf("งานที่ยังไม่จ่าย") } // Track the current mode
     var searchQuery by remember { mutableStateOf("") }
@@ -57,12 +58,12 @@ fun RequestRepairScreen(navController: NavHostController, viewModel: RequestForR
     var showDialog by remember { mutableStateOf(false) }
     var selectedFilter by remember { mutableStateOf("ทั้งหมด") }
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(requestList,eqtList,empList,buildList,departList,techList,equipmentTypeList) {
         if(ConnectionChecker.checkConnection()){
-            viewModel.loadData()
             userType = context.dataStore.data.map { item ->
                 item[stringPreferencesKey("role")]
             }.first() ?: "null"
+            viewModel.loadData()
             isLoading = false
         }else{
             isLoading = true
