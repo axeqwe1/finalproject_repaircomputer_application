@@ -1,6 +1,5 @@
 package com.example.repaircomputerapplication_finalproject.viewModel
 
-import SessionManager
 import android.app.Application
 import android.content.ContentValues.TAG
 import android.util.Log
@@ -11,15 +10,12 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.repaircomputerapplication_finalproject.api_service.RetrofitInstance
 import com.example.repaircomputerapplication_finalproject.model.AdminData
-import com.example.repaircomputerapplication_finalproject.model.ChiefData
 import com.example.repaircomputerapplication_finalproject.model.EmployeeData
 import com.example.repaircomputerapplication_finalproject.model.NotificationReadRequest
 import com.example.repaircomputerapplication_finalproject.model.TechnicianData
 import com.example.repaircomputerapplication_finalproject.repository.NotificationRepository
 import com.example.repaircomputerapplication_finalproject.viewModel.ContextDataStore.dataStore
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
